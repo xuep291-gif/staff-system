@@ -2,10 +2,10 @@
   <view class="page">
     <SNavBar title="线下收款确认" :showBack="true" />
 
-    <STabs v-model="currentTab" :tabs="tabs" storage-key="finance-offline-collection" @change="onTabChange" />
+    <StatusTabs v-model="currentTab" :tabs="tabs" @change="onTabChange" />
 
-    <!-- Tab 0: 待确认 -->
-    <view class="list-section" v-if="currentTab === 0">
+    <!-- Tab 待确认 -->
+    <view class="list-section" v-if="currentTab === 'pending'">
       <SEmpty v-if="!pendingList.length" text="当前暂无待确认线下收款" />
       <view
         class="list-item"
@@ -39,8 +39,8 @@
       </view>
     </view>
 
-    <!-- Tab 1: 已确认 -->
-    <view class="list-section" v-if="currentTab === 1">
+    <!-- Tab 已确认 -->
+    <view class="list-section" v-if="currentTab === 'confirmed'">
       <SEmpty v-if="!confirmedList.length" text="当前暂无已确认线下收款" />
       <view
         class="list-item"
@@ -72,8 +72,8 @@
       </view>
     </view>
 
-    <!-- Tab 2: 收款记录查询 -->
-    <view class="list-section" v-if="currentTab === 2">
+    <!-- Tab 收款记录查询 -->
+    <view class="list-section" v-if="currentTab === 'records'">
       <view class="filter-card">
         <input class="search-input" v-model.trim="filters.keyword" placeholder="姓名 / 学号 / 学院 / 时间" />
         <picker :range="paymentMethods" :value="paymentMethodIndex" @change="onPaymentFilterChange">
@@ -186,7 +186,7 @@
 
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
-import STabs from '@/components/shared/STabs.vue'
+import StatusTabs from '@/components/shared/StatusTabs.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import { confirmOfflineCollection, voidOfflineCollection, getOfflineCollectionList, getStudentBill, generateReceiptNumber } from '@/utils/businessState.js'
@@ -194,10 +194,10 @@ import { hasPermission } from '@/utils/permissions.js'
 
 export default {
   name: 'FinanceCollect',
-  components: { SNavBar, STabs, SBadge, SEmpty },
+  components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
     return {
-      currentTab: 0,
+      currentTab: 'pending',
       showSheet: false,
       currentItem: null,
       list: [],
@@ -218,9 +218,9 @@ export default {
     },
     tabs() {
       return [
-        { label: '待确认', count: this.pendingList.length },
-        { label: '已确认', count: this.confirmedList.length },
-        { label: '记录查询', count: this.recordList.length }
+        { key: 'pending', label: '待确认', count: this.pendingList.length },
+        { key: 'confirmed', label: '已确认', count: this.confirmedList.length },
+        { key: 'records', label: '记录查询', count: this.recordList.length }
       ]
     },
     pendingList() {
@@ -277,8 +277,8 @@ export default {
       }
     },
 
-    onTabChange(idx) {
-      this.currentTab = Number(idx)
+    onTabChange(key) {
+      console.log('线下收款切换:', key)
     },
 
     onItemClick(item) {
@@ -385,7 +385,7 @@ export default {
         this.refresh()
         uni.showToast({ title: '线下收款已确认', icon: 'success' })
         this.$nextTick(() => {
-          this.currentTab = 1
+          this.currentTab = 'confirmed'
         })
       } catch (e) {
         uni.showToast({ title: '确认失败，请重试', icon: 'none' })
@@ -395,7 +395,7 @@ export default {
     },
 
     onViewMore() {
-      this.currentTab = 0
+      this.currentTab = 'pending'
     },
 
     onVoidClick(item) {

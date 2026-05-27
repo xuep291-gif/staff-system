@@ -1,7 +1,7 @@
 <template>
   <view class="page">
     <SNavBar title="退费审核" :showBack="true" />
-    <STabs :tabs="tabs" v-model="activeTab" storage-key="finance-refund-review" @change="selectTab" />
+    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
     <scroll-view scroll-y class="body">
       <view v-if="filteredList.length" class="list">
         <view class="item" v-for="item in filteredList" :key="item.uid" @click="openSheet(item)">
@@ -75,7 +75,7 @@
 
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
-import STabs from '@/components/shared/STabs.vue'
+import StatusTabs from '@/components/shared/StatusTabs.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SButton from '@/components/shared/SButton.vue'
 import SBottomSheet from '@/components/shared/SBottomSheet.vue'
@@ -84,13 +84,15 @@ import SEmpty from '@/components/shared/SEmpty.vue'
 import { buildRefundTabs, filterRefundByTab, getLastBusinessChange, getRefundItem, getRefundList, getRefundTabIndex, updateRefund, REFUND_STATUS } from '@/utils/businessState.js'
 import { refundApi } from '@/common/api/refund.js'
 
+const REFUND_KEY_MAP = ['pending', 'approved', 'completed']
+
 export default {
   name: 'FinanceRefund',
-  components: { SNavBar, STabs, SBadge, SButton, SBottomSheet, SInfoRow, SEmpty },
+  components: { SNavBar, StatusTabs, SBadge, SButton, SBottomSheet, SInfoRow, SEmpty },
   data() {
     return {
       REFUND_STATUS,
-      activeTab: 0,
+      activeTab: 'pending',
       list: [],
       showSheet: false,
       showPreview: false,
@@ -102,10 +104,14 @@ export default {
   },
   computed: {
     tabs() {
-      return buildRefundTabs(this.list)
+      return buildRefundTabs(this.list).map((tab, i) => ({
+        ...tab,
+        key: REFUND_KEY_MAP[i] || `tab-${i}`
+      }))
     },
     filteredList() {
-      return filterRefundByTab(this.list, this.activeTab)
+      const idx = REFUND_KEY_MAP.indexOf(this.activeTab)
+      return filterRefundByTab(this.list, idx >= 0 ? idx : 0)
     },
     canAudit() {
       return this.currentItem && this.currentItem.status === REFUND_STATUS.PENDING
@@ -127,8 +133,8 @@ export default {
     this.refresh(true)
   },
   methods: {
-    selectTab(idx) {
-      this.activeTab = Number(idx)
+    onTabChange(key) {
+      console.log('退费审核切换:', key)
     },
     refresh(syncChangedTab = false) {
       this.list = getRefundList()
@@ -140,7 +146,8 @@ export default {
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
-      this.activeTab = getRefundTabIndex(item)
+      const idx = getRefundTabIndex(item)
+      this.activeTab = REFUND_KEY_MAP[idx] || 'pending'
     },
     openSheet(item) {
       this.currentItem = item

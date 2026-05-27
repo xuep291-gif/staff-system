@@ -1,7 +1,7 @@
 <template>
   <view class="page">
     <SNavBar title="助学贷款审核" :showBack="true" />
-    <STabs v-model="activeTab" :tabs="tabs" storage-key="finance-loan-review" @change="selectTab" />
+    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
     <scroll-view scroll-y class="body">
       <view v-if="filteredList.length" class="list">
         <SListItem v-for="item in filteredList" :key="item.uid" clickable @click="goDetail(item.uid)">
@@ -23,25 +23,31 @@
 
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
-import STabs from '@/components/shared/STabs.vue'
+import StatusTabs from '@/components/shared/StatusTabs.vue'
 import SListItem from '@/components/shared/SListItem.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
+const REVIEW_KEY_MAP = ['pending', 'processing', 'completed']
+
 export default {
   name: 'FinancePayoutLoan',
-  components: { SNavBar, STabs, SListItem, SBadge, SEmpty },
+  components: { SNavBar, StatusTabs, SListItem, SBadge, SEmpty },
   data() {
-    return { activeTab: 0, list: [], lastSyncedChange: '' }
+    return { activeTab: 'pending', list: [], lastSyncedChange: '' }
   },
   computed: {
     tabs() {
-      return buildReviewTabs(this.list, 'finance')
+      return buildReviewTabs(this.list, 'finance').map((tab, i) => ({
+        ...tab,
+        key: REVIEW_KEY_MAP[i] || `tab-${i}`
+      }))
     },
     filteredList() {
-      return filterReviewByTab(this.list, 'finance', this.activeTab)
+      const idx = REVIEW_KEY_MAP.indexOf(this.activeTab)
+      return filterReviewByTab(this.list, 'finance', idx >= 0 ? idx : 0)
     }
   },
   onLoad() {
@@ -57,8 +63,8 @@ export default {
     this.refresh(true)
   },
   methods: {
-    selectTab(idx) {
-      this.activeTab = Number(idx)
+    onTabChange(key) {
+      console.log('财务助学贷款切换:', key)
     },
     refresh(syncChangedTab = false) {
       this.list = getReviewList('loans')
@@ -70,7 +76,8 @@ export default {
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
-      this.activeTab = getReviewTabIndex(item, 'finance')
+      const idx = getReviewTabIndex(item, 'finance')
+      this.activeTab = REVIEW_KEY_MAP[idx] || 'pending'
     },
     goDetail(uid) {
       rememberStaffBackTarget('/pages/finance/payout-loan/index')

@@ -28,15 +28,11 @@ export default {
     storageKey: { type: String, default: '' }
   },
   emits: ['update:modelValue', 'change'],
-  data() {
-    return {
-      selectedIndex: Number(this.modelValue) || 0
-    }
-  },
   computed: {
     activeIndex() {
       const max = Math.max(this.tabs.length - 1, 0)
-      return Math.min(Math.max(Number(this.selectedIndex) || 0, 0), max)
+      const idx = Number(this.modelValue)
+      return Number.isInteger(idx) && idx >= 0 ? Math.min(idx, max) : 0
     },
     persistenceKey() {
       if (this.storageKey) return `${STORAGE_PREFIX}${this.storageKey}`
@@ -52,7 +48,6 @@ export default {
   },
   watch: {
     modelValue(value) {
-      this.selectedIndex = Number(value) || 0
       this.saveSelection(value)
     },
     tabs() {
@@ -67,7 +62,6 @@ export default {
   methods: {
     onSelect(idx) {
       if (idx < 0 || idx >= this.tabs.length) return
-      this.selectedIndex = idx
       this.saveSelection(idx)
       this.$emit('update:modelValue', idx)
       this.$emit('change', idx)
@@ -83,7 +77,6 @@ export default {
       try {
         const stored = Number(uni.getStorageSync(this.persistenceKey))
         if (Number.isInteger(stored) && stored >= 0 && (!this.tabs.length || stored < this.tabs.length)) {
-          this.selectedIndex = stored
           this.$emit('update:modelValue', stored)
           this.$emit('change', stored)
           return

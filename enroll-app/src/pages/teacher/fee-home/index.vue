@@ -155,7 +155,7 @@ export default {
   },
   methods: {
     selectTab(index) {
-      this.activeTab = Number(index) || 0
+      this.activeTab = Number(index)
       this.selectedIds = []
       this.showSheet = false
     },

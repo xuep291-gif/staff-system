@@ -1,6 +1,6 @@
 <template>
-  <view class="status-tabs-wrapper">
-    <view class="status-tabs" :style="gridStyle">
+  <view class="status-tabs-wrapper" :style="underlineVars">
+    <view class="status-tabs">
       <view
         v-for="tab in tabs"
         :key="tab.key"
@@ -14,7 +14,7 @@
         <text class="status-tab-count">{{ tab.count }}</text>
       </view>
     </view>
-    <view class="status-tabs-underline" :style="underlineStyle" />
+    <view class="status-tabs-underline" />
   </view>
 </template>
 
@@ -39,25 +39,18 @@ export default {
       const idx = this.tabs.findIndex(t => t.key === this.modelValue)
       return idx >= 0 ? idx : 0
     },
-    gridStyle() {
+    underlineVars() {
       const cols = Math.max(this.tabs.length, 1)
+      const pct = (100 / cols)
       return {
-        gridTemplateColumns: `repeat(${cols}, 1fr)`
-      }
-    },
-    underlineStyle() {
-      const cols = Math.max(this.tabs.length, 1)
-      const pct = (100 / cols).toFixed(4)
-      return {
-        width: `${pct}%`,
-        left: `${(this.activeIndex * parseFloat(pct)).toFixed(4)}%`
+        '--ul-left': `${(this.activeIndex * pct).toFixed(2)}%`,
+        '--ul-width': `${pct.toFixed(2)}%`
       }
     }
   },
   methods: {
     onSelect(key) {
       if (!this.tabs.some(t => t.key === key)) return
-      console.log('切换缴费状态:', key)
       this.$emit('update:modelValue', key)
       this.$emit('change', key)
     }
@@ -73,13 +66,15 @@ export default {
 }
 
 .status-tabs {
-  display: grid;
+  display: flex;
   width: 100%;
   background: var(--white);
 }
 
 .status-tab {
   position: relative;
+  flex: 1;
+  min-width: 0;
   min-height: 80rpx;
   font-size: var(--fs-13);
   font-weight: 500;
@@ -118,7 +113,8 @@ export default {
 .status-tabs-underline {
   position: absolute;
   bottom: 0;
-  left: 0;
+  left: var(--ul-left);
+  width: var(--ul-width);
   height: 6rpx;
   background: var(--brand);
   border-radius: 3rpx;

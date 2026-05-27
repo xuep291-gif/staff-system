@@ -173,7 +173,6 @@ export default {
   methods: {
     onPaymentTabChange(key) {
       this.activePaymentStatus = key
-      console.log('当前选中状态:', key)
     },
     onYearChange(event) {
       this.activeYear = this.schoolYears[Number(event.detail.value)] || this.schoolYears[0]

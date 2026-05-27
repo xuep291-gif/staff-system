@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>在线缴费 - 高校收费管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+            background: #f2f3f5;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        .nav-bar {
+            background: #fff;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 0.5px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-back {
+            font-size: 20px;
+            color: #374151;
+            text-decoration: none;
+        }
+        .nav-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .nav-placeholder {
+            width: 24px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            margin: 14px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .card-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #9ca3af;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .bill-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 0.5px solid #f0f2f5;
+        }
+        .bill-item:last-child {
+            border-bottom: none;
+        }
+        .bill-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #2B6CB0;
+            border-radius: 4px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #2B6CB0;
+        }
+        .bill-checkbox i {
+            color: #fff;
+            font-size: 12px;
+        }
+        .bill-checkbox.unchecked {
+            background: #fff;
+        }
+        .bill-info {
+            flex: 1;
+        }
+        .bill-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        .bill-desc {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .bill-amount {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2B6CB0;
+        }
+
+        .payment-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .method-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .method-item:hover {
+            border-color: #2B6CB0;
+            background: #eff6ff;
+        }
+        .method-item.selected {
+            border-color: #2B6CB0;
+            background: #eff6ff;
+        }
+        .method-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+        .method-icon.green {
+            background: #dcfce7;
+        }
+        .method-icon.green i {
+            color: #15803d;
+            font-size: 20px;
+        }
+        .method-icon.blue {
+            background: #dbeafe;
+        }
+        .method-icon.blue i {
+            color: #2B6CB0;
+            font-size: 20px;
+        }
+        .method-icon.orange {
+            background: #fef3c7;
+        }
+        .method-icon.orange i {
+            color: #d97706;
+            font-size: 20px;
+        }
+        .method-info {
+            flex: 1;
+        }
+        .method-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 2px;
+        }
+        .method-desc {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .method-check {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .method-item.selected .method-check {
+            border-color: #2B6CB0;
+            background: #2B6CB0;
+        }
+        .method-check i {
+            color: #fff;
+            font-size: 10px;
+        }
+
+        .summary-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-top: 0.5px solid #e5e7eb;
+            padding: 12px 16px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        .summary-info {
+            flex: 1;
+        }
+        .summary-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+        .summary-amount {
+            font-size: 22px;
+            font-weight: 700;
+            color: #b91c1c;
+        }
+        .pay-btn {
+            background: #2B6CB0;
+            color: #fff;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .pay-btn:hover {
+            background: #1e4d8c;
+        }
+        .pay-btn:disabled {
+            background: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .select-all {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 0.5px solid #f0f2f5;
+            margin-bottom: 8px;
+        }
+        .select-all .bill-checkbox {
+            margin-right: 8px;
+        }
+        .select-all span {
+            font-size: 13px;
+            color: #374151;
+        }
+
+        .tag-required {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+        .tag-optional {
+            display: inline-block;
+            background: #f2f3f5;
+            color: #6b7280;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+
+        .tips {
+            background: #fef3c7;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #92400e;
+            line-height: 1.6;
+            margin-top: 12px;
+        }
+        .tips i {
+            margin-right: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <div class="nav-bar">
+        <a href="#" class="nav-back"><i class="ti ti-arrow-left"></i></a>
+        <div class="nav-title">在线缴费</div>
+        <div class="nav-placeholder"></div>
+    </div>
+
+    <!-- 选择缴费项目 -->
+    <div class="card">
+        <div class="card-header">选择缴费项目</div>
+        <div class="select-all">
+            <div class="bill-checkbox">
+                <i class="ti ti-check"></i>
+            </div>
+            <span>全选</span>
+        </div>
+        <div class="bill-item">
+            <div class="bill-checkbox">
+                <i class="ti ti-check"></i>
+            </div>
+            <div class="bill-info">
+                <div class="bill-name">
+                    学费
+                    <span class="tag-required">必缴</span>
+                </div>
+                <div class="bill-desc">2024-2025学年</div>
+            </div>
+            <div class="bill-amount">¥5,000</div>
+        </div>
+        <div class="bill-item">
+            <div class="bill-checkbox">
+                <i class="ti ti-check"></i>
+            </div>
+            <div class="bill-info">
+                <div class="bill-name">
+                    住宿费（4人间）
+                    <span class="tag-optional">可选</span>
+                </div>
+                <div class="bill-desc">A栋301室 · 男生宿舍</div>
+            </div>
+            <div class="bill-amount">¥2,500</div>
+        </div>
+        <div class="bill-item">
+            <div class="bill-checkbox unchecked"></div>
+            <div class="bill-info">
+                <div class="bill-name">
+                    教材费
+                    <span class="tag-optional">可选</span>
+                </div>
+                <div class="bill-desc">2024-2025学年</div>
+            </div>
+            <div class="bill-amount">¥500</div>
+        </div>
+    </div>
+
+    <!-- 选择支付方式 -->
+    <div class="card">
+        <div class="card-header">选择支付方式</div>
+        <div class="payment-methods">
+            <div class="method-item selected">
+                <div class="method-icon green">
+                    <i class="ti ti-brand-wechat"></i>
+                </div>
+                <div class="method-info">
+                    <div class="method-name">微信支付</div>
+                    <div class="method-desc">推荐使用</div>
+                </div>
+                <div class="method-check">
+                    <i class="ti ti-check"></i>
+                </div>
+            </div>
+            <div class="method-item">
+                <div class="method-icon blue">
+                    <i class="ti ti-brand-alipay"></i>
+                </div>
+                <div class="method-info">
+                    <div class="method-name">支付宝</div>
+                    <div class="method-desc">快捷支付</div>
+                </div>
+                <div class="method-check"></div>
+            </div>
+            <div class="method-item">
+                <div class="method-icon orange">
+                    <i class="ti ti-credit-card"></i>
+                </div>
+                <div class="method-info">
+                    <div class="method-name">银联支付</div>
+                    <div class="method-desc">支持各大银行卡</div>
+                </div>
+                <div class="method-check"></div>
+            </div>
+        </div>
+        <div class="tips">
+            <i class="ti ti-info-circle"></i>
+            支付订单有效期为30分钟，超时未支付将自动关闭。支付成功后系统将自动生成电子票据。
+        </div>
+    </div>
+
+    <!-- 底部汇总栏 -->
+    <div class="summary-bar">
+        <div class="summary-info">
+            <div class="summary-label">应付金额（2项）</div>
+            <div class="summary-amount">¥7,500</div>
+        </div>
+        <button class="pay-btn">立即支付</button>
+    </div>
+</body>
+</html>

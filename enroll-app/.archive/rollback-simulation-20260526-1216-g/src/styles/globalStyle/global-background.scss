@@ -1,0 +1,45 @@
+/**
+ * 全局背景样式定义
+ */
+
+/* ***属性*** */
+
+/* ***样式*** */
+// 双色背景
+.global-background-twoColor {
+	// display: flex;
+	height: 100vh;
+	background-image: linear-gradient(to right bottom, #eea2a4, #619ac3);
+}
+
+// 渐变
+.global-background-gradualChange {
+	// display: flex;
+	height: 100vh;
+	background-image: linear-gradient(to bottom,#2177b8 1%,transparent 50%,transparent);
+}
+
+// 顶部圆弧
+.global-background-topArc {
+	
+}
+
+// 背景图
+.global-background-picture {
+	height: 100%;
+	background-image: url("https://static.smallsaas.cn/house/2022/svg/houseAppIcon/help.svg");
+	background-position: center;
+	background-attachment: fixed;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+// 双色 + 背景图
+.global-background-twoColor-picture {
+	height: 100%;
+	// background-image: url("https://static.smallsaas.cn/house/2022/svg/houseAppIcon/help.svg"),linear-gradient(to right bottom, #eea2a4, #619ac3);
+	background-position: center;
+	background-attachment: fixed;
+	background-repeat: no-repeat;
+}
+

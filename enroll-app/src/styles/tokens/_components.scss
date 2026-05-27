@@ -1,0 +1,79 @@
+// ═══════════════════════════════════════
+// Design Tokens: Component-level
+// Strictly follows unified-ui-spec-v5.0 §6
+// ═══════════════════════════════════════
+
+:root {
+  // ── NavBar (§6.1) ──
+  --navbar-height: 104rpx;
+  --navbar-padding: 0 32rpx;
+  --navbar-bg: var(--brand);
+  --navbar-text: var(--white);
+  --navbar-title-size: var(--fs-16);
+  --navbar-action-size: var(--fs-13);
+
+  // ── NavBar white variant ──
+  --navbar-wh-bg: var(--white);
+  --navbar-wh-text: var(--N900);
+  --navbar-wh-border: 1px solid var(--N200);
+  --navbar-wh-action: var(--brand);
+
+  // ── Banner (§6.4) ──
+  --banner-bg: var(--brand);
+  --banner-padding: 32rpx 36rpx 88rpx;
+  --banner-name-size: var(--fs-18);
+  --banner-sub-size: var(--fs-11);
+
+  // ── FloatCard (§6.5) ──
+  --fc-bg: var(--white);
+  --fc-radius: var(--r-14);
+  --fc-shadow: var(--card-shadow-high);
+  --fc-padding: var(--sp-16);
+  --fc-offset: -56rpx;
+
+  // ── Card (§6.8) ──
+  --card-bg: var(--white);
+  --card-radius: var(--r-14);
+  --card-border: 1px solid rgba(0,0,0,.07);
+  --card-shadow: var(--card-shadow-low);
+  --card-header-padding: 24rpx 28rpx;
+  --card-body-padding: 24rpx 28rpx;
+
+  // ── Button (§6.10) ──
+  --btn-h: 96rpx;
+  --btn-radius: 16rpx;
+  --btn-font-size: var(--fs-14);
+  --btn-pill-h: 64rpx;
+  --btn-pill-radius: var(--r-20);
+  --btn-sm-h: 56rpx;
+
+  // ── Badge (§6.9) ──
+  --badge-padding: 4rpx 16rpx;
+  --badge-radius: var(--r-20);
+  --badge-font-size: var(--fs-11);
+
+  // ── Progress (§6.6) ──
+  --prog-h: 12rpx;
+  --prog-radius: 6rpx;
+
+  // ── Input (§6.17) ──
+  --input-h: 88rpx;
+  --input-radius: var(--r-12);
+  --input-border: 1.5px solid var(--N200);
+
+  // ── TabBar (§6.3) ──
+  --tabbar-h: 120rpx;
+  --tabbar-bg: var(--white);
+  --tabbar-border: 1px solid var(--N200);
+
+  // ── BottomSheet (§6.25) ──
+  --sheet-radius: 40rpx 40rpx 0 0;
+  --sheet-overlay: rgba(0,0,0,.45);
+
+  // ── Toast (§6.24) ──
+  --toast-radius: var(--r-20);
+
+  // ── Alert (§6.22) ──
+  --alert-padding: 20rpx 28rpx;
+  --alert-radius: 16rpx;
+}

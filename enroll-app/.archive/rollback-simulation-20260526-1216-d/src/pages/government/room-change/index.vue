@@ -1,0 +1,78 @@
+<template>
+  <view class="page">
+    <SNavBar title="换房审批" :showBack="true" />
+    <STabs v-model="activeTab" :tabs="tabs" />
+    <scroll-view scroll-y class="body">
+      <view class="sc">
+        <view class="card" v-for="item in filteredList" :key="item.uid" @click="goReview(item)">
+          <view class="card-bd">
+            <view class="li">
+              <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>
+              <view class="li-info">
+                <text class="li-name">{{ item.name }}</text>
+                <text class="li-meta">{{ item.id }} · {{ item.from }} → {{ item.to }}</text>
+              </view>
+              <SBadge :color="item.badgeColor">{{ item.statusLabel }}</SBadge>
+              <text class="li-arrow">›</text>
+            </view>
+          </view>
+        </view>
+        <SEmpty v-if="filteredList.length === 0" text="当前状态暂无换房申请" />
+      </view>
+    </scroll-view>
+  </view>
+</template>
+<script>
+import SNavBar from '@/components/shared/SNavBar.vue'
+import STabs from '@/components/shared/STabs.vue'
+import SBadge from '@/components/shared/SBadge.vue'
+import SEmpty from '@/components/shared/SEmpty.vue'
+import { buildDormReviewTabs, filterDormReviewByTab, getDormReviewList } from '@/utils/businessState.js'
+import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
+
+export default {
+  name: 'GovernmentRoomChange',
+  components: { SNavBar, STabs, SBadge, SEmpty },
+  data() {
+    return { activeTab: 0, list: [] }
+  },
+  computed: {
+    tabs() {
+      return buildDormReviewTabs(this.list)
+    },
+    filteredList() {
+      return filterDormReviewByTab(this.list, this.activeTab)
+    }
+  },
+  onShow() {
+    this.list = getDormReviewList('roomChanges').map(item => ({
+      ...item,
+      from: item.oldDorm,
+      to: item.targetDorm,
+      bg: `var(--${item.badgeColor}-bg)`,
+      iconColor: `var(--${item.badgeColor})`
+    }))
+  },
+  methods: {
+    goReview(item) {
+      rememberStaffBackTarget('/pages/government/room-change/index')
+      uni.navigateTo({ url: `/pages/government/dorm-review/index?uid=${item.uid}&apiId=${item.applicationId || item.uid}` })
+    }
+  }
+}
+</script>
+<style lang="scss" scoped>
+.page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
+.body { height: 0; flex: 1; }
+.sc { padding: 28rpx; display: flex; flex-direction: column; }
+.sc > * + * { margin-top: 20rpx; }
+.card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); overflow: hidden; }
+.card-bd { padding: var(--card-body-padding); }
+.li { display: flex; align-items: center; }
+.li > * + * { margin-left: 20rpx; }
+.li-ico { width: 80rpx; height: 80rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 600; flex-shrink: 0; }
+.li-info { flex: 1; min-width: 0; }
+.li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
+.li-meta { font-size: var(--fs-11); color: var(--N500); display: block; margin-top: 4rpx; }
+.li-arrow { font-size: 28rpx; color: var(--N400); flex-shrink: 0; }
+</style>

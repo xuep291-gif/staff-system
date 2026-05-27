@@ -1,0 +1,25 @@
+@baseUrl = http://house.cloud.smallsaas.cn 
+
+### 模拟小程序登录
+POST {{baseUrl}}/api/oauth/wxapp/login
+Content-Type: application/json
+
+ {
+      "auth": "h5mock_1735214400000_a3b9c2",
+      "type": 16,
+      "app": 1
+}
+
+### 获取用户信息
+@token = eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFM1MTIifQ.eyJvcmdJZCI6MzAsInVzZXJJZCI6Mjk3LCJhY2NvdW50IjoiOGI5ZDEwMDJiOWI3NDFiOGJlMWQ5ZDlhYTMzMWM5ZmQiLCJkb21haW5Vc2VySWQiOiIiLCJ0eXBlIjoxMzY2MjUsImFwcGlkIjoiIiwibmFtZSI6IuS4uuWfjiIsIm9yZ2FuaXphdGlvblVzZXIiOjAsInBhcnR5TWVtYmVySWQiOiIiLCJwYXJ0eU9yZ2FuaXphdGlvbklkIjoiIiwiZGV2aWNlVHlwZSI6Ik1JTklfQVBQIiwiY2xpZW50SWQiOiIyNDUzYmZhNmU3ZTc0ZmUxYTU5NTIxZTA3MDQ0YTU2YiIsInRva2VuVHlwZSI6InVzZXIiLCJpYXQiOjE3NjY3NjI4NjcsImp0aSI6IjI5NyIsInN1YiI6IjhiOWQxMDAyYjliNzQxYjhiZTFkOWQ5YWEzMzFjOWZkIiwiZXhwIjoxNzY3MzY3NjY3fQ.FLMOD8lXsFJVTpEV3MZ2iNWqZBuYxmaqWktB0cz8PHOpm8GZ5rZBJoIxPAaGXNiwVbzl7vyVOIQrt0V-nb6fKA
+
+### 获取所有社区列表
+# 新用户注册/登录后，首先需要选择社区
+GET {{baseUrl}}/api/u/asset/tenant?appid=1
+Authorization: Bearer {{token}}
+
+### 依据社区获取所有小区列表
+# 选择社区后，需要选择该社区下的小区
+# tenantId: 社区ID (orgId)
+GET {{baseUrl}}/api/u/asset/community?tenantId=30
+Authorization: Bearer {{token}}

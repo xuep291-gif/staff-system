@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>班级缴费概览 - 高校收费管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+            background: #f2f3f5;
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+        .nav-bar {
+            background: #fff;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 0.5px solid #e5e7eb;
+        }
+        .nav-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .nav-btn {
+            font-size: 13px;
+            color: #2B6CB0;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .class-info {
+            background: #2B6CB0;
+            padding: 20px 16px;
+            color: #fff;
+        }
+        .class-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .class-meta {
+            font-size: 12px;
+            opacity: 0.8;
+            display: flex;
+            gap: 16px;
+        }
+
+        .stats-card {
+            background: #fff;
+            border-radius: 14px;
+            margin: -28px 14px 0;
+            padding: 16px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+        }
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .stats-item {
+            text-align: center;
+            flex: 1;
+        }
+        .stats-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+        .stats-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2B6CB0;
+        }
+        .stats-value.success {
+            color: #15803d;
+        }
+        .stats-value.danger {
+            color: #b91c1c;
+        }
+        .stats-value.warning {
+            color: #d97706;
+        }
+        .progress-bar {
+            background: #f2f3f5;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #2B6CB0 0%, #15803d 100%);
+            height: 100%;
+            width: 66.7%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .progress-text {
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 6px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            margin: 14px;
+            padding: 14px 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .filter-tab {
+            font-size: 12px;
+            padding: 5px 12px;
+            border-radius: 14px;
+            background: #f2f3f5;
+            color: #6b7280;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .filter-tab.active {
+            background: #2B6CB0;
+            color: #fff;
+        }
+        .filter-tab .count {
+            margin-left: 4px;
+            opacity: 0.7;
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 0.5px solid #f0f2f5;
+        }
+        .student-item:last-child {
+            border-bottom: none;
+        }
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #dbeafe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2B6CB0;
+        }
+        .student-info {
+            flex: 1;
+        }
+        .student-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 3px;
+        }
+        .student-meta {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .student-status {
+            text-align: right;
+        }
+        .status-badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .status-paid {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .status-partial {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .status-unpaid {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-overdue {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .student-amount {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .action-bar {
+            background: #fff;
+            border-top: 0.5px solid #e5e7eb;
+            padding: 12px 16px;
+            display: flex;
+            gap: 8px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        }
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .action-btn.primary {
+            background: #2B6CB0;
+            color: #fff;
+        }
+        .action-btn.secondary {
+            background: #f2f3f5;
+            color: #374151;
+        }
+        .action-btn i {
+            font-size: 16px;
+        }
+        .selected-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #b91c1c;
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 14px;
+        }
+        .quick-stat-item {
+            background: #fff;
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-icon.blue {
+            background: #dbeafe;
+        }
+        .stat-icon.blue i {
+            color: #2B6CB0;
+            font-size: 20px;
+        }
+        .stat-icon.orange {
+            background: #fef3c7;
+        }
+        .stat-icon.orange i {
+            color: #d97706;
+            font-size: 20px;
+        }
+        .stat-icon.green {
+            background: #dcfce7;
+        }
+        .stat-icon.green i {
+            color: #15803d;
+            font-size: 20px;
+        }
+        .stat-icon.red {
+            background: #fee2e2;
+        }
+        .stat-icon.red i {
+            color: #b91c1c;
+            font-size: 20px;
+        }
+        .stat-text {
+            flex: 1;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .select-mode .student-item {
+            padding-left: 44px;
+            position: relative;
+        }
+        .select-checkbox {
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .select-checkbox.checked {
+            background: #2B6CB0;
+            border-color: #2B6CB0;
+        }
+        .select-checkbox i {
+            color: #fff;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <div class="nav-bar">
+        <div class="nav-title">班级缴费概览</div>
+        <div class="nav-actions">
+            <a href="#" class="nav-btn"><i class="ti ti-refresh"></i> 刷新</a>
+            <a href="#" class="nav-btn"><i class="ti ti-download"></i> 导出</a>
+        </div>
+    </div>
+
+    <!-- 班级信息 -->
+    <div class="class-info">
+        <div class="class-name">2024级 计算机科学与技术1班</div>
+        <div class="class-meta">
+            <span><i class="ti ti-users"></i> 总人数 45人</span>
+            <span><i class="ti ti-calendar"></i> 2024-2025学年</span>
+        </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stats-card">
+        <div class="stats-row">
+            <div class="stats-item">
+                <div class="stats-label">已缴人数</div>
+                <div class="stats-value success">30</div>
+            </div>
+            <div class="stats-item">
+                <div class="stats-label">部分缴人数</div>
+                <div class="stats-value warning">5</div>
+            </div>
+            <div class="stats-item">
+                <div class="stats-label">未缴人数</div>
+                <div class="stats-value danger">10</div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        <div class="progress-text">班级缴费完成率 66.7%</div>
+    </div>
+
+    <!-- 快捷统计 -->
+    <div class="quick-stats">
+        <div class="quick-stat-item">
+            <div class="stat-icon blue">
+                <i class="ti ti-cash"></i>
+            </div>
+            <div class="stat-text">
+                <div class="stat-label">应缴总额</div>
+                <div class="stat-value">¥562,500</div>
+            </div>
+        </div>
+        <div class="quick-stat-item">
+            <div class="stat-icon green">
+                <i class="ti ti-check"></i>
+            </div>
+            <div class="stat-text">
+                <div class="stat-label">已缴总额</div>
+                <div class="stat-value">¥375,000</div>
+            </div>
+        </div>
+        <div class="quick-stat-item">
+            <div class="stat-icon orange">
+                <i class="ti ti-clock"></i>
+            </div>
+            <div class="stat-text">
+                <div class="stat-label">待缴总额</div>
+                <div class="stat-value">¥187,500</div>
+            </div>
+        </div>
+        <div class="quick-stat-item">
+            <div class="stat-icon red">
+                <i class="ti ti-alert-triangle"></i>
+            </div>
+            <div class="stat-text">
+                <div class="stat-label">逾期人数</div>
+                <div class="stat-value">5人</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 学生缴费列表 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">学生缴费列表</div>
+        </div>
+        <div class="filter-tabs">
+            <button class="filter-tab active">全部 <span class="count">45</span></button>
+            <button class="filter-tab">已缴 <span class="count">30</span></button>
+            <button class="filter-tab">部分缴 <span class="count">5</span></button>
+            <button class="filter-tab">未缴 <span class="count">10</span></button>
+            <button class="filter-tab">逾期 <span class="count">5</span></button>
+        </div>
+
+        <div style="margin-top: 12px;">
+            <div class="student-item">
+                <div class="student-avatar">张</div>
+                <div class="student-info">
+                    <div class="student-name">张三</div>
+                    <div class="student-meta">202401001 · 计算机科学与技术</div>
+                </div>
+                <div class="student-status">
+                    <div class="status-badge status-paid">已缴清</div>
+                    <div class="student-amount">¥12,500</div>
+                </div>
+            </div>
+            <div class="student-item">
+                <div class="student-avatar">李</div>
+                <div class="student-info">
+                    <div class="student-name">李四</div>
+                    <div class="student-meta">202401002 · 计算机科学与技术</div>
+                </div>
+                <div class="student-status">
+                    <div class="status-badge status-partial">部分缴</div>
+                    <div class="student-amount">¥5,000 / ¥12,500</div>
+                </div>
+            </div>
+            <div class="student-item">
+                <div class="student-avatar">王</div>
+                <div class="student-info">
+                    <div class="student-name">王五</div>
+                    <div class="student-meta">202401003 · 计算机科学与技术</div>
+                </div>
+                <div class="student-status">
+                    <div class="status-badge status-unpaid">未缴</div>
+                    <div class="student-amount">¥12,500</div>
+                </div>
+            </div>
+            <div class="student-item">
+                <div class="student-avatar">赵</div>
+                <div class="student-info">
+                    <div class="student-name">赵六</div>
+                    <div class="student-meta">202401004 · 计算机科学与技术</div>
+                </div>
+                <div class="student-status">
+                    <div class="status-badge status-overdue">逾期5天</div>
+                    <div class="student-amount">¥12,500</div>
+                </div>
+            </div>
+            <div class="student-item">
+                <div class="student-avatar">刘</div>
+                <div class="student-info">
+                    <div class="student-name">刘七</div>
+                    <div class="student-meta">202401005 · 计算机科学与技术</div>
+                </div>
+                <div class="student-status">
+                    <div class="status-badge status-paid">已缴清</div>
+                    <div class="student-amount">¥12,500</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部操作栏 -->
+    <div class="action-bar">
+        <button class="action-btn secondary">
+            <i class="ti ti-send"></i>
+            催缴通知
+        </button>
+        <button class="action-btn secondary">
+            <i class="ti ti-phone"></i>
+            联系家长
+        </button>
+        <button class="action-btn primary" style="position: relative;">
+            <i class="ti ti-checkbox"></i>
+            批量操作
+            <span class="selected-count">0</span>
+        </button>
+    </div>
+</body>
+</html>

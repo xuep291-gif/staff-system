@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>华东科技大学 · 迎新管理系统 · 学生端</title>
+<style>
+/* ══════════════════════════════════════════
+   DESIGN TOKENS  (与教职工端统一)
+══════════════════════════════════════════ */
+:root{
+  --brand:#2B6CB0; --brand-d:#1E4D8C; --brand-t:#DBEAFE; --brand-s:#EFF6FF;
+  --ok:#15803D;  --ok-bg:#DCFCE7;  --ok-bd:#86EFAC;
+  --wa:#D97706;  --wa-bg:#FEF3C7;  --wa-bd:#FCD34D;
+  --er:#B91C1C;  --er-bg:#FEE2E2;  --er-bd:#FCA5A5;
+  --in:#0369A1;  --in-bg:#E0F2FE;  --in-bd:#7DD3FC;
+  --pu:#7C3AED;  --pu-bg:#EDE9FE;  --pu-bd:#C4B5FD;
+  --N900:#111827; --N700:#374151; --N500:#6B7280;
+  --N400:#9CA3AF; --N200:#E5E7EB; --N50:#F2F3F5; --N25:#F8F9FB;
+  --wh:#FFFFFF;
+  --sh-lo:0 1px 3px rgba(0,0,0,.06);
+  --sh-md:0 4px 12px rgba(0,0,0,.09);
+  --sh-hi:0 8px 24px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;
+  font-size:14px;color:var(--N700);background:#C8D0D8;overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+input,textarea,select{font-family:inherit;outline:none}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:2px}
+
+/* ══ SHELL ══ */
+.shell{display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:14px 0;gap:10px}
+.scene-lbl{font-size:11px;color:rgba(255,255,255,.7);font-weight:500;
+  background:rgba(0,0,0,.2);padding:4px 12px;border-radius:20px;letter-spacing:.3px}
+
+/* ══ PHONE FRAME ══ */
+.phone{width:375px;height:780px;border-radius:40px;overflow:hidden;position:relative;flex-shrink:0;
+  box-shadow:0 24px 64px rgba(0,0,0,.28),0 4px 16px rgba(0,0,0,.14)}
+.inner{width:100%;height:100%;display:flex;flex-direction:column;background:var(--N50)}
+
+/* ══ STATUS BAR ══ */
+.sbar{height:44px;background:var(--brand);display:flex;align-items:center;
+  justify-content:space-between;padding:0 20px;flex-shrink:0}
+.sbar-time{font-size:15px;font-weight:600;color:#fff}
+.sbar-icons{display:flex;gap:5px;align-items:center}
+.si{width:16px;height:16px;fill:#fff}
+
+/* ══ SCREENS ══ */
+.screens{flex:1;overflow:hidden;position:relative}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;transition:opacity .18s;background:var(--N50)}
+.scr.on{opacity:1;pointer-events:all}
+.sbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:60px}
+.sbody.nb{padding-bottom:8px}
+.sc{padding:14px;display:flex;flex-direction:column;gap:10px}
+
+/* ══ NAV BAR ══ */
+.nbar{height:52px;background:var(--brand);display:flex;align-items:center;
+  padding:0 16px;gap:10px;flex-shrink:0}
+.nbar.wh{background:var(--wh);border-bottom:1px solid var(--N200)}
+.nback{width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.nback svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2}
+.nbar.wh .nback svg{stroke:var(--N700)}
+.ntitle{font-size:16px;font-weight:600;color:#fff;flex:1;text-align:center}
+.nbar.wh .ntitle{color:var(--N900)}
+.nact{font-size:13px;color:rgba(255,255,255,.85);cursor:pointer;min-width:36px;text-align:right}
+.nbar.wh .nact{color:var(--brand)}
+
+/* ══ BANNER ══ */
+.banner{background:var(--brand);padding:16px 18px 44px;flex-shrink:0}
+.brow{display:flex;align-items:center;justify-content:space-between}
+.bav{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;
+  color:#fff;border:2px solid rgba(255,255,255,.3);flex-shrink:0}
+.bname{font-size:18px;font-weight:700;color:#fff}
+.bsub{font-size:11px;color:rgba(255,255,255,.68);margin-top:2px}
+.bbell{width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;flex-shrink:0}
+.bbell svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2}
+.bdot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;
+  background:#EF4444;border:1.5px solid var(--brand)}
+
+/* ══ FLOAT CARD ══ */
+.fc{background:var(--wh);border-radius:14px;box-shadow:var(--sh-hi);
+  margin:-28px 14px 0;padding:16px;position:relative;z-index:2;flex-shrink:0}
+.fc-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.fc-tt{font-size:13px;font-weight:600;color:var(--N700)}
+.fc-lk{font-size:11px;color:var(--brand);font-weight:600;cursor:pointer}
+.prog-track{height:6px;background:var(--N200);border-radius:3px;overflow:hidden;margin:6px 0}
+.prog-fill{height:100%;border-radius:3px;background:var(--brand);transition:width .5s}
+.prog-fill.wa{background:var(--wa)}.prog-fill.er{background:var(--er)}
+.prog-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--N500)}
+.stats-row{display:flex}
+.stat{flex:1;text-align:center;padding:4px 0;border-right:1px solid var(--N200)}
+.stat:last-child{border-right:none}
+.snum{font-size:22px;font-weight:700;color:var(--brand);line-height:1.2}
+.snum.wa{color:var(--wa)}.snum.er{color:var(--er)}.snum.ok{color:var(--ok)}.snum.gy{color:var(--N500)}
+.slbl{font-size:10px;color:var(--N400);margin-top:2px;letter-spacing:.3px}
+
+/* ══ CARDS ══ */
+.card{background:var(--wh);border-radius:14px;border:1px solid rgba(0,0,0,.07);
+  box-shadow:var(--sh-lo);overflow:hidden}
+.card.urgent{border-color:var(--er-bd);box-shadow:0 0 0 3px rgba(185,28,28,.06)}
+.card.info-c{border-color:var(--in-bd)}
+.card.ok-c{border-color:var(--ok-bd)}
+.ch{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--N50)}
+.ct{font-size:15px;font-weight:600;color:var(--N900)}
+.cmore{font-size:12px;color:var(--brand);cursor:pointer}
+.cb{padding:12px 14px}
+.sec-lbl{font-size:10px;font-weight:600;color:var(--N400);letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px}
+
+/* ══ BADGES ══ */
+.b{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;
+  font-size:11px;font-weight:600;border:1px solid;white-space:nowrap}
+.bok{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-bd)}
+.bwa{color:#92400E;background:var(--wa-bg);border-color:var(--wa-bd)}
+.ber{color:var(--er);background:var(--er-bg);border-color:var(--er-bd)}
+.bin{color:var(--in);background:var(--in-bg);border-color:var(--in-bd)}
+.bpu{color:var(--pu);background:var(--pu-bg);border-color:var(--pu-bd)}
+.bgy{color:var(--N500);background:var(--N50);border-color:var(--N200)}
+
+/* ══ TABS ══ */
+.tbar{display:flex;background:var(--wh);border-bottom:1px solid var(--N200);flex-shrink:0}
+.tbar::-webkit-scrollbar{display:none}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:12px;color:var(--N400);
+  cursor:pointer;border-bottom:2px solid transparent;font-weight:500;transition:all .2s;white-space:nowrap}
+.tab.on{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
+.tp{display:none}.tp.on{display:block}
+
+/* ══ LIST ITEMS ══ */
+.li{padding:12px 14px;display:flex;align-items:flex-start;gap:10px;
+  cursor:pointer;border-bottom:1px solid var(--N50);transition:background .15s}
+.li:last-child{border-bottom:none}
+.li:active{background:var(--N50)}
+.lico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:20px;flex-shrink:0}
+.linf{flex:1;min-width:0}
+.ln{font-size:13px;font-weight:600;color:var(--N900)}
+.ls{font-size:11px;color:var(--N500);margin-top:2px}
+.lm{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.larr svg{width:14px;height:14px;stroke:var(--N400);fill:none;stroke-width:2}
+
+/* ══ STEP INDICATORS ══ */
+.steps{display:flex;align-items:center;padding:16px 14px}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.step-dot.done{background:var(--ok);color:#fff}
+.step-dot.cur{background:var(--brand);color:#fff;box-shadow:0 0 0 3px var(--brand-t)}
+.step-dot.todo{background:var(--N200);color:var(--N400)}
+.step-line{flex:1;height:2px;background:var(--N200);margin:0 4px}
+.step-line.done{background:var(--ok)}
+
+/* ══ PROCESS CHECKLIST ══ */
+.check-item{display:flex;align-items:center;gap:10px;padding:10px 14px;
+  border-bottom:1px solid var(--N50)}
+.check-item:last-child{border-bottom:none}
+.check-ico{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0}
+.check-ico.done{background:var(--ok);color:#fff;font-size:11px}
+.check-ico.cur{background:var(--brand);color:#fff;font-size:11px}
+.check-ico.todo{background:var(--N200);color:var(--N400);font-size:11px}
+.check-ico.err{background:var(--er);color:#fff;font-size:11px}
+.check-txt{flex:1;font-size:13px;color:var(--N900)}
+.check-sub{font-size:11px;color:var(--N500);margin-top:1px}
+
+/* ══ DORM GRID (床位选择) ══ */
+.dorm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 14px}
+.bed-card{border-radius:10px;border:1.5px solid var(--N200);padding:12px 10px;
+  cursor:pointer;transition:all .18s;position:relative}
+.bed-card.available:hover{border-color:var(--brand);background:var(--brand-s)}
+.bed-card.selected{border-color:var(--brand);background:var(--brand-t);
+  box-shadow:0 0 0 2px var(--brand-t)}
+.bed-card.occupied{background:var(--N50);cursor:default;opacity:.6}
+.bed-card.available{background:var(--wh)}
+.bed-num{font-size:15px;font-weight:700;color:var(--N900)}
+.bed-card.selected .bed-num{color:var(--brand)}
+.bed-card.occupied .bed-num{color:var(--N400)}
+.bed-tag{font-size:10px;margin-top:3px;font-weight:600}
+.bed-card.available .bed-tag{color:var(--ok)}
+.bed-card.occupied .bed-tag{color:var(--N400)}
+.bed-card.selected .bed-tag{color:var(--brand)}
+.bed-sel-mark{position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:50%;
+  background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700}
+
+/* ══ BUILDING FILTER ══ */
+.bld-filter{display:flex;gap:6px;padding:10px 14px;overflow-x:auto}
+.bld-filter::-webkit-scrollbar{display:none}
+.bld-btn{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;
+  border:1.5px solid var(--N200);background:var(--wh);color:var(--N500);white-space:nowrap;flex-shrink:0}
+.bld-btn.on{border-color:var(--brand);background:var(--brand-t);color:var(--brand)}
+
+/* ══ ROOM CARD ══ */
+.room-card{background:var(--wh);border-radius:12px;border:1px solid var(--N200);
+  margin:0 14px 10px;overflow:hidden;box-shadow:var(--sh-lo)}
+.room-hd{padding:10px 14px;background:var(--N25);display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--N200)}
+.room-name{font-size:13px;font-weight:600;color:var(--N900)}
+.room-avail{font-size:11px;color:var(--ok);font-weight:600}
+
+/* ══ UPLOAD AREA ══ */
+.upload-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.upload-item{aspect-ratio:1;border-radius:10px;border:1.5px dashed var(--N200);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;background:var(--N25);transition:all .15s;position:relative;overflow:hidden}
+.upload-item:active{background:var(--brand-s);border-color:var(--brand)}
+.upload-item.done{border-style:solid;border-color:var(--ok-bd);background:var(--ok-bg)}
+.upload-ico{font-size:24px;margin-bottom:4px}
+.upload-lbl{font-size:10px;color:var(--N500);text-align:center;font-weight:500}
+.upload-item.done .upload-lbl{color:var(--ok);font-weight:600}
+.upload-ok{position:absolute;top:4px;right:4px;width:14px;height:14px;border-radius:50%;
+  background:var(--ok);display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700}
+
+/* ══ FORM ══ */
+.flabel{font-size:12px;font-weight:600;color:var(--N700);margin-bottom:4px}
+.finput{width:100%;height:44px;padding:0 12px;border:1.5px solid var(--N200);
+  border-radius:12px;font-size:13px;color:var(--N900);background:var(--wh)}
+.finput:focus{border-color:var(--brand)}
+.fta{width:100%;padding:10px 12px;border:1.5px solid var(--N200);
+  border-radius:12px;font-size:13px;color:var(--N900);background:var(--wh);resize:none;min-height:72px}
+.fta:focus{border-color:var(--brand)}
+.frow{display:flex;flex-direction:column;gap:4px}
+.frows{display:flex;flex-direction:column;gap:12px}
+.fhint{font-size:11px;color:var(--N400)}
+.ferr{font-size:11px;color:var(--er);display:none}.ferr.on{display:block}
+.famt{display:flex;align-items:center;gap:8px}
+.famt-pre{font-size:20px;font-weight:600;color:var(--N500)}
+.famt-in{flex:1;height:52px;padding:0 12px;border:1.5px solid var(--N200);
+  border-radius:12px;font-size:24px;font-weight:700;color:var(--brand);background:var(--wh)}
+.famt-in:focus{border-color:var(--brand)}
+
+/* ══ BUTTONS ══ */
+.btn-p{width:100%;height:48px;background:var(--brand);color:#fff;border-radius:12px;
+  font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border:none;transition:background .15s}
+.btn-p:active{background:var(--brand-d)}
+.btn-p:disabled{background:var(--N200);color:var(--N400);cursor:default}
+.btn-s{width:100%;height:48px;background:transparent;color:var(--brand);border-radius:12px;
+  font-size:15px;font-weight:600;border:1.5px solid var(--brand);
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.btn-e{width:100%;height:48px;background:var(--er-bg);color:var(--er);border-radius:12px;
+  font-size:15px;font-weight:600;border:1px solid var(--er-bd);
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.btn-wa{width:100%;height:44px;background:var(--wa-bg);color:#92400E;border-radius:10px;
+  font-size:13px;font-weight:600;border:1px solid var(--wa-bd);
+  display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+.brow{display:flex;gap:8px}
+.brow .btn-p,.brow .btn-s,.brow .btn-e{flex:1}
+.pay-btn{width:100%;height:52px;background:linear-gradient(135deg,var(--brand),var(--brand-d));
+  color:#fff;border-radius:14px;font-size:16px;font-weight:700;border:none;
+  display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(43,108,176,.35)}
+
+/* ══ ALERT BARS ══ */
+.abar{padding:10px 14px;border-radius:10px;display:flex;gap:8px;
+  align-items:flex-start;font-size:12px;line-height:1.5}
+.awa{background:var(--wa-bg);color:#92400E;border:1px solid var(--wa-bd)}
+.ain{background:var(--in-bg);color:var(--in);border:1px solid var(--in-bd)}
+.aer{background:var(--er-bg);color:var(--er);border:1px solid var(--er-bd)}
+.aok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
+
+/* ══ INFO ROWS ══ */
+.ir{display:flex;align-items:flex-start;justify-content:space-between;
+  padding:10px 0;border-bottom:1px solid var(--N50)}
+.ir:last-child{border-bottom:none}
+.ik{font-size:13px;color:var(--N500);flex-shrink:0}
+.iv{font-size:13px;color:var(--N900);font-weight:500;text-align:right;max-width:200px}
+
+/* ══ PAYMENT METHODS ══ */
+.pay-method{display:flex;gap:8px;padding:0 0 4px}
+.pm{flex:1;padding:12px 8px;border-radius:10px;border:1.5px solid var(--N200);
+  text-align:center;cursor:pointer;transition:all .15s}
+.pm.on{border-color:var(--brand);background:var(--brand-s)}
+.pm-ico{font-size:22px;margin-bottom:4px}
+.pm-lbl{font-size:11px;font-weight:600;color:var(--N500)}
+.pm.on .pm-lbl{color:var(--brand)}
+
+/* ══ SUCCESS / RESULT ══ */
+.result-wrap{display:flex;flex-direction:column;align-items:center;padding:48px 20px 24px;gap:12px}
+.result-ico{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:32px}
+.result-ico.ok{background:var(--ok-bg)}
+.result-ico.wa{background:var(--wa-bg)}
+.result-ico.er{background:var(--er-bg)}
+.result-title{font-size:20px;font-weight:700;color:var(--N900)}
+.result-sub{font-size:13px;color:var(--N500);text-align:center;line-height:1.6}
+
+/* ══ BILL ITEMS ══ */
+.bill-item{display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px;border-bottom:1px solid var(--N50)}
+.bill-item:last-child{border-bottom:none}
+.bill-name{font-size:13px;color:var(--N900);font-weight:500}
+.bill-sub{font-size:11px;color:var(--N500);margin-top:1px}
+.bill-amt{font-size:14px;font-weight:600;color:var(--er)}
+.bill-amt.ok{color:var(--ok)}.bill-amt.gy{color:var(--N400);text-decoration:line-through}
+
+/* ══ COUNTDOWN ══ */
+.countdown{display:flex;gap:4px;align-items:center}
+.cd-box{background:var(--brand);color:#fff;border-radius:4px;padding:2px 6px;
+  font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;min-width:24px;text-align:center}
+.cd-sep{font-size:13px;font-weight:700;color:var(--brand)}
+
+/* ══ TABBAR ══ */
+.tabbar{height:60px;background:var(--wh);border-top:1px solid var(--N200);
+  display:flex;align-items:stretch;flex-shrink:0;
+  box-shadow:0 -2px 8px rgba(0,0,0,.06);position:relative;z-index:10}
+.tbi{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;cursor:pointer}
+.tbi-ico{width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.tbi-ico svg{width:22px;height:22px;stroke:var(--N400);stroke-width:1.8;fill:none}
+.tbi-lbl{font-size:10px;color:var(--N400);font-weight:500}
+.tbi.on .tbi-ico{background:var(--brand-t);border-radius:8px}
+.tbi.on .tbi-ico svg{stroke:var(--brand)}
+.tbi.on .tbi-lbl{color:var(--brand);font-weight:600}
+.tbbadge{position:absolute;top:4px;right:calc(50% - 22px);background:var(--er);
+  color:#fff;font-size:9px;font-weight:600;padding:1px 5px;border-radius:10px;min-width:16px;text-align:center}
+
+/* ══ BOTTOM SHEET ══ */
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:300;
+  pointer-events:none;transition:background .25s}
+.ovl.on{background:rgba(0,0,0,.45);pointer-events:all}
+.sheet{position:absolute;bottom:0;left:0;right:0;background:var(--wh);
+  border-radius:20px 20px 0 0;padding:0 0 36px;transform:translateY(100%);
+  transition:transform .28s cubic-bezier(.32,.72,0,1);max-height:88vh;overflow-y:auto}
+.ovl.on .sheet{transform:translateY(0)}
+.shandle{width:36px;height:4px;background:var(--N200);border-radius:2px;margin:10px auto 0}
+.stitle{font-size:16px;font-weight:600;color:var(--N900);
+  padding:14px 16px 12px;border-bottom:1px solid var(--N50)}
+.sbody2{padding:16px;display:flex;flex-direction:column;gap:12px}
+
+/* ══ BIND SCREEN (与教职工端一致) ══ */
+.bind-wrap{flex:1;display:flex;flex-direction:column;overflow-y:auto}
+.bind-hero{background:var(--brand);padding:32px 24px 52px;flex-shrink:0}
+.bind-logo{width:60px;height:60px;border-radius:16px;background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:14px}
+.bind-hero-title{font-size:20px;font-weight:700;color:#fff}
+.bind-hero-sub{font-size:12px;color:rgba(255,255,255,.7);margin-top:4px}
+.bind-body{flex:1;background:var(--N50);border-radius:20px 20px 0 0;margin-top:-20px;
+  padding:24px 16px;display:flex;flex-direction:column;gap:16px}
+.bind-err{font-size:12px;color:var(--er);padding:4px 0;display:none}
+.bind-err.on{display:block}
+.bind-loading{display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px;font-size:13px;color:var(--N400)}
+.spin{width:16px;height:16px;border:2px solid var(--N200);border-top-color:var(--brand);
+  border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══ MISC ══ */
+.empty{padding:40px 20px;text-align:center}
+.empty-ico{font-size:40px;opacity:.4}
+.empty-t{font-size:14px;font-weight:600;color:var(--N500);margin-top:8px}
+.empty-s{font-size:12px;color:var(--N400);margin-top:4px}
+.divider{height:8px;background:var(--N50);margin:0 -14px}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+#gtoast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.78);color:#fff;padding:8px 18px;border-radius:20px;
+  font-size:13px;z-index:9999;display:none;white-space:nowrap;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="gtoast"></div>
+
+<div class="shell">
+<div class="scene-lbl" id="scene-lbl">📱 学生端 · 迎新管理系统</div>
+
+<div class="phone">
+<div class="inner">
+
+<!-- STATUS BAR -->
+<div class="sbar">
+  <span class="sbar-time">9:41</span>
+  <div class="sbar-icons">
+    <svg class="si" viewBox="0 0 16 10"><rect x="0" y="3" width="2" height="7" rx="1"/><rect x="4" y="2" width="2" height="8" rx="1"/><rect x="8" y="0" width="2" height="10" rx="1"/><rect x="12" y="0" width="2" height="10" rx="1" opacity=".3"/></svg>
+    <svg class="si" viewBox="0 0 20 14"><path d="M10 2C5.5 2 1.5 4 0 7.5 1.5 11 5.5 13 10 13s8.5-2 10-5.5C18.5 4 14.5 2 10 2zm0 9a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" fill="#fff"/></svg>
+    <svg class="si" viewBox="0 0 25 12"><rect x="0" y="1" width="22" height="10" rx="2" stroke="#fff" stroke-width="1" fill="none"/><rect x="1.5" y="2.5" width="15" height="7" rx="1" fill="#fff"/><rect x="23" y="4" width="2" height="4" rx="1" fill="#fff" opacity=".5"/></svg>
+  </div>
+</div>
+
+<!-- SCREENS -->
+<div class="screens" id="screens">
+
+<!-- ══════════════════════════════
+     BIND-SCREEN: 首次登录绑定
+══════════════════════════════ -->
+<div class="scr" id="bind-screen">
+  <!-- 步骤1：手机号验证 -->
+  <div id="bs1" class="bind-wrap">
+    <div class="bind-hero">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.2);padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.3);margin-bottom:12px">
+        <span style="font-size:12px;font-weight:600;color:#fff">🎓 新生</span>
+      </div>
+      <div class="bind-logo">🎓</div>
+      <div class="bind-hero-title">欢迎，华东科技大学</div>
+      <div class="bind-hero-sub">首次使用需验证身份并绑定学号</div>
+    </div>
+    <div class="bind-body">
+      <div class="card"><div class="cb">
+        <div style="font-size:13px;font-weight:600;color:var(--N900);margin-bottom:12px">① 验证手机号</div>
+        <div class="frows">
+          <div class="frow">
+            <div class="flabel">手机号</div>
+            <div style="display:flex;gap:8px">
+              <input class="finput" id="b-phone" type="tel" maxlength="11" placeholder="请输入注册手机号" style="flex:1">
+              <button class="btn-p" id="sms-btn" style="width:86px;height:44px;font-size:12px;flex-shrink:0;border-radius:12px" onclick="sendSms()">获取验证码</button>
+            </div>
+            <div class="bind-err" id="err-phone">请输入正确的11位手机号</div>
+          </div>
+          <div class="frow" id="sms-row" style="display:none">
+            <div class="flabel">验证码</div>
+            <input class="finput" id="b-sms" type="number" maxlength="6" placeholder="请输入6位验证码">
+            <div class="bind-err" id="err-sms">验证码错误，请重新输入</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="abar ain" style="font-size:11px">ℹ️ 请使用录取通知书上登记的手机号，验证后绑定学号</div>
+      <button class="btn-p" id="phone-next-btn" onclick="phoneNext()" style="display:none">下一步 →</button>
+      <div class="bind-loading" id="bl1" style="display:none"><div class="spin"></div><span>验证中…</span></div>
+    </div>
+  </div>
+  <!-- 步骤2：绑定学号 -->
+  <div id="bs2" class="bind-wrap" style="display:none">
+    <div class="bind-hero">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.2);padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.3);margin-bottom:12px">
+        <span style="font-size:12px;font-weight:600;color:#fff">🎓 新生</span>
+      </div>
+      <div class="bind-logo">🔗</div>
+      <div class="bind-hero-title">绑定学号</div>
+      <div class="bind-hero-sub">请输入录取通知书上的学号</div>
+    </div>
+    <div class="bind-body">
+      <div class="card"><div class="cb">
+        <div style="font-size:13px;font-weight:600;color:var(--N900);margin-bottom:4px">学号</div>
+        <div style="font-size:11px;color:var(--N500);margin-bottom:12px">格式：10 位数字，如 2026010001</div>
+        <div class="frow">
+          <div class="flabel">学号（student_no）</div>
+          <input class="finput" id="b-sno" type="number" placeholder="2026010001" style="font-size:16px;letter-spacing:1.5px">
+          <div class="bind-err" id="err-sno">学号不存在或已被绑定，请检查后重试</div>
+        </div>
+      </div></div>
+      <div class="card" style="cursor:pointer;border:1.5px dashed var(--N200)" onclick="autoMatch()">
+        <div class="cb" style="display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:8px;background:var(--brand-t);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📱</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--N900)">使用手机号自动匹配学号</div>
+            <div style="font-size:11px;color:var(--N500);margin-top:2px">系统将根据已验证手机号查找学籍档案</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--N400)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+      <div class="bind-loading" id="bl2" style="display:none"><div class="spin"></div><span>绑定中…</span></div>
+      <button class="btn-p" onclick="submitBind()">确认绑定</button>
+      <button class="btn-s" style="height:40px;font-size:13px" onclick="showBS(1)">← 返回上一步</button>
+    </div>
+  </div>
+  <!-- 步骤3：成功 -->
+  <div id="bs3" class="bind-wrap" style="display:none">
+    <div class="bind-hero" style="padding-bottom:32px"></div>
+    <div class="bind-body" style="align-items:center;text-align:center">
+      <div style="width:72px;height:72px;border-radius:50%;background:var(--ok-bg);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto">✅</div>
+      <div style="font-size:18px;font-weight:700;color:var(--N900);margin-top:16px">绑定成功</div>
+      <div style="font-size:13px;color:var(--N500);margin-top:8px">学号 <strong id="bind-result-sno">2026010001</strong> 已与微信账号绑定<br>后续登录将自动识别身份</div>
+      <div class="card" style="width:100%;margin-top:20px;text-align:left"><div class="cb">
+        <div class="ir"><span class="ik">姓名</span><span class="iv" id="sr-name">王明辉</span></div>
+        <div class="ir"><span class="ik">学号</span><span class="iv" id="sr-sno">2026010001</span></div>
+        <div class="ir"><span class="ik">学院</span><span class="iv">计算机学院</span></div>
+        <div class="ir"><span class="ik">绑定手机</span><span class="iv" id="sr-phone">138****5678</span></div>
+      </div></div>
+      <button class="btn-p" style="width:100%;margin-top:20px" onclick="bindComplete()">开始迎新报到 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     HOME: 首页
+══════════════════════════════ -->
+<div class="scr" id="home">
+  <div class="sbody">
+    <div class="banner">
+      <div class="brow">
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="bav">王</div>
+          <div><div class="bname">王明辉</div><div class="bsub">计算机学院 · 2026级 · 2026010001</div></div>
+        </div>
+        <div class="bbell" onclick="nav('msg')"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="bdot"></div></div>
+      </div>
+    </div>
+    <div class="fc">
+      <div class="fc-hd"><span class="fc-tt">🚩 报到进度</span><span class="fc-lk" onclick="nav('checklist')">查看详情 ›</span></div>
+      <!-- 步骤进度 -->
+      <div class="steps">
+        <div class="step-dot done">✓</div>
+        <div class="step-line done"></div>
+        <div class="step-dot done">✓</div>
+        <div class="step-line done"></div>
+        <div class="step-dot cur">3</div>
+        <div class="step-line"></div>
+        <div class="step-dot todo">4</div>
+        <div class="step-line"></div>
+        <div class="step-dot todo">5</div>
+        <div class="step-line"></div>
+        <div class="step-dot todo">6</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:0 4px;font-size:9px;color:var(--N400);margin-top:-4px">
+        <span>绑定</span><span>资料</span><span style="color:var(--brand);font-weight:600">缴费</span><span>宿舍</span><span>报到</span><span>完成</span>
+      </div>
+    </div>
+
+    <div class="sc" style="margin-top:10px">
+      <!-- 催缴警告 -->
+      <div class="abar aer" style="cursor:pointer" onclick="nav('bill')">
+        ⚠️ <div><strong>学费 ¥5,800</strong> 已逾期 3 天，请尽快缴纳，否则影响报到<br><span style="font-size:11px;margin-top:2px;display:block">点击立即缴费 →</span></div>
+      </div>
+
+      <!-- 快捷功能 -->
+      <div class="card">
+        <div class="ch"><span class="ct">迎新功能</span></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--N50)">
+          <div style="background:var(--wh);padding:14px 6px;text-align:center;cursor:pointer" onclick="nav('bill')"><div style="font-size:22px;margin-bottom:4px">💰</div><div style="font-size:11px;font-weight:600;color:var(--N700)">缴费</div></div>
+          <div style="background:var(--wh);padding:14px 6px;text-align:center;cursor:pointer" onclick="nav('doc-upload')"><div style="font-size:22px;margin-bottom:4px">📋</div><div style="font-size:11px;font-weight:600;color:var(--N700)">资料提交</div></div>
+          <div style="background:var(--wh);padding:14px 6px;text-align:center;cursor:pointer" onclick="nav('dorm')"><div style="font-size:22px;margin-bottom:4px">🏠</div><div style="font-size:11px;font-weight:600;color:var(--N700)">选宿舍</div></div>
+          <div style="background:var(--wh);padding:14px 6px;text-align:center;cursor:pointer" onclick="nav('aid-apply')"><div style="font-size:22px;margin-bottom:4px">⭐</div><div style="font-size:11px;font-weight:600;color:var(--N700)">助学金</div></div>
+          <div style="background:var(--wh);padding:14px 6px;text-align:center;cursor:pointer" onclick="nav('refund')"><div style="font-size:22px;margin-bottom:4px">↩️</div><div style="font-size:11px;font-weight:600;color:var(--N700)">退费</div></div>
+          <div style="background:var(--wh);padding:14px 6px;text-align:center;cursor:pointer" onclick="nav('receipt')"><div style="font-size:22px;margin-bottom:4px">🧾</div><div style="font-size:11px;font-weight:600;color:var(--N700)">我的票据</div></div>
+          <div style="background:var(--wh);padding:14px 6px;text-align:center;cursor:pointer" onclick="nav('prepay')"><div style="font-size:22px;margin-bottom:4px">💳</div><div style="font-size:11px;font-weight:600;color:var(--N700)">预缴余额</div></div>
+          <div style="background:var(--wh);padding:14px 6px;text-align:center;cursor:pointer" onclick="nav('checklist')"><div style="font-size:22px;margin-bottom:4px">✅</div><div style="font-size:11px;font-weight:600;color:var(--N700)">报到清单</div></div>
+        </div>
+      </div>
+
+      <!-- 最新消息 -->
+      <div class="card">
+        <div class="ch"><span class="ct">最新消息</span><span class="cmore" onclick="nav('msg')">全部 ›</span></div>
+        <div class="li" onclick="nav('msg')">
+          <div class="lico" style="background:var(--er-bg)">⚠️</div>
+          <div class="linf"><div class="ln">学费逾期提醒</div><div class="ls">您的学费 ¥5,800 已逾期，请尽快缴纳</div></div>
+          <div class="lm"><div style="font-size:10px;color:var(--N400)">10:15</div><span class="b ber">未读</span></div>
+        </div>
+        <div class="li" onclick="nav('msg')">
+          <div class="lico" style="background:var(--in-bg)">📋</div>
+          <div class="linf"><div class="ln">资料审核通知</div><div class="ls">您的资料已通过班主任初核，请等待后续</div></div>
+          <div class="lm"><div style="font-size:10px;color:var(--N400)">昨天</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <div class="tbi on" onclick="nav('home')"><div class="tbi-ico"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="tbi-lbl">首页</div></div>
+    <div class="tbi" onclick="nav('bill')" style="position:relative"><div class="tbi-ico"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="tbi-lbl">账单</div><div class="tbbadge">逾期</div></div>
+    <div class="tbi" onclick="nav('dorm')"><div class="tbi-ico"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div><div class="tbi-lbl">宿舍</div></div>
+    <div class="tbi" onclick="nav('profile')"><div class="tbi-ico"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="tbi-lbl">我的</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     BILL: 缴费账单
+══════════════════════════════ -->
+<div class="scr" id="bill">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">我的账单</span><span class="nact" onclick="nav('receipt')">票据</span></div>
+  <div class="sbody">
+    <div style="background:var(--brand);padding:16px 18px 44px">
+      <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:4px">待缴总额</div>
+      <div style="font-size:36px;font-weight:700;color:#fff;line-height:1">¥5,800</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:6px">截止日期：2026-05-20 · 剩余 <strong style="color:#FCD34D">4天</strong></div>
+    </div>
+    <div class="fc">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="b ber">学费逾期</span>
+        <span class="b bok">住宿费已缴</span>
+        <span class="b bok">教材费已缴</span>
+      </div>
+      <div class="prog-track" style="margin-top:10px"><div class="prog-fill" style="width:40%"></div></div>
+      <div class="prog-lbl"><span>缴费完成度</span><span style="color:var(--er)">40%（1/3项）</span></div>
+    </div>
+    <div class="sc" style="margin-top:10px">
+      <div class="card urgent">
+        <div class="ch"><span class="ct">缴费明细</span><span style="font-size:11px;color:var(--N400)">2026-2027学年第一学期</span></div>
+        <div class="bill-item">
+          <div><div class="bill-name">学费</div><div class="bill-sub">必缴 · 逾期 3 天</div></div>
+          <div style="text-align:right">
+            <div class="bill-amt" style="font-size:18px">¥5,800</div>
+            <span class="b ber" style="font-size:10px">逾期未缴</span>
+          </div>
+        </div>
+        <div class="bill-item">
+          <div><div class="bill-name">住宿费</div><div class="bill-sub">4人间标准间 · 已选 3号楼305室</div></div>
+          <div style="text-align:right">
+            <div class="bill-amt ok">¥1,200</div>
+            <span class="b bok" style="font-size:10px">已缴</span>
+          </div>
+        </div>
+        <div class="bill-item" style="border:none">
+          <div><div class="bill-name">教材费</div><div class="bill-sub">2026级计算机学院教材</div></div>
+          <div style="text-align:right">
+            <div class="bill-amt ok">¥320</div>
+            <span class="b bok" style="font-size:10px">已缴</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="abar ain" style="font-size:11px">
+        💳 预缴余额可抵扣 <strong>¥200</strong>，实付 <span style="color:var(--er);font-weight:700">¥5,600</span>
+        <span style="margin-left:4px;color:var(--brand);cursor:pointer" onclick="nav('prepay')">查看余额 ›</span>
+      </div>
+
+      <div class="card">
+        <div class="ch"><span class="ct">选择支付方式</span></div>
+        <div class="cb">
+          <div class="pay-method">
+            <div class="pm on" onclick="selPay(this)"><div class="pm-ico">💚</div><div class="pm-lbl">微信支付</div></div>
+            <div class="pm" onclick="selPay(this)"><div class="pm-ico">🔵</div><div class="pm-lbl">支付宝</div></div>
+            <div class="pm" onclick="selPay(this)"><div class="pm-ico">🏦</div><div class="pm-lbl">银行卡</div></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="pay-btn" onclick="nav('pay-confirm')">
+        <span>立即缴纳</span>
+        <span style="opacity:.8;font-size:13px">¥5,600（抵扣¥200）</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PAY-CONFIRM: 支付确认 -->
+<div class="scr" id="pay-confirm">
+  <div class="nbar"><div class="nback" onclick="nav('bill')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">确认缴费</span></div>
+  <div class="sbody nb">
+    <div class="sc">
+      <div style="text-align:center;padding:24px 0 8px">
+        <div style="font-size:13px;color:var(--N500);margin-bottom:4px">本次缴纳金额</div>
+        <div style="font-size:44px;font-weight:700;color:var(--brand)">¥5,600</div>
+        <div style="font-size:11px;color:var(--N400);margin-top:4px">微信支付 · 已抵扣预缴余额 ¥200</div>
+      </div>
+      <div class="card"><div class="cb">
+        <div class="ir"><span class="ik">缴费项目</span><span class="iv">学费</span></div>
+        <div class="ir"><span class="ik">应缴金额</span><span class="iv">¥5,800</span></div>
+        <div class="ir"><span class="ik">预缴抵扣</span><span class="iv" style="color:var(--ok)">-¥200</span></div>
+        <div class="ir"><span class="ik">实付金额</span><span class="iv" style="color:var(--brand);font-size:16px;font-weight:700">¥5,600</span></div>
+        <div class="ir"><span class="ik">支付方式</span><span class="iv">微信支付</span></div>
+        <div class="ir"><span class="ik">收款方</span><span class="iv">华东科技大学财务处</span></div>
+      </div></div>
+      <div class="abar awa" style="font-size:11px">⚠️ 支付成功后30分钟内处于「支付确认中」状态，请勿重复支付</div>
+      <button class="pay-btn" onclick="nav('pay-result')">确认支付 ¥5,600</button>
+      <button class="btn-s" style="height:44px;font-size:14px" onclick="nav('bill')">返回修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAY-RESULT: 支付结果 -->
+<div class="scr" id="pay-result">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">缴费结果</span></div>
+  <div class="sbody nb">
+    <div class="result-wrap">
+      <div class="result-ico ok">✅</div>
+      <div class="result-title">缴费成功</div>
+      <div class="result-sub">学费 ¥5,800 已缴清<br>电子票据将在 1 个工作日内生成</div>
+    </div>
+    <div class="sc" style="padding-top:0">
+      <div class="card"><div class="cb">
+        <div class="ir"><span class="ik">缴费项目</span><span class="iv">学费</span></div>
+        <div class="ir"><span class="ik">缴费金额</span><span class="iv" style="color:var(--ok);font-weight:700">¥5,800</span></div>
+        <div class="ir"><span class="ik">交易流水号</span><span class="iv" style="font-size:11px">TX20260516093241</span></div>
+        <div class="ir"><span class="ik">缴费时间</span><span class="iv">2026-05-16 09:32</span></div>
+        <div class="ir"><span class="ik">支付方式</span><span class="iv">微信支付</span></div>
+      </div></div>
+      <button class="btn-p" onclick="nav('checklist')">查看报到进度 →</button>
+      <button class="btn-s" style="height:44px;font-size:14px" onclick="nav('receipt')">查看票据</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     DOC-UPLOAD: 资料提交
+══════════════════════════════ -->
+<div class="scr" id="doc-upload">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">资料提交</span></div>
+  <div class="sbody nb">
+    <div class="sc">
+      <div class="abar ain" style="font-size:11px">📌 请上传清晰完整的照片，所有材料审核通过后方可完成报到</div>
+      <div class="card"><div class="ch"><span class="ct">必交材料</span><span style="font-size:11px;color:var(--N400)">6 项</span></div><div class="cb">
+        <div class="upload-grid">
+          <div class="upload-item done" onclick="toast('预览：身份证正面')"><div class="upload-ico">🪪</div><div class="upload-lbl">身份证正面</div><div class="upload-ok">✓</div></div>
+          <div class="upload-item done" onclick="toast('预览：身份证背面')"><div class="upload-ico">🪪</div><div class="upload-lbl">身份证背面</div><div class="upload-ok">✓</div></div>
+          <div class="upload-item done" onclick="toast('预览：录取通知书')"><div class="upload-ico">📜</div><div class="upload-lbl">录取通知书</div><div class="upload-ok">✓</div></div>
+          <div class="upload-item done" onclick="toast('预览：户口本首页')"><div class="upload-ico">📗</div><div class="upload-lbl">户口本首页</div><div class="upload-ok">✓</div></div>
+          <div class="upload-item" onclick="toast('请选择照片上传')"><div class="upload-ico">📗</div><div class="upload-lbl">户口本本人页</div></div>
+          <div class="upload-item" onclick="toast('请选择照片上传')"><div class="upload-ico">📷</div><div class="upload-lbl">一寸证件照</div></div>
+        </div>
+      </div></div>
+      <div class="card"><div class="ch"><span class="ct">健康申报</span><span class="b bwa" style="font-size:10px">待填写</span></div><div class="cb">
+        <div class="frows">
+          <div class="frow">
+            <div class="flabel">是否有传染性疾病</div>
+            <div style="display:flex;gap:8px">
+              <label style="flex:1;padding:10px;border:1.5px solid var(--N200);border-radius:10px;display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="radio" name="hq1" style="accent-color:var(--brand)" checked> 否</label>
+              <label style="flex:1;padding:10px;border:1.5px solid var(--N200);border-radius:10px;display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="radio" name="hq1" style="accent-color:var(--brand)"> 是</label>
+            </div>
+          </div>
+          <div class="frow">
+            <div class="flabel">是否有残疾情况</div>
+            <div style="display:flex;gap:8px">
+              <label style="flex:1;padding:10px;border:1.5px solid var(--N200);border-radius:10px;display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="radio" name="hq2" style="accent-color:var(--brand)" checked> 否</label>
+              <label style="flex:1;padding:10px;border:1.5px solid var(--N200);border-radius:10px;display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="radio" name="hq2" style="accent-color:var(--brand)"> 是</label>
+            </div>
+          </div>
+          <div class="frow">
+            <div class="flabel">其他需要说明的健康情况（选填）</div>
+            <textarea class="fta" placeholder="如有请填写，无则留空…" rows="2"></textarea>
+          </div>
+        </div>
+      </div></div>
+      <div class="card"><div class="cb" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--N900)">当前审核状态</div>
+          <div style="font-size:11px;color:var(--N500);margin-top:2px">班主任初核：<span style="color:var(--wa);font-weight:600">待审核</span></div>
+        </div>
+        <span class="b bwa">4/6 已上传</span>
+      </div></div>
+      <button class="btn-p" onclick="nav('doc-status')">提交审核（4/6）</button>
+    </div>
+  </div>
+</div>
+
+<!-- DOC-STATUS: 资料审核状态 -->
+<div class="scr" id="doc-status">
+  <div class="nbar"><div class="nback" onclick="nav('doc-upload')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">审核状态</span></div>
+  <div class="sbody nb">
+    <div class="sc">
+      <div class="card"><div class="cb" style="text-align:center;padding:20px">
+        <div style="font-size:40px;margin-bottom:8px">📋</div>
+        <div style="font-size:16px;font-weight:700;color:var(--N900)">资料已提交，等待审核</div>
+        <div style="font-size:12px;color:var(--N500);margin-top:6px">提交于 2026-05-15 16:32</div>
+        <span class="b bwa" style="margin-top:10px;display:inline-flex">班主任初核中</span>
+      </div></div>
+      <div class="card"><div class="ch"><span class="ct">审核进度</span></div>
+        <div class="check-item"><div class="check-ico done">✓</div><div class="linf"><div class="check-txt">材料提交</div><div class="check-sub">2026-05-15 16:32 完成</div></div></div>
+        <div class="check-item"><div class="check-ico cur">⋯</div><div class="linf"><div class="check-txt">班主任初核</div><div class="check-sub">刘晓华老师审核中，预计24小时内完成</div></div></div>
+        <div class="check-item"><div class="check-ico todo">3</div><div class="linf"><div class="check-txt">审核完成</div><div class="check-sub" style="color:var(--N400)">等待上一步完成</div></div></div>
+      </div>
+      <div class="abar ain" style="font-size:11px">ℹ️ 审核结果将通过消息通知，如有退回请及时重新上传</div>
+      <button class="btn-s" style="height:44px" onclick="nav('doc-upload')">修改材料</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     DORM: 宿舍选择
+══════════════════════════════ -->
+<div class="scr" id="dorm">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">宿舍选择</span><span class="nact" onclick="nav('my-dorm')">我的宿舍</span></div>
+  <div class="sbody">
+    <div style="background:var(--brand);padding:12px 18px 32px">
+      <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px">选宿截止时间</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="cd-box" id="cd-h">02</div><span class="cd-sep">:</span>
+        <div class="cd-box" id="cd-m">47</div><span class="cd-sep">:</span>
+        <div class="cd-box" id="cd-s">33</div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:6px">超时后系统将自动分配剩余床位</div>
+    </div>
+    <div class="bld-filter">
+      <div class="bld-btn on" onclick="selBld(this)">全部楼栋</div>
+      <div class="bld-btn" onclick="selBld(this)">1号楼</div>
+      <div class="bld-btn" onclick="selBld(this)">2号楼</div>
+      <div class="bld-btn" onclick="selBld(this)">3号楼</div>
+      <div class="bld-btn" onclick="selBld(this)">4号楼</div>
+    </div>
+    <!-- 房间1 -->
+    <div class="room-card">
+      <div class="room-hd">
+        <div>
+          <div class="room-name">3号楼 305室</div>
+          <div style="font-size:11px;color:var(--N500);margin-top:1px">4人间标准间 · 空调/独卫 · ¥1,200/年</div>
+        </div>
+        <div class="room-avail">剩 2 床</div>
+      </div>
+      <div class="dorm-grid">
+        <div class="bed-card occupied"><div class="bed-num">A1</div><div class="bed-tag">已占用</div></div>
+        <div class="bed-card occupied"><div class="bed-num">A2</div><div class="bed-tag">已占用</div></div>
+        <div class="bed-card available" onclick="selBed(this,'305-A3','3号楼305室-A3','¥1,200')"><div class="bed-num">A3</div><div class="bed-tag">可选</div></div>
+        <div class="bed-card available" onclick="selBed(this,'305-A4','3号楼305室-A4','¥1,200')"><div class="bed-num">A4</div><div class="bed-tag">可选</div></div>
+      </div>
+    </div>
+    <!-- 房间2 -->
+    <div class="room-card">
+      <div class="room-hd">
+        <div>
+          <div class="room-name">3号楼 310室</div>
+          <div style="font-size:11px;color:var(--N500);margin-top:1px">4人间标准间 · 空调/独卫 · ¥1,200/年</div>
+        </div>
+        <div class="room-avail">剩 3 床</div>
+      </div>
+      <div class="dorm-grid">
+        <div class="bed-card occupied"><div class="bed-num">B1</div><div class="bed-tag">已占用</div></div>
+        <div class="bed-card available" onclick="selBed(this,'310-B2','3号楼310室-B2','¥1,200')"><div class="bed-num">B2</div><div class="bed-tag">可选</div></div>
+        <div class="bed-card available" onclick="selBed(this,'310-B3','3号楼310室-B3','¥1,200')"><div class="bed-num">B3</div><div class="bed-tag">可选</div></div>
+        <div class="bed-card available" onclick="selBed(this,'310-B4','3号楼310室-B4','¥1,200')"><div class="bed-num">B4</div><div class="bed-tag">可选</div></div>
+      </div>
+    </div>
+    <!-- 房间3 -->
+    <div class="room-card" style="margin-bottom:14px">
+      <div class="room-hd">
+        <div>
+          <div class="room-name">1号楼 112室</div>
+          <div style="font-size:11px;color:var(--N500);margin-top:1px">6人间 · 公共卫浴 · ¥800/年</div>
+        </div>
+        <div class="room-avail">剩 4 床</div>
+      </div>
+      <div class="dorm-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="bed-card occupied"><div class="bed-num">C1</div><div class="bed-tag">已占用</div></div>
+        <div class="bed-card occupied"><div class="bed-num">C2</div><div class="bed-tag">已占用</div></div>
+        <div class="bed-card available" onclick="selBed(this,'112-C3','1号楼112室-C3','¥800')"><div class="bed-num">C3</div><div class="bed-tag">可选</div></div>
+        <div class="bed-card available" onclick="selBed(this,'112-C4','1号楼112室-C4','¥800')"><div class="bed-num">C4</div><div class="bed-tag">可选</div></div>
+        <div class="bed-card available" onclick="selBed(this,'112-C5','1号楼112室-C5','¥800')"><div class="bed-num">C5</div><div class="bed-tag">可选</div></div>
+        <div class="bed-card available" onclick="selBed(this,'112-C6','1号楼112室-C6','¥800')"><div class="bed-num">C6</div><div class="bed-tag">可选</div></div>
+      </div>
+    </div>
+  </div>
+  <!-- 底部确认栏 -->
+  <div id="dorm-bottom" style="display:none;background:var(--wh);padding:12px 14px;border-top:1px solid var(--N200);flex-shrink:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--N900)" id="sel-bed-name">—</div>
+        <div style="font-size:11px;color:var(--N500);margin-top:1px" id="sel-bed-price">—</div>
+      </div>
+      <span class="b bin">已选择</span>
+    </div>
+    <button class="btn-p" onclick="nav('dorm-confirm')">确认选择此床位 →</button>
+  </div>
+</div>
+
+<!-- DORM-CONFIRM: 确认选宿 -->
+<div class="scr" id="dorm-confirm">
+  <div class="nbar"><div class="nback" onclick="nav('dorm')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">确认选宿</span></div>
+  <div class="sbody nb">
+    <div class="sc">
+      <div class="card"><div class="cb">
+        <div class="ir"><span class="ik">选择床位</span><span class="iv" id="dc-bed">3号楼 305室 A3</span></div>
+        <div class="ir"><span class="ik">房间类型</span><span class="iv">4人间标准间（空调/独卫）</span></div>
+        <div class="ir"><span class="ik">住宿费</span><span class="iv" style="color:var(--brand);font-weight:700">¥1,200/年</span></div>
+        <div class="ir"><span class="ik">当前缴纳状态</span><span class="iv" style="color:var(--ok)">住宿费已缴</span></div>
+      </div></div>
+      <div class="abar ain" style="font-size:11px">ℹ️ 确认后 <strong>24小时内可申请换房</strong>，超时后需由政务职工审批</div>
+      <button class="btn-p" onclick="nav('dorm-success')">✓ 确认选择此床位</button>
+      <button class="btn-s" style="height:44px;font-size:14px" onclick="nav('dorm')">重新选择</button>
+    </div>
+  </div>
+</div>
+
+<!-- DORM-SUCCESS: 选宿成功 -->
+<div class="scr" id="dorm-success">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">选宿成功</span></div>
+  <div class="sbody nb">
+    <div class="result-wrap">
+      <div class="result-ico ok">🏠</div>
+      <div class="result-title">宿舍确认成功</div>
+      <div class="result-sub">3号楼 305室 A3 已成功预订<br>请按时入住</div>
+    </div>
+    <div class="sc" style="padding-top:0">
+      <div class="card"><div class="cb">
+        <div class="ir"><span class="ik">宿舍</span><span class="iv">3号楼 305室 A3</span></div>
+        <div class="ir"><span class="ik">房间类型</span><span class="iv">4人间标准间</span></div>
+        <div class="ir"><span class="ik">住宿费</span><span class="iv" style="color:var(--ok)">¥1,200 已缴</span></div>
+        <div class="ir"><span class="ik">入住时间</span><span class="iv">2026-08-28 起</span></div>
+      </div></div>
+      <button class="btn-p" onclick="nav('my-dorm')">查看我的宿舍</button>
+      <button class="btn-s" style="height:44px;font-size:14px" onclick="nav('checklist')">返回报到清单</button>
+    </div>
+  </div>
+</div>
+
+<!-- MY-DORM: 我的宿舍 -->
+<div class="scr" id="my-dorm">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">我的宿舍</span></div>
+  <div class="sbody nb">
+    <div class="sc">
+      <div class="card ok-c">
+        <div style="background:var(--ok-bg);padding:16px 14px;display:flex;align-items:center;gap:12px">
+          <div style="font-size:36px">🏠</div>
+          <div>
+            <div style="font-size:18px;font-weight:700;color:var(--N900)">3号楼 305室 A3</div>
+            <div style="font-size:12px;color:var(--N500);margin-top:2px">4人间标准间 · 空调/独卫</div>
+            <span class="b bok" style="margin-top:6px;display:inline-flex">已确认</span>
+          </div>
+        </div>
+        <div class="cb">
+          <div class="ir"><span class="ik">住宿费</span><span class="iv" style="color:var(--ok)">¥1,200 已缴</span></div>
+          <div class="ir"><span class="ik">入住时间</span><span class="iv">2026-08-28 起</span></div>
+          <div class="ir"><span class="ik">宿舍楼管</span><span class="iv">李阿姨 138****8899</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">室友信息</span></div>
+        <div class="li"><div class="lico" style="background:var(--brand-t);color:var(--brand);font-size:15px;font-weight:700">赵</div><div class="linf"><div class="ln">赵子豪（A1）</div><div class="ls">计算机学院 · 2026级</div></div></div>
+        <div class="li"><div class="lico" style="background:var(--brand-t);color:var(--brand);font-size:15px;font-weight:700">陈</div><div class="linf"><div class="ln">陈晓琳（A2）</div><div class="ls">计算机学院 · 2026级</div></div></div>
+        <div class="li" style="border:none"><div class="lico" style="background:var(--N50);color:var(--N400);font-size:15px;font-weight:700">A4</div><div class="linf"><div class="ln">床位空置</div><div class="ls">等待同学选择</div></div></div>
+      </div>
+      <button class="btn-wa" onclick="nav('dorm-change')">↔ 申请换房</button>
+      <div class="abar ain" style="font-size:11px">ℹ️ 换房申请需政务职工审批，差额（如有）将生成补差订单</div>
+    </div>
+  </div>
+</div>
+
+<!-- DORM-CHANGE: 换房申请 -->
+<div class="scr" id="dorm-change">
+  <div class="nbar"><div class="nback" onclick="nav('my-dorm')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">申请换房</span></div>
+  <div class="sbody nb">
+    <div class="sc">
+      <div class="card"><div class="cb">
+        <div style="font-size:12px;color:var(--N500);margin-bottom:8px">当前宿舍</div>
+        <div style="font-size:16px;font-weight:700;color:var(--N900)">3号楼 305室 A3</div>
+        <div style="font-size:12px;color:var(--N500);margin-top:2px">4人间 · ¥1,200/年</div>
+      </div></div>
+      <div class="card"><div class="ch"><span class="ct">申请换至</span></div><div class="cb">
+        <div class="frows">
+          <div class="frow">
+            <div class="flabel">目标楼栋</div>
+            <select class="finput"><option>请选择楼栋</option><option>1号楼</option><option selected>3号楼</option><option>4号楼</option></select>
+          </div>
+          <div class="frow">
+            <div class="flabel">目标房间号</div>
+            <input class="finput" placeholder="如：310" value="310">
+          </div>
+          <div class="frow">
+            <div class="flabel">申请原因 *</div>
+            <textarea class="fta" rows="3" placeholder="请说明换房原因，如：与同乡同住…">与同乡同学同住，便于相互照应</textarea>
+          </div>
+        </div>
+      </div></div>
+      <div class="abar awa" style="font-size:11px">⚠️ 换房至不同价位宿舍将产生补差，审批通过后自动生成补差订单</div>
+      <button class="btn-p" onclick="nav('dorm-change-done')">提交换房申请</button>
+    </div>
+  </div>
+</div>
+
+<!-- DORM-CHANGE-DONE: 换房申请成功 -->
+<div class="scr" id="dorm-change-done">
+  <div class="nbar"><div class="nback" onclick="nav('my-dorm')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">申请已提交</span></div>
+  <div class="sbody nb">
+    <div class="result-wrap">
+      <div class="result-ico wa">⏳</div>
+      <div class="result-title">申请已提交</div>
+      <div class="result-sub">换房申请已提交，等待政务职工审批<br>审批结果将通过消息通知您</div>
+    </div>
+    <div class="sc" style="padding-top:0">
+      <div class="card"><div class="cb">
+        <div class="ir"><span class="ik">当前宿舍</span><span class="iv">3号楼 305室 A3</span></div>
+        <div class="ir"><span class="ik">申请换至</span><span class="iv">3号楼 310室</span></div>
+        <div class="ir"><span class="ik">申请状态</span><span class="iv"><span class="b bwa">审批中</span></span></div>
+      </div></div>
+      <button class="btn-s" style="height:44px" onclick="nav('home')">返回首页</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     DIFF: 补差订单
+══════════════════════════════ -->
+<div class="scr" id="diff">
+  <div class="nbar"><div class="nback" onclick="nav('bill')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">补差订单</span></div>
+  <div class="sbody nb">
+    <div class="sc">
+      <div class="abar aer">⚠️ 换房差额需在 <strong>3 天内</strong>（2026-05-19 前）缴清，否则换房将被撤销</div>
+      <div class="card urgent">
+        <div class="cb" style="padding:16px">
+          <div style="font-size:12px;color:var(--N500);margin-bottom:4px">补差金额</div>
+          <div style="font-size:36px;font-weight:700;color:var(--er)">¥400</div>
+          <div style="font-size:11px;color:var(--N500);margin-top:6px">原宿舍：1号楼112室 ¥800/年 → 新宿舍：3号楼305室 ¥1,200/年</div>
+        </div>
+        <div class="cb" style="border-top:1px solid var(--N50)">
+          <div class="ir"><span class="ik">差额项目</span><span class="iv">住宿费差额</span></div>
+          <div class="ir"><span class="ik">截止时间</span><span class="iv" style="color:var(--er)">2026-05-19 23:59</span></div>
+        </div>
+      </div>
+      <button class="pay-btn" onclick="nav('pay-confirm')">立即缴纳补差 ¥400</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     AID-APPLY: 助学金申请
+══════════════════════════════ -->
+<div class="scr" id="aid-apply">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">助学金申请</span></div>
+  <div class="sbody nb">
+    <div class="sc">
+      <div class="card"><div class="ch"><span class="ct">助学金类型</span></div>
+        <div class="li" onclick="nav('aid-form')">
+          <div class="lico" style="background:#FEF3C7;font-size:20px">⭐</div>
+          <div class="linf"><div class="ln">特殊困难助学金</div><div class="ls">资助金额 ¥2,000 ~ ¥5,000 · 需提供低保/残疾等证明</div></div>
+          <div class="larr"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="li" onclick="nav('aid-form')">
+          <div class="lico" style="background:#EDE9FE;font-size:20px">💜</div>
+          <div class="linf"><div class="ln">普通困难助学金</div><div class="ls">资助金额 ¥1,000 ~ ¥3,000 · 需提供家庭收入证明</div></div>
+          <div class="larr"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="li" style="border:none" onclick="nav('aid-form')">
+          <div class="lico" style="background:var(--er-bg);font-size:20px">🏅</div>
+          <div class="linf"><div class="ln">孤儿/烈士子女助学金</div><div class="ls">资助金额 ¥2,500 ~ ¥5,000 · 需相关证明文件</div></div>
+          <div class="larr"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+      <div class="abar ain" style="font-size:11px">ℹ️ 申请流程：学生提交 → 班主任初审 → 学院复审 → 学工处终审 → 发放</div>
+    </div>
+  </div>
+</div>
+
+<!-- AID-FORM: 助学金申请表 -->
+<div class="scr" id="aid-form">
+  <div class="nbar"><div class="nback" onclick="nav('aid-apply')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">填写申请</span></div>
+  <div class="sbody nb">
+    <div class="sc">
+      <div class="card"><div class="cb"><div class="frows">
+        <div class="frow">
+          <div class="flabel">申请类型</div>
+          <select class="finput"><option selected>特殊困难助学金</option><option>普通困难助学金</option><option>孤儿/烈士子女助学金</option></select>
+        </div>
+        <div class="frow">
+          <div class="flabel">申请金额（元）</div>
+          <div class="famt"><span class="famt-pre">¥</span><input type="number" class="famt-in" value="4000"></div>
+          <div class="fhint">申请区间：¥2,000 ~ ¥5,000</div>
+        </div>
+        <div class="frow">
+          <div class="flabel">家庭情况说明 *</div>
+          <textarea class="fta" rows="4" placeholder="请详细描述家庭经济情况、主要收入来源等…">父亲长期患病，家庭主要收入来源为母亲务农，年收入约 8,000 元，生活极度困难。</textarea>
+        </div>
+      </div></div></div>
+      <div class="card"><div class="ch"><span class="ct">佐证材料</span><span style="font-size:11px;color:var(--N400)">至少上传1项</span></div><div class="cb">
+        <div class="upload-grid">
+          <div class="upload-item done" onclick="toast('预览：低保证明')"><div class="upload-ico">📄</div><div class="upload-lbl">低保证明</div><div class="upload-ok">✓</div></div>
+          <div class="upload-item done" onclick="toast('预览：户籍证明')"><div class="upload-ico">📋</div><div class="upload-lbl">户籍证明</div><div class="upload-ok">✓</div></div>
+          <div class="upload-item" onclick="toast('上传医疗诊断书')"><div class="upload-ico">🏥</div><div class="upload-lbl">医疗诊断</div></div>
+          <div class="upload-item" onclick="toast('上传其他证明')"><div class="upload-ico">📂</div><div class="upload-lbl">其他证明</div></div>
+        </div>
+      </div></div>
+      <button class="btn-p" onclick="nav('aid-submitted')">提交申请</button>
+    </div>
+  </div>
+</div>
+
+<!-- AID-SUBMITTED: 助学金申请成功 -->
+<div class="scr" id="aid-submitted">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">申请已提交</span></div>
+  <div class="sbody nb">
+    <div class="result-wrap">
+      <div class="result-ico ok">⭐</div>
+      <div class="result-title">申请已提交</div>
+      <div class="result-sub">助学金申请已提交，等待班主任初审<br>审批结果将通过消息通知您</div>
+    </div>
+    <div class="sc" style="padding-top:0">
+      <div class="card"><div class="cb">
+        <div class="ir"><span class="ik">申请类型</span><span class="iv">特殊困难助学金</span></div>
+        <div class="ir"><span class="ik">申请金额</span><span class="iv" style="color:var(--brand)">¥4,000</span></div>
+        <div class="ir"><span class="ik">当前状态</span><span class="iv"><span class="b bwa">等待初审</span></span></div>
+        <div class="ir"><span class="ik">提交时间</span><span class="iv">2026-05-16 10:45</span></div>
+      </div></div>
+      <div class="card"><div class="ch"><span class="ct">审批进度</span></div>
+        <div class="check-item"><div class="check-ico done">✓</div><div class="linf"><div class="check-txt">申请提交</div></div></div>
+        <div class="check-item"><div class="check-ico cur">⋯</div><div class="linf"><div class="check-txt">班主任初审</div><div class="check-sub">等待刘晓华老师审核</div></div></div>
+        <div class="check-item"><div class="check-ico todo">3</div><div class="linf"><div class="check-txt" style="color:var(--N400)">学院复审</div></div></div>
+        <div class="check-item" style="border:none"><div class="check-ico todo">4</div><div class="linf"><div class="check-txt" style="color:var(--N400)">学工处终审 + 发放</div></div></div>
+      </div>
+      <button class="btn-s" style="height:44px" onclick="nav('home')">返回首页</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     REFUND: 退费申请
+══════════════════════════════ -->
+<div class="scr" id="refund">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">退费申请</span></div>
+  <div class="sbody nb">
+    <div class="tbar">
+      <div class="tab on" onclick="stab(this,0,'tref')">可退费</div>
+      <div class="tab" onclick="stab(this,1,'tref')">申请记录</div>
+    </div>
+    <div id="tref">
+      <div class="tp on">
+        <div class="sc">
+          <div class="card ok-c">
+            <div class="cb" style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:13px;font-weight:600;color:var(--N900)">教材费</div><div style="font-size:11px;color:var(--N500);margin-top:2px">2026-05-14 缴纳 · 当日可退</div></div>
+              <div style="text-align:right"><div style="font-size:18px;font-weight:700;color:var(--er)">¥320</div><span class="b bok" style="font-size:10px">可退款</span></div>
+            </div>
+            <div style="padding:0 14px 12px"><button class="btn-s" style="height:36px;font-size:12px;border-radius:8px" onclick="showSheet('sh-refund-apply')">申请退款</button></div>
+          </div>
+          <div class="card">
+            <div class="cb" style="display:flex;align-items:center;justify-content:space-between;opacity:.5">
+              <div><div style="font-size:13px;font-weight:600;color:var(--N900)">住宿费</div><div style="font-size:11px;color:var(--N500);margin-top:2px">2026-05-10 缴纳 · 已过退款期</div></div>
+              <div style="text-align:right"><div style="font-size:18px;font-weight:700;color:var(--N400)">¥1,200</div><span class="b bgy" style="font-size:10px">已过期</span></div>
+            </div>
+            <div style="padding:0 14px 12px;opacity:.5">
+              <div style="font-size:11px;color:var(--N400)">如需退费请致电财务处：0571-88001234</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tp">
+        <div class="sc">
+          <div class="card">
+            <div class="cb" style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:13px;font-weight:600;color:var(--N900)">教材费退款</div><div style="font-size:11px;color:var(--N500);margin-top:2px">申请于 2026-05-16 · 重复缴费</div></div>
+              <div style="text-align:right"><div style="font-size:15px;font-weight:700;color:var(--ok)">¥320</div><span class="b bwa" style="font-size:10px">财务审核中</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     RECEIPT: 我的票据
+══════════════════════════════ -->
+<div class="scr" id="receipt">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">我的票据</span></div>
+  <div class="sbody nb">
+    <div class="sc">
+      <div class="card">
+        <div class="ch"><span class="ct">已开具票据</span></div>
+        <div class="li" onclick="toast('查看票据详情')">
+          <div class="lico" style="background:var(--in-bg)">🧾</div>
+          <div class="linf"><div class="ln">住宿费缴费收据</div><div class="ls">¥1,200 · 2026-05-10 开具</div></div>
+          <div class="lm"><span class="b bok">已开具</span><span style="font-size:11px;color:var(--brand);margin-top:4px;cursor:pointer">下载</span></div>
+        </div>
+        <div class="li" onclick="toast('查看票据详情')">
+          <div class="lico" style="background:var(--in-bg)">🧾</div>
+          <div class="linf"><div class="ln">教材费缴费收据</div><div class="ls">¥320 · 2026-05-10 开具</div></div>
+          <div class="lm"><span class="b bok">已开具</span><span style="font-size:11px;color:var(--brand);margin-top:4px;cursor:pointer">下载</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct">待开具</span></div>
+        <div class="li" style="cursor:default">
+          <div class="lico" style="background:var(--N50)">📄</div>
+          <div class="linf"><div class="ln">学费缴费收据</div><div class="ls">¥5,800 · 缴费后自动生成，约1个工作日</div></div>
+          <span class="b bgy">未缴费</span>
+        </div>
+      </div>
+      <div class="abar ain" style="font-size:11px">🖨 需要补打纸质票据？请在财务处窗口或通过班主任申请</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PREPAY: 预缴余额
+══════════════════════════════ -->
+<div class="scr" id="prepay">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">预缴余额</span></div>
+  <div class="sbody nb">
+    <div style="background:var(--brand);padding:20px 18px 44px">
+      <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px">可用余额</div>
+      <div style="font-size:44px;font-weight:700;color:#fff">¥200</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">余额有效期至：2026-12-31</div>
+    </div>
+    <div class="fc">
+      <div style="font-size:12px;font-weight:600;color:var(--N500);margin-bottom:8px">余额使用规则</div>
+      <div style="font-size:12px;color:var(--N700);line-height:1.7">
+        · 预缴余额可抵扣任意缴费项目<br>
+        · 每笔最多抵扣余额上限为 ¥500<br>
+        · 学年结束后未使用余额可申请退还
+      </div>
+    </div>
+    <div class="sc" style="margin-top:10px">
+      <div class="card"><div class="ch"><span class="ct">充值记录</span></div>
+        <div class="li"><div class="lico" style="background:var(--ok-bg)">💰</div><div class="linf"><div class="ln">家长充值</div><div class="ls">2026-05-08 通过微信转账</div></div><div class="lm"><span style="font-size:15px;font-weight:600;color:var(--ok)">+¥500</span></div></div>
+        <div class="li" style="border:none"><div class="lico" style="background:var(--er-bg)">↩️</div><div class="linf"><div class="ln">抵扣住宿费</div><div class="ls">2026-05-10 账单抵扣</div></div><div class="lm"><span style="font-size:15px;font-weight:600;color:var(--er)">-¥300</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     CHECKLIST: 报到清单
+══════════════════════════════ -->
+<div class="scr" id="checklist">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">报到清单</span></div>
+  <div class="sbody nb">
+    <div style="background:var(--brand);padding:16px 18px 44px">
+      <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px">整体完成进度</div>
+      <div style="font-size:28px;font-weight:700;color:#fff">40%</div>
+      <div style="background:rgba(255,255,255,.2);border-radius:4px;height:6px;margin-top:8px">
+        <div style="background:#fff;width:40%;height:100%;border-radius:4px"></div>
+      </div>
+    </div>
+    <div class="fc">
+      <div style="font-size:13px;font-weight:600;color:var(--N900);margin-bottom:8px">距开学报到：<span style="color:var(--er)">104天</span></div>
+      <div style="font-size:11px;color:var(--N500)">请在 2026-08-28 前完成所有步骤</div>
+    </div>
+    <div class="sc" style="margin-top:10px">
+      <div class="card">
+        <div class="check-item" onclick="nav('bind-screen')">
+          <div class="check-ico done">✓</div>
+          <div class="linf"><div class="check-txt">① 微信绑定学号</div><div class="check-sub">2026-05-15 完成</div></div>
+          <span class="b bok">完成</span>
+        </div>
+        <div class="check-item" onclick="nav('doc-status')">
+          <div class="check-ico done">✓</div>
+          <div class="linf"><div class="check-txt">② 提交入学材料</div><div class="check-sub">班主任审核中…</div></div>
+          <span class="b bwa">审核中</span>
+        </div>
+        <div class="check-item" onclick="nav('bill')">
+          <div class="check-ico err">!</div>
+          <div class="linf"><div class="check-txt">③ 缴纳学费</div><div class="check-sub" style="color:var(--er)">¥5,800 逾期未缴，请尽快处理</div></div>
+          <span class="b ber">逾期</span>
+        </div>
+        <div class="check-item" onclick="nav('dorm')">
+          <div class="check-ico todo">4</div>
+          <div class="linf"><div class="check-txt">④ 选择宿舍</div><div class="check-sub">已选 3号楼305室A3，等待确认</div></div>
+          <span class="b bin">进行中</span>
+        </div>
+        <div class="check-item">
+          <div class="check-ico todo">5</div>
+          <div class="linf"><div class="check-txt">⑤ 现场报到（到校当日）</div><div class="check-sub" style="color:var(--N400)">完成步骤①~④后可报到</div></div>
+          <span class="b bgy">待完成</span>
+        </div>
+        <div class="check-item" style="border:none">
+          <div class="check-ico todo">6</div>
+          <div class="linf"><div class="check-txt">⑥ 报到完成</div><div class="check-sub" style="color:var(--N400)">现场报到通过后自动更新</div></div>
+          <span class="b bgy">待完成</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     MSG: 消息中心
+══════════════════════════════ -->
+<div class="scr" id="msg">
+  <div class="nbar"><div class="nback" onclick="nav('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div><span class="ntitle">消息通知</span></div>
+  <div class="sbody nb">
+    <div class="sc">
+      <div class="card" style="cursor:pointer" onclick="nav('bill')">
+        <div class="cb">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:600;color:var(--er)">⚠️ 缴费催缴</span>
+            <span style="font-size:11px;color:var(--N400)">今天 10:15</span>
+          </div>
+          <div style="font-size:13px;color:var(--N700);line-height:1.6">您的学费 ¥5,800 已逾期 3 天，请尽快缴纳，否则可能影响正式报到。</div>
+          <div style="margin-top:8px"><span style="font-size:12px;color:var(--brand);font-weight:600">立即缴费 →</span></div>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer" onclick="nav('doc-status')">
+        <div class="cb">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:600;color:var(--in)">📋 资料审核通知</span>
+            <span style="font-size:11px;color:var(--N400)">昨天 09:30</span>
+          </div>
+          <div style="font-size:13px;color:var(--N700);line-height:1.6">您提交的入学材料已通过班主任刘晓华老师初核，资料状态更新为「已审核」。</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cb">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:600;color:var(--ok)">🏠 宿舍选择提醒</span>
+            <span style="font-size:11px;color:var(--N400)">05-14</span>
+          </div>
+          <div style="font-size:13px;color:var(--N700);line-height:1.6">选宿窗口已开放，请在截止时间前完成选择，超时将自动分配剩余床位。</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cb">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:600;color:var(--N700)">🎓 迎新通知</span>
+            <span style="font-size:11px;color:var(--N400)">05-10</span>
+          </div>
+          <div style="font-size:13px;color:var(--N700);line-height:1.6">欢迎加入华东科技大学 2026 级！请尽快完成迎新系统的学号绑定与资料提交。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PROFILE: 个人中心
+══════════════════════════════ -->
+<div class="scr" id="profile">
+  <div class="sbody">
+    <div class="banner" style="padding-bottom:40px">
+      <div class="brow">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div class="bav" style="width:52px;height:52px;font-size:20px">王</div>
+          <div>
+            <div class="bname">王明辉</div>
+            <div class="bsub">2026010001 · 计算机学院 2026级1班</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fc" style="margin:-24px 14px 0">
+      <div class="stats-row">
+        <div class="stat"><div class="snum ok" style="font-size:18px">2</div><div class="slbl">已完成</div></div>
+        <div class="stat"><div class="snum wa" style="font-size:18px">2</div><div class="slbl">进行中</div></div>
+        <div class="stat"><div class="snum gy" style="font-size:18px">2</div><div class="slbl">待完成</div></div>
+      </div>
+    </div>
+    <div class="sc" style="margin-top:10px">
+      <div class="card">
+        <div class="li" onclick="nav('checklist')">
+          <div class="lico" style="background:var(--in-bg)">✅</div>
+          <div class="linf"><div class="ln">报到清单</div></div>
+          <div class="larr"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="li" onclick="nav('doc-status')">
+          <div class="lico" style="background:var(--brand-t)">📋</div>
+          <div class="linf"><div class="ln">我的资料</div><div class="ls">初核中…</div></div>
+          <div class="larr"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="li" onclick="nav('aid-submitted')">
+          <div class="lico" style="background:#FEF3C7">⭐</div>
+          <div class="linf"><div class="ln">助学金申请</div><div class="ls">等待初审</div></div>
+          <div class="larr"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="li" onclick="nav('my-dorm')">
+          <div class="lico" style="background:var(--ok-bg)">🏠</div>
+          <div class="linf"><div class="ln">我的宿舍</div><div class="ls">3号楼 305室 A3</div></div>
+          <div class="larr"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="li" onclick="nav('receipt')">
+          <div class="lico" style="background:var(--in-bg)">🧾</div>
+          <div class="linf"><div class="ln">我的票据</div><div class="ls">2 份已开具</div></div>
+          <div class="larr"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="li" style="border:none" onclick="nav('prepay')">
+          <div class="lico" style="background:var(--wa-bg)">💳</div>
+          <div class="linf"><div class="ln">预缴余额</div><div class="ls">¥200 可用</div></div>
+          <div class="larr"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="li"><div class="lico" style="background:var(--N50)">ℹ️</div><div class="linf"><div class="ln">联系班主任</div><div class="ls">刘晓华 · 138****0000</div></div></div>
+        <div class="li" style="border:none"><div class="lico" style="background:var(--N50)">📞</div><div class="linf"><div class="ln">财务处咨询</div><div class="ls">0571-88001234</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <div class="tbi" onclick="nav('home')"><div class="tbi-ico"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div class="tbi-lbl">首页</div></div>
+    <div class="tbi" onclick="nav('bill')" style="position:relative"><div class="tbi-ico"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="tbi-lbl">账单</div></div>
+    <div class="tbi" onclick="nav('dorm')"><div class="tbi-ico"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div><div class="tbi-lbl">宿舍</div></div>
+    <div class="tbi on" onclick="nav('profile')"><div class="tbi-ico"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="tbi-lbl">我的</div></div>
+  </div>
+</div>
+
+</div><!-- /screens -->
+</div><!-- /inner -->
+</div><!-- /phone -->
+</div><!-- /shell -->
+
+<!-- ═══ BOTTOM SHEETS ═══ -->
+<div class="ovl" id="sh-refund-apply" onclick="closeSheet('sh-refund-apply')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="shandle"></div>
+    <div class="stitle">申请退款</div>
+    <div class="sbody2">
+      <div class="card" style="background:var(--N25)"><div class="cb">
+        <div class="ir"><span class="ik">退费项目</span><span class="iv">教材费</span></div>
+        <div class="ir"><span class="ik">退款金额</span><span class="iv" style="color:var(--er);font-weight:700">¥320</span></div>
+        <div class="ir"><span class="ik">退款原因</span><span class="iv">重复缴费</span></div>
+      </div></div>
+      <div class="frow"><div class="flabel">补充说明（可选）</div><textarea class="fta" placeholder="如有特殊情况请说明…" rows="2"></textarea></div>
+      <div class="abar awa" style="font-size:11px">⚠️ 退款将由财务处审核，预计 1~3 个工作日原路退回</div>
+      <button class="btn-p" onclick="closeSheet('sh-refund-apply');toast('✅ 退款申请已提交')">确认提交</button>
+      <button class="btn-s" style="height:40px;font-size:13px" onclick="closeSheet('sh-refund-apply')">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── NAVIGATION ───────────────────────────────────
+function nav(id) {
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
+  const t = document.getElementById(id);
+  if (t) {
+    t.classList.add('on');
+    const sb = t.querySelector('.sbody');
+    if (sb) sb.scrollTop = 0;
+  }
+  // update scene label
+  const labels = {
+    'bind-screen':'🔐 绑定学号','home':'🏠 首页','bill':'💰 缴费账单',
+    'pay-confirm':'💳 支付确认','pay-result':'✅ 缴费成功','doc-upload':'📋 资料提交',
+    'doc-status':'📋 资料审核状态','dorm':'🏠 宿舍选择','dorm-confirm':'🏠 确认选宿',
+    'dorm-success':'🏠 选宿成功','my-dorm':'🏠 我的宿舍','dorm-change':'↔️ 换房申请',
+    'dorm-change-done':'⏳ 换房申请提交','diff':'⚠️ 补差订单','aid-apply':'⭐ 助学金申请',
+    'aid-form':'⭐ 填写申请','aid-submitted':'⭐ 申请已提交','refund':'↩️ 退费',
+    'receipt':'🧾 我的票据','prepay':'💳 预缴余额','checklist':'✅ 报到清单',
+    'msg':'🔔 消息通知','profile':'👤 个人中心'
+  };
+  const lbl = document.getElementById('scene-lbl');
+  if (lbl) lbl.textContent = (labels[id] || '📱 学生端') + ' · 迎新管理系统';
+}
+
+// ─── BIND FLOW ────────────────────────────────────
+let _smsTmr = null, _verifiedPhone = '';
+
+function showBS(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('bs'+i);
+    if (el) el.style.display = i===n ? 'flex' : 'none';
+  });
+}
+
+function sendSms() {
+  const phone = document.getElementById('b-phone').value.trim();
+  if (!/^1[3-9]\d{9}$/.test(phone)) { showErr('err-phone'); return; }
+  hideErr('err-phone');
+  const btn = document.getElementById('sms-btn');
+  btn.disabled = true;
+  // API: POST /api/sms/send { phone }
+  showLd('bl1', true);
+  setTimeout(() => {
+    showLd('bl1', false);
+    document.getElementById('sms-row').style.display = 'block';
+    let s = 60;
+    btn.textContent = s + 's重发';
+    clearInterval(_smsTmr);
+    _smsTmr = setInterval(() => {
+      s--;
+      btn.textContent = s > 0 ? s+'s重发' : '重新获取';
+      if (s <= 0) { clearInterval(_smsTmr); btn.disabled = false; }
+    }, 1000);
+    toast('验证码已发送至 ' + phone.slice(0,3)+'****'+phone.slice(7));
+  }, 1200);
+}
+
+function phoneNext() {
+  const sms = document.getElementById('b-sms').value.trim();
+  if (sms.length !== 6) { showErr('err-sms'); return; }
+  hideErr('err-sms');
+  showLd('bl1', true);
+  document.getElementById('phone-next-btn').style.display = 'none';
+  // API: POST /api/sms/verify { phone, code }
+  setTimeout(() => {
+    showLd('bl1', false);
+    _verifiedPhone = document.getElementById('b-phone').value.trim();
+    showBS(2);
+  }, 1400);
+}
+
+function autoMatch() {
+  showLd('bl2', true);
+  // API: POST /api/student/match-by-phone { phone }
+  setTimeout(() => {
+    showLd('bl2', false);
+    document.getElementById('b-sno').value = '2026010001';
+    toast('✅ 已匹配到学号 2026010001');
+  }, 1200);
+}
+
+function submitBind() {
+  const sno = document.getElementById('b-sno').value.trim();
+  if (!sno || sno.length < 8) { showErr('err-sno'); return; }
+  hideErr('err-sno');
+  showLd('bl2', true);
+  // API: POST /api/student/bind { student_no: sno, phone }
+  setTimeout(() => {
+    showLd('bl2', false);
+    document.getElementById('bind-result-sno').textContent = sno;
+    document.getElementById('sr-sno').textContent = sno;
+    document.getElementById('sr-phone').textContent = _verifiedPhone ?
+      _verifiedPhone.slice(0,3)+'****'+_verifiedPhone.slice(7) : '138****5678';
+    showBS(3);
+  }, 1400);
+}
+
+function bindComplete() { nav('home'); }
+
+// ─── DORM SELECTION ───────────────────────────────
+let _selBedId = '';
+function selBed(el, id, name, price) {
+  // 同一楼层只能选一个
+  document.querySelectorAll('.bed-card.selected').forEach(b => {
+    b.classList.remove('selected');
+    const m = b.querySelector('.bed-sel-mark');
+    if (m) m.remove();
+  });
+  if (el.classList.contains('occupied')) return;
+  el.classList.add('selected');
+  if (!el.querySelector('.bed-sel-mark')) {
+    const mk = document.createElement('div');
+    mk.className = 'bed-sel-mark';
+    mk.textContent = '✓';
+    el.appendChild(mk);
+  }
+  _selBedId = id;
+  document.getElementById('sel-bed-name').textContent = name;
+  document.getElementById('sel-bed-price').textContent = '住宿费 ' + price + '/年';
+  document.getElementById('dc-bed').textContent = name;
+  const bot = document.getElementById('dorm-bottom');
+  if (bot) bot.style.display = 'block';
+  toast('已选择 ' + name);
+}
+
+function selBld(btn) {
+  document.querySelectorAll('.bld-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// ─── PAYMENT METHOD ───────────────────────────────
+function selPay(el) {
+  document.querySelectorAll('.pm').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// ─── SHEET / TAB / UTILS ──────────────────────────
+function showSheet(id) { const el = document.getElementById(id); if (el) el.classList.add('on'); }
+function closeSheet(id) { const el = document.getElementById(id); if (el) el.classList.remove('on'); }
+
+function stab(tabEl, idx, contId) {
+  const cont = document.getElementById(contId);
+  if (!cont) return;
+  tabEl.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  tabEl.classList.add('on');
+  cont.querySelectorAll(':scope > .tp').forEach((p, i) => p.classList.toggle('on', i===idx));
+}
+
+function showErr(id) { const el = document.getElementById(id); if (el) el.classList.add('on'); }
+function hideErr(id) { const el = document.getElementById(id); if (el) el.classList.remove('on'); }
+function showLd(id, v) { const el = document.getElementById(id); if (el) el.style.display = v?'flex':'none'; }
+
+let _tt = null;
+function toast(msg) {
+  const el = document.getElementById('gtoast');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(_tt);
+  _tt = setTimeout(() => { el.style.display = 'none'; }, 2400);
+}
+
+// ─── COUNTDOWN TIMER ──────────────────────────────
+let cdTotal = 2 * 3600 + 47 * 60 + 33;
+function tickCd() {
+  if (cdTotal <= 0) return;
+  cdTotal--;
+  const h = String(Math.floor(cdTotal/3600)).padStart(2,'0');
+  const m = String(Math.floor((cdTotal%3600)/60)).padStart(2,'0');
+  const s = String(cdTotal%60).padStart(2,'0');
+  const hEl = document.getElementById('cd-h');
+  const mEl = document.getElementById('cd-m');
+  const sEl = document.getElementById('cd-s');
+  if (hEl) hEl.textContent = h;
+  if (mEl) mEl.textContent = m;
+  if (sEl) sEl.textContent = s;
+}
+setInterval(tickCd, 1000);
+
+// ─── SMS INPUT WATCH ──────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const si = document.getElementById('b-sms');
+  if (si) si.addEventListener('input', () => {
+    const btn = document.getElementById('phone-next-btn');
+    if (btn) btn.style.display = si.value.length >= 6 ? 'flex' : 'none';
+  });
+  // init tab panes
+  document.querySelectorAll('[id^="t"]').forEach(cont => {
+    const panes = cont.querySelectorAll(':scope > .tp');
+    if (panes.length && !cont.querySelector(':scope > .tp.on'))
+      panes[0].classList.add('on');
+  });
+});
+
+// 初始进入绑定页
+nav('bind-screen');
+showBS(1);
+</script>
+</body>
+</html>

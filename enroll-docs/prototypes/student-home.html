@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>首页 - 高校收费管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+            background: #f2f3f5;
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+        .header-banner {
+            background: #2B6CB0;
+            padding: 44px 16px 60px;
+            color: #fff;
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .avatar i {
+            font-size: 20px;
+        }
+        .user-text h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .user-text p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        .badge-status {
+            background: rgba(255,255,255,0.15);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .header-tabs {
+            display: flex;
+            gap: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 8px;
+        }
+        .tab-item {
+            font-size: 14px;
+            opacity: 0.65;
+            padding-bottom: 8px;
+            position: relative;
+        }
+        .tab-item.active {
+            opacity: 1;
+            font-weight: 600;
+        }
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -9px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #fff;
+            border-radius: 1px;
+        }
+
+        .summary-card {
+            background: #fff;
+            border-radius: 14px;
+            margin: -28px 14px 0;
+            padding: 16px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .summary-item {
+            text-align: center;
+            flex: 1;
+        }
+        .summary-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        .summary-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2B6CB0;
+        }
+        .summary-value.danger {
+            color: #b91c1c;
+        }
+        .summary-value.success {
+            color: #15803d;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            margin: 10px 14px;
+            padding: 14px 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .card-more {
+            font-size: 12px;
+            color: #6b7280;
+            text-decoration: none;
+        }
+        .bill-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 0.5px solid #f0f2f5;
+        }
+        .bill-item:last-child {
+            border-bottom: none;
+        }
+        .bill-info h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        .bill-info p {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .bill-amount {
+            text-align: right;
+        }
+        .bill-amount .amount {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+        }
+        .bill-amount .status {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+        .status-unpaid {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-paid {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .action-btn {
+            flex: 1;
+            min-width: calc(50% - 4px);
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #374151;
+        }
+        .action-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .action-icon i {
+            font-size: 18px;
+        }
+        .action-icon.blue { background: #dbeafe; }
+        .action-icon.blue i { color: #2B6CB0; }
+        .action-icon.green { background: #dcfce7; }
+        .action-icon.green i { color: #15803d; }
+        .action-icon.orange { background: #fef3c7; }
+        .action-icon.orange i { color: #d97706; }
+        .action-icon.purple { background: #ede9fe; }
+        .action-icon.purple i { color: #7c3aed; }
+        .action-text {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .dormitory-status {
+            background: linear-gradient(135deg, #2B6CB0 0%, #1e4d8c 100%);
+            border-radius: 12px;
+            padding: 14px;
+            color: #fff;
+        }
+        .dormitory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .dormitory-title {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dormitory-tag {
+            background: rgba(255,255,255,0.2);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        .dormitory-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .dormitory-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dormitory-icon i {
+            font-size: 22px;
+        }
+        .dormitory-detail h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        .dormitory-detail p {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-top: 0.5px solid #e5e7eb;
+            display: flex;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6px 0 8px;
+            text-decoration: none;
+            color: #9ca3af;
+        }
+        .tab-item.active {
+            color: #2B6CB0;
+        }
+        .tab-item i {
+            font-size: 22px;
+            margin-bottom: 2px;
+        }
+        .tab-item span {
+            font-size: 10px;
+        }
+
+        .notice-bar {
+            background: #fef3c7;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 14px;
+            border-radius: 10px;
+        }
+        .notice-bar i {
+            color: #d97706;
+            font-size: 16px;
+        }
+        .notice-bar p {
+            font-size: 12px;
+            color: #92400e;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部Banner -->
+    <div class="header-banner">
+        <div class="header-top">
+            <div class="user-info">
+                <div class="avatar">
+                    <i class="ti ti-user"></i>
+                </div>
+                <div class="user-text">
+                    <h2>张三</h2>
+                    <p>2024级 · 计算机科学与技术</p>
+                </div>
+            </div>
+            <div class="badge-status">
+                2024-2025学年
+            </div>
+        </div>
+        <div class="header-tabs">
+            <div class="tab-item active">账单</div>
+            <div class="tab-item">票据</div>
+            <div class="tab-item">记录</div>
+        </div>
+    </div>
+
+    <!-- 汇总卡片 -->
+    <div class="summary-card">
+        <div class="summary-row">
+            <div class="summary-item">
+                <div class="summary-label">应缴金额</div>
+                <div class="summary-value">¥12,500</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">已缴金额</div>
+                <div class="summary-value success">¥5,000</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">待缴金额</div>
+                <div class="summary-value danger">¥7,500</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 催缴通知 -->
+    <div class="notice-bar">
+        <i class="ti ti-alert-triangle"></i>
+        <p>截止日期 2026年9月5日，请尽快完成缴费</p>
+    </div>
+
+    <!-- 待缴账单 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">待缴账单</div>
+            <a href="#" class="card-more">查看全部 &rarr;</a>
+        </div>
+        <div class="bill-item">
+            <div class="bill-info">
+                <h4>学费</h4>
+                <p>必缴项目 · 2024-2025学年</p>
+            </div>
+            <div class="bill-amount">
+                <div class="amount">¥5,000</div>
+                <span class="status status-unpaid">未缴</span>
+            </div>
+        </div>
+        <div class="bill-item">
+            <div class="bill-info">
+                <h4>住宿费（4人间）</h4>
+                <p>可选项目 · A栋301室</p>
+            </div>
+            <div class="bill-amount">
+                <div class="amount">¥2,500</div>
+                <span class="status status-unpaid">未缴</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 宿舍信息 -->
+    <div class="card">
+        <div class="dormitory-status">
+            <div class="dormitory-header">
+                <div class="dormitory-title">
+                    <i class="ti ti-building"></i>
+                    我的宿舍
+                </div>
+                <span class="dormitory-tag">已分配</span>
+            </div>
+            <div class="dormitory-info">
+                <div class="dormitory-icon">
+                    <i class="ti ti-map-pin"></i>
+                </div>
+                <div class="dormitory-detail">
+                    <h4>A栋 301室 4号床</h4>
+                    <p>4人间 · 男生宿舍 · 计算机学院</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快捷入口 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">快捷服务</div>
+        </div>
+        <div class="quick-actions">
+            <a href="#" class="action-btn">
+                <div class="action-icon blue">
+                    <i class="ti ti-credit-card"></i>
+                </div>
+                <div class="action-text">在线缴费</div>
+            </a>
+            <a href="#" class="action-btn">
+                <div class="action-icon green">
+                    <i class="ti ti-receipt"></i>
+                </div>
+                <div class="action-text">我的票据</div>
+            </a>
+            <a href="#" class="action-btn">
+                <div class="action-icon orange">
+                    <i class="ti ti-history"></i>
+                </div>
+                <div class="action-text">缴费记录</div>
+            </a>
+            <a href="#" class="action-btn">
+                <div class="action-icon purple">
+                    <i class="ti ti-arrow-back"></i>
+                </div>
+                <div class="action-text">申请退费</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 底部TabBar -->
+    <div class="tab-bar">
+        <a href="#" class="tab-item active">
+            <i class="ti ti-home"></i>
+            <span>首页</span>
+        </a>
+        <a href="#" class="tab-item">
+            <i class="ti ti-file-text"></i>
+            <span>账单</span>
+        </a>
+        <a href="#" class="tab-item">
+            <i class="ti ti-credit-card"></i>
+            <span>缴费</span>
+        </a>
+        <a href="#" class="tab-item">
+            <i class="ti ti-user"></i>
+            <span>我的</span>
+        </a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,259 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif}
+.spec{width:100%;background:var(--color-background-primary);color:var(--color-text-primary)}
+.section{padding:20px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.section:last-child{border-bottom:none}
+.sec-label{font-size:10px;font-weight:600;color:var(--color-text-tertiary);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.chip{display:inline-flex;flex-direction:column;align-items:center;gap:4px}
+.swatch{width:48px;height:48px;border-radius:10px}
+.sw-sm{width:32px;height:32px;border-radius:8px}
+.token{font-size:10px;color:var(--color-text-tertiary);text-align:center;line-height:1.3;max-width:56px}
+.token b{display:block;color:var(--color-text-secondary);font-size:11px;font-weight:600}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:6px 0 12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.demo-card{background:#fff;border-radius:14px;padding:12px 14px;border:1px solid rgba(0,0,0,.07);box-shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04)}
+.demo-card.err{border-color:#fca5a5}
+.demo-pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;gap:4px}
+.type-row{display:flex;align-items:baseline;gap:12px;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.type-row:last-child{border-bottom:none}
+.tr-label{font-size:10px;color:var(--color-text-tertiary);min-width:68px}
+.r-box{border-radius:12px;height:32px;background:#f2f3f5;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--color-text-secondary);flex:1}
+.icon-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.icon-cell{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;background:#f8f9fb;border-radius:10px}
+.rule-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+.rule-row:last-child{border-bottom:none}
+.rule-dot{width:6px;height:6px;border-radius:50%;background:#2B6CB0;margin-top:4px;flex-shrink:0}
+</style>
+
+<div class="spec">
+
+<div class="section">
+  <div class="sec-label">01 — 品牌色系 Brand Colors</div>
+  <div class="row">
+    <div class="chip"><div class="swatch" style="background:#2B6CB0"></div><div class="token"><b>#2B6CB0</b>Primary 主色</div></div>
+    <div class="chip"><div class="swatch" style="background:#1e4d8c"></div><div class="token"><b>#1E4D8C</b>Pressed 按下</div></div>
+    <div class="chip"><div class="swatch" style="background:#dbeafe"></div><div class="token"><b>#DBEAFE</b>Tint 浅色</div></div>
+    <div class="chip"><div class="swatch" style="background:#eff6ff"></div><div class="token"><b>#EFF6FF</b>Surface 底面</div></div>
+    <div class="chip"><div class="swatch" style="background:#1e3a5f"></div><div class="token"><b>#1E3A5F</b>Dark 深色文字</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-label">语义色 Semantic</div>
+  <div class="row">
+    <div class="chip"><div class="swatch" style="background:#15803d"></div><div class="token"><b>#15803D</b>Success 成功</div></div>
+    <div class="chip"><div class="swatch" style="background:#dcfce7"></div><div class="token"><b>#DCFCE7</b>Succ Bg</div></div>
+    <div class="chip"><div class="swatch" style="background:#d97706"></div><div class="token"><b>#D97706</b>Warning 警告</div></div>
+    <div class="chip"><div class="swatch" style="background:#fef3c7"></div><div class="token"><b>#FEF3C7</b>Warn Bg</div></div>
+    <div class="chip"><div class="swatch" style="background:#b91c1c"></div><div class="token"><b>#B91C1C</b>Danger 危险</div></div>
+    <div class="chip"><div class="swatch" style="background:#fee2e2"></div><div class="token"><b>#FEE2E2</b>Danger Bg</div></div>
+    <div class="chip"><div class="swatch" style="background:#7c3aed"></div><div class="token"><b>#7C3AED</b>Purple 紫</div></div>
+    <div class="chip"><div class="swatch" style="background:#ede9fe"></div><div class="token"><b>#EDE9FE</b>Purple Bg</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-label">中性色 Neutrals</div>
+  <div class="row">
+    <div class="chip"><div class="swatch" style="background:#111827"></div><div class="token"><b>#111827</b>N-900 标题</div></div>
+    <div class="chip"><div class="swatch" style="background:#374151"></div><div class="token"><b>#374151</b>N-700 正文</div></div>
+    <div class="chip"><div class="swatch" style="background:#6b7280"></div><div class="token"><b>#6B7280</b>N-500 次要</div></div>
+    <div class="chip"><div class="swatch" style="background:#9ca3af"></div><div class="token"><b>#9CA3AF</b>N-400 辅助</div></div>
+    <div class="chip"><div class="swatch" style="background:#e5e7eb"></div><div class="token"><b>#E5E7EB</b>N-200 分割线</div></div>
+    <div class="chip"><div class="swatch" style="background:#f2f3f5"></div><div class="token"><b>#F2F3F5</b>N-50 页面背景</div></div>
+    <div class="chip"><div class="swatch" style="background:#f8f9fb;border:1px solid #e5e7eb"></div><div class="token"><b>#F8F9FB</b>N-25 卡片内底</div></div>
+    <div class="chip"><div class="swatch" style="background:#ffffff;border:1px solid #e5e7eb"></div><div class="token"><b>#FFFFFF</b>Surface 卡片</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-label">02 — 字体规范 Typography</div>
+  <div class="type-row"><span class="tr-label">页面标题</span><span style="font-size:18px;font-weight:700;color:#111827">欢迎加入华东科技大学</span></div>
+  <div class="type-row"><span class="tr-label">卡片标题</span><span style="font-size:15px;font-weight:600;color:#111827">我的报到进度</span></div>
+  <div class="type-row"><span class="tr-label">功能入口</span><span style="font-size:13px;font-weight:600;color:#374151">在线缴费  选择宿舍</span></div>
+  <div class="type-row"><span class="tr-label">正文内容</span><span style="font-size:13px;font-weight:400;color:#374151">您的账单共 ¥12,500 尚未缴清，请尽快完成缴费操作。</span></div>
+  <div class="type-row"><span class="tr-label">辅助说明</span><span style="font-size:11px;font-weight:400;color:#6b7280">截止日期 2026年9月5日 · 联系辅导员</span></div>
+  <div class="type-row"><span class="tr-label">数字大值</span><span style="font-size:22px;font-weight:700;color:#2B6CB0">¥7,500</span></div>
+  <div class="type-row"><span class="tr-label">标签/徽章</span><span style="font-size:10px;font-weight:600;color:#9ca3af;letter-spacing:.5px;text-transform:uppercase">SECTION LABEL</span></div>
+</div>
+
+<div class="section">
+  <div class="sec-label">03 — 间距 & 圆角 Spacing & Radius</div>
+  <div class="row" style="align-items:flex-end">
+    <div class="chip"><div style="width:4px;height:4px;background:#2B6CB0;border-radius:2px;align-self:flex-end"></div><div class="token"><b>4px</b>xs</div></div>
+    <div class="chip"><div style="width:8px;height:8px;background:#2B6CB0;border-radius:2px;align-self:flex-end"></div><div class="token"><b>8px</b>sm</div></div>
+    <div class="chip"><div style="width:12px;height:12px;background:#2B6CB0;border-radius:3px;align-self:flex-end"></div><div class="token"><b>12px</b>md</div></div>
+    <div class="chip"><div style="width:16px;height:16px;background:#2B6CB0;border-radius:4px;align-self:flex-end"></div><div class="token"><b>16px</b>lg</div></div>
+    <div class="chip"><div style="width:20px;height:20px;background:#2B6CB0;border-radius:5px;align-self:flex-end"></div><div class="token"><b>20px</b>xl</div></div>
+    <div class="chip"><div style="width:24px;height:24px;background:#2B6CB0;border-radius:6px;align-self:flex-end"></div><div class="token"><b>24px</b>2xl</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="row">
+    <div class="chip"><div style="width:48px;height:28px;background:#eff6ff;border:1.5px solid #2B6CB0;border-radius:4px"></div><div class="token"><b>4px</b>badge/tag</div></div>
+    <div class="chip"><div style="width:48px;height:28px;background:#eff6ff;border:1.5px solid #2B6CB0;border-radius:8px"></div><div class="token"><b>8px</b>button</div></div>
+    <div class="chip"><div style="width:48px;height:28px;background:#eff6ff;border:1.5px solid #2B6CB0;border-radius:12px"></div><div class="token"><b>12px</b>input/cell</div></div>
+    <div class="chip"><div style="width:48px;height:28px;background:#eff6ff;border:1.5px solid #2B6CB0;border-radius:14px"></div><div class="token"><b>14px</b>card</div></div>
+    <div class="chip"><div style="width:48px;height:28px;background:#eff6ff;border:1.5px solid #2B6CB0;border-radius:20px"></div><div class="token"><b>20px</b>pill/chip</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-label">04 — 图标规范 Icons</div>
+  <div class="icon-grid" style="margin-bottom:10px">
+    <div class="icon-cell"><i class="ti ti-home" style="font-size:22px;color:#2B6CB0" aria-hidden="true"></i><span style="font-size:9px;color:#6b7280">首页</span></div>
+    <div class="icon-cell"><i class="ti ti-credit-card" style="font-size:22px;color:#b91c1c" aria-hidden="true"></i><span style="font-size:9px;color:#6b7280">缴费</span></div>
+    <div class="icon-cell"><i class="ti ti-building-community" style="font-size:22px;color:#0369a1" aria-hidden="true"></i><span style="font-size:9px;color:#6b7280">宿舍</span></div>
+    <div class="icon-cell"><i class="ti ti-shield-check" style="font-size:22px;color:#15803d" aria-hidden="true"></i><span style="font-size:9px;color:#6b7280">核验</span></div>
+    <div class="icon-cell"><i class="ti ti-bell" style="font-size:22px;color:#374151" aria-hidden="true"></i><span style="font-size:9px;color:#6b7280">通知</span></div>
+    <div class="icon-cell"><i class="ti ti-user" style="font-size:22px;color:#374151" aria-hidden="true"></i><span style="font-size:9px;color:#6b7280">我的</span></div>
+    <div class="icon-cell"><i class="ti ti-school" style="font-size:22px;color:#1e40af" aria-hidden="true"></i><span style="font-size:9px;color:#6b7280">入学</span></div>
+    <div class="icon-cell"><i class="ti ti-map-pin" style="font-size:22px;color:#7c3aed" aria-hidden="true"></i><span style="font-size:9px;color:#6b7280">地图</span></div>
+    <div class="icon-cell"><i class="ti ti-receipt" style="font-size:22px;color:#92400e" aria-hidden="true"></i><span style="font-size:9px;color:#6b7280">票据</span></div>
+    <div class="icon-cell"><i class="ti ti-id-badge" style="font-size:22px;color:#0369a1" aria-hidden="true"></i><span style="font-size:9px;color:#6b7280">学生证</span></div>
+    <div class="icon-cell"><i class="ti ti-phone-call" style="font-size:22px;color:#374151" aria-hidden="true"></i><span style="font-size:9px;color:#6b7280">辅导员</span></div>
+    <div class="icon-cell"><i class="ti ti-calendar" style="font-size:22px;color:#d97706" aria-hidden="true"></i><span style="font-size:9px;color:#6b7280">日程</span></div>
+  </div>
+  <div style="display:flex;gap:16px;font-size:11px;color:#6b7280;flex-wrap:wrap">
+    <span><b style="color:#111827">导航/入口</b> 22–24px outline</span>
+    <span><b style="color:#111827">卡片内图标</b> 18–20px</span>
+    <span><b style="color:#111827">行内辅助</b> 14–16px</span>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-label">05 — 状态徽章 Status Badges</div>
+  <div class="row" style="flex-wrap:wrap;gap:8px">
+    <div class="demo-pill" style="background:#dcfce7;color:#15803d;border:1px solid #86efac"><i class="ti ti-check" style="font-size:11px" aria-hidden="true"></i>已完成</div>
+    <div class="demo-pill" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd"><i class="ti ti-clock" style="font-size:11px" aria-hidden="true"></i>进行中</div>
+    <div class="demo-pill" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d"><i class="ti ti-alert-triangle" style="font-size:11px" aria-hidden="true"></i>待办</div>
+    <div class="demo-pill" style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5"><i class="ti ti-x" style="font-size:11px" aria-hidden="true"></i>逾期</div>
+    <div class="demo-pill" style="background:#ede9fe;color:#6d28d9;border:1px solid #c4b5fd"><i class="ti ti-star" style="font-size:11px" aria-hidden="true"></i>绿通</div>
+    <div class="demo-pill" style="background:#f2f3f5;color:#6b7280;border:1px solid #e5e7eb">未开始</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-label">06 — 按钮规范 Buttons</div>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button style="background:#2B6CB0;color:#fff;border:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;min-width:100px">主要操作</button>
+      <button style="background:transparent;color:#2B6CB0;border:1.5px solid #2B6CB0;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;min-width:100px">次要操作</button>
+      <button style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600">危险操作</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button style="background:#2B6CB0;color:#fff;border:none;padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600">立即缴费</button>
+      <button style="background:#f2f3f5;color:#374151;border:none;padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600">暂不缴费</button>
+      <button style="background:transparent;color:#9ca3af;border:1px solid #e5e7eb;padding:6px 14px;border-radius:20px;font-size:11px">查看详情</button>
+    </div>
+    <div style="background:#f8f9fb;border-radius:10px;padding:10px 12px;font-size:11px;color:#6b7280">
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 10px">
+        <span style="color:#2B6CB0;font-weight:600">圆角矩形</span><span>表单提交、页面主操作，高度 44px</span>
+        <span style="color:#2B6CB0;font-weight:600">胶囊按钮</span><span>列表行内操作、快速动作，高度 32px</span>
+        <span style="color:#2B6CB0;font-weight:600">文字按钮</span><span>次级导航、撤销等低权重操作</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-label">07 — 卡片规范 Cards</div>
+  <div style="display:flex;flex-direction:column;gap:10px">
+
+    <div class="demo-card">
+      <div style="font-size:10px;font-weight:600;color:#9ca3af;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px">基础卡片 · white bg + border + shadow</div>
+      <div style="font-size:13px;color:#374151">白底、1px #e5e7eb 边框、box-shadow 0 1px 3px rgba(0,0,0,.06)、圆角 14px、padding 14–16px</div>
+    </div>
+
+    <div style="background:#2B6CB0;border-radius:14px;padding:14px 16px">
+      <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.6);letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px">Banner 卡片 · 品牌色底</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.9)">用于首屏总览数据，白色文字，品牌蓝实色，不做渐变，内嵌白色浮岛数据卡叠压 -28px</div>
+    </div>
+
+    <div class="demo-card err">
+      <div style="font-size:10px;font-weight:600;color:#b91c1c;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px">强调卡片 · 语义色边框</div>
+      <div style="font-size:13px;color:#374151">紧急/错误场景，border-color 替换为语义色（如 #fca5a5），背景保持白色，不做色底</div>
+    </div>
+
+    <div style="background:#f8f9fb;border-radius:14px;padding:12px 14px;border:1px solid #f0f2f5">
+      <div style="font-size:10px;font-weight:600;color:#9ca3af;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px">功能入口格 · 内嵌格子</div>
+      <div style="font-size:13px;color:#374151">快捷入口宫格，背景 #f8f9fb，无阴影，3列布局，每格 44px 图标背景块 + 11px 文字</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-label">08 — 页面布局 Layout</div>
+  <div style="display:flex;gap:10px;margin-bottom:10px">
+    <div style="flex:1">
+      <div style="background:#2B6CB0;border-radius:10px 10px 0 0;height:52px;display:flex;align-items:center;padding:0 12px;gap:8px">
+        <div style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.2)"></div>
+        <div style="flex:1"><div style="height:6px;background:rgba(255,255,255,.5);border-radius:3px;width:60%;margin-bottom:4px"></div><div style="height:8px;background:#fff;border-radius:3px;width:80%"></div></div>
+        <div style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.15)"></div>
+      </div>
+      <div style="margin:-18px 8px 0;position:relative;z-index:2;background:#fff;border-radius:10px;padding:10px;box-shadow:0 3px 10px rgba(0,0,0,.1)">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <div style="height:14px;background:#dbeafe;border-radius:3px;width:40%"></div>
+          <div style="height:14px;background:#dcfce7;border-radius:10px;width:20%"></div>
+        </div>
+        <div style="height:4px;background:#2B6CB0;border-radius:2px;width:40%;margin-bottom:8px"></div>
+        <div style="display:flex;gap:0;border-top:1px solid #f0f2f5;padding-top:8px">
+          <div style="flex:1;text-align:center"><div style="height:12px;background:#1e3a5f;border-radius:2px;width:60%;margin:0 auto 3px"></div><div style="height:8px;background:#f0f2f5;border-radius:2px;width:50%;margin:0 auto"></div></div>
+          <div style="flex:1;text-align:center;border-left:1px solid #f0f2f5;border-right:1px solid #f0f2f5"><div style="height:12px;background:#d97706;border-radius:2px;width:60%;margin:0 auto 3px"></div><div style="height:8px;background:#f0f2f5;border-radius:2px;width:50%;margin:0 auto"></div></div>
+          <div style="flex:1;text-align:center"><div style="height:12px;background:#0369a1;border-radius:2px;width:60%;margin:0 auto 3px"></div><div style="height:8px;background:#f0f2f5;border-radius:2px;width:50%;margin:0 auto"></div></div>
+        </div>
+      </div>
+      <div style="background:#f2f3f5;padding:8px;display:flex;flex-direction:column;gap:6px">
+        <div style="background:#fff;border-radius:8px;height:36px;padding:0 10px;display:flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+          <div style="width:20px;height:20px;border-radius:6px;background:#dcfce7"></div>
+          <div style="flex:1"><div style="height:6px;background:#f0f2f5;border-radius:3px;width:60%;margin-bottom:3px"></div><div style="height:5px;background:#f0f2f5;border-radius:3px;width:40%"></div></div>
+          <div style="height:18px;background:#2B6CB0;border-radius:10px;width:40px"></div>
+        </div>
+        <div style="background:#fff;border-radius:8px;height:36px;padding:0 10px;display:flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+          <div style="width:20px;height:20px;border-radius:6px;background:#dbeafe"></div>
+          <div style="flex:1"><div style="height:6px;background:#f0f2f5;border-radius:3px;width:50%;margin-bottom:3px"></div><div style="height:5px;background:#f0f2f5;border-radius:3px;width:35%"></div></div>
+          <div style="height:18px;background:#6b7280;border-radius:10px;width:40px"></div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:8px 10px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+          <div style="display:flex;gap:5px">
+            <div style="flex:1;background:#f8f9fb;border-radius:7px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><div style="width:16px;height:16px;border-radius:5px;background:#dcfce7"></div><div style="height:5px;background:#f0f2f5;border-radius:2px;width:80%"></div></div>
+            <div style="flex:1;background:#f8f9fb;border-radius:7px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><div style="width:16px;height:16px;border-radius:5px;background:#dbeafe"></div><div style="height:5px;background:#f0f2f5;border-radius:2px;width:80%"></div></div>
+            <div style="flex:1;background:#f8f9fb;border-radius:7px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><div style="width:16px;height:16px;border-radius:5px;background:#ede9fe"></div><div style="height:5px;background:#f0f2f5;border-radius:2px;width:80%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div style="background:#fff;border-top:0.5px solid #e5e7eb;height:48px;display:flex">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
+          <div style="width:20px;height:20px;background:#eff6ff;border-radius:6px;display:flex;align-items:center;justify-content:center"><i class="ti ti-home" style="font-size:12px;color:#2B6CB0" aria-hidden="true"></i></div>
+          <div style="height:5px;background:#2B6CB0;border-radius:2px;width:16px"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><i class="ti ti-file-text" style="font-size:16px;color:#9ca3af" aria-hidden="true"></i><div style="height:5px;background:#f0f2f5;border-radius:2px;width:16px"></div></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><i class="ti ti-credit-card" style="font-size:16px;color:#9ca3af" aria-hidden="true"></i><div style="height:5px;background:#f0f2f5;border-radius:2px;width:16px"></div></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><i class="ti ti-user" style="font-size:16px;color:#9ca3af" aria-hidden="true"></i><div style="height:5px;background:#f0f2f5;border-radius:2px;width:16px"></div></div>
+      </div>
+      <div style="font-size:9px;color:#9ca3af;text-align:center;padding-top:6px">首页结构示意</div>
+    </div>
+    <div style="flex:1;font-size:11px;color:#374151;line-height:1.7">
+      <div style="margin-bottom:8px"><b style="color:#2B6CB0;display:block;margin-bottom:3px">① 顶部 Banner</b>品牌蓝实色，高度 88~100px，承载身份与批次信息</div>
+      <div style="margin-bottom:8px"><b style="color:#2B6CB0;display:block;margin-bottom:3px">② 浮岛卡片</b>负 margin -28px 叠压 Banner，白底高阴影，3列关键数据</div>
+      <div style="margin-bottom:8px"><b style="color:#2B6CB0;display:block;margin-bottom:3px">③ 内容区</b>页面背景 #f2f3f5，白卡片间距 10px，左右 padding 14px</div>
+      <div style="margin-bottom:8px"><b style="color:#2B6CB0;display:block;margin-bottom:3px">④ TabBar</b>高度 48+安全区，选中项用方块底托，图标 22px</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-label">09 — 设计规则 Rules</div>
+  <div>
+    <div class="rule-row"><div class="rule-dot"></div><div style="color:#374151"><b style="color:#111827">间距基准 4px</b> — 所有间距为 4 的倍数（4/8/12/16/20/24px），禁止使用 5/6/7/9/10px</div></div>
+    <div class="rule-row"><div class="rule-dot"></div><div style="color:#374151"><b style="color:#111827">触控最小尺寸</b> — 可点击元素高度 ≥ 44px，行内图标按钮 ≥ 32×32px</div></div>
+    <div class="rule-row"><div class="rule-dot"></div><div style="color:#374151"><b style="color:#111827">色彩即语义</b> — 蓝色=可交互/主操作，绿色=成功，橙色=警告，红色=危险/紧急，紫色=特殊状态（绿通）</div></div>
+    <div class="rule-row"><div class="rule-dot"></div><div style="color:#374151"><b style="color:#111827">卡片层级</b> — Banner(蓝) › 浮岛卡片(白+高阴影) › 内容卡片(白+低阴影) › 内嵌格(灰底无阴影)</div></div>
+    <div class="rule-row"><div class="rule-dot"></div><div style="color:#374151"><b style="color:#111827">禁止渐变</b> — Banner 与按钮均使用实色，禁止 linear-gradient；阴影仅用于卡片浮起层次</div></div>
+    <div class="rule-row"><div class="rule-dot"></div><div style="color:#374151"><b style="color:#111827">图标统一</b> — 全部使用 Tabler outline 风格，同一场景图标视觉重量保持一致</div></div>
+    <div class="rule-row"><div class="rule-dot"></div><div style="color:#374151"><b style="color:#111827">文字对比</b> — 正文 #374151 on 白底对比度 ≥ 7:1，辅助文字 #6b7280 on 白底 ≥ 4.5:1，满足 WCAG AA</div></div>
+    <div class="rule-row" style="border-bottom:none"><div class="rule-dot"></div><div style="color:#374151"><b style="color:#111827">Banner 文字</b> — 白色 #fff on #2B6CB0 对比度 4.8:1，满足 AA；副标题使用 rgba(255,255,255,.65) 区分层级</div></div>
+  </div>
+</div>
+
+</div>

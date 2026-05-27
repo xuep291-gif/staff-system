@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>迎新收费管理系统 — 三端合一原型 v2.1</title>
+<style>
+/* ========== Design Tokens (unified-ui-spec-v3.1 严格遵循) ========== */
+:root {
+  --brand:#2B6CB0; --brand-d:#1E4D8C; --brand-t:#DBEAFE; --brand-s:#EFF6FF;
+  --ok:#16A34A; --ok-bg:#DCFCE7; --ok-bd:#86EFAC;
+  --wa:#D97706; --wa-bg:#FEF3C7; --wa-bd:#FCD34D;
+  --er:#DC2626; --er-bg:#FEE2E2; --er-bd:#FCA5A5;
+  --in:#0369A1; --in-bg:#E0F2FE; --in-bd:#7DD3FC;
+  --pu:#7C3AED; --pu-bg:#EDE9FE; --pu-bd:#C4B5FD;
+  --N900:#111827;--N700:#374151;--N600:#4B5563;--N500:#6B7280;--N400:#9CA3AF;
+  --N300:#D1D5DB;--N200:#E5E7EB;--N150:#F0F2F5;--N100:#F3F4F6;--N50:#F9FAFB;--N25:#F8F9FB;--wh:#FFFFFF;
+  --sh-lo:0 1px 3px rgba(0,0,0,.06);
+  --sh-md:0 4px 12px rgba(0,0,0,.09);
+  --sh-hi:0 8px 24px rgba(0,0,0,.12);
+  --font: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+}
+body.rf { --brand:#16A34A; --brand-d:#15803D; --brand-t:#DCFCE7; --brand-s:#F0FDF4; }
+body.ra { --brand:#7C3AED; --brand-d:#6D28D9; --brand-t:#EDE9FE; --brand-s:#F5F3FF; }
+
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font);background:var(--N50);display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--N900);font-size:14px;line-height:1.5;}
+
+/* ========== LOGIN PAGE (参照 student-v1.2 设计风格) ========== */
+.login-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;
+  background:var(--brand-d);position:relative;overflow:hidden;width:100%;}
+.login-wrap::before{content:'';position:absolute;top:-80px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);}
+.login-wrap::after{content:'';position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.04);}
+.login-badge{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:40px;position:relative;z-index:1;}
+.login-heroname{font-size:26px;color:var(--wh);font-weight:800;letter-spacing:.04em;text-align:center;position:relative;z-index:1;}
+.login-herosub{font-size:13px;color:rgba(255,255,255,.65);margin:8px 0 32px;letter-spacing:.06em;text-align:center;position:relative;z-index:1;}
+.login-card{width:100%;max-width:380px;background:rgba(255,255,255,.95);border-radius:20px;padding:28px 24px;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative;z-index:1;}
+.login-tabs{display:flex;margin-bottom:20px;background:var(--N100);border-radius:10px;padding:3px;}
+.login-tab{flex:1;padding:10px 0;text-align:center;font-size:13px;font-weight:600;color:var(--N500);cursor:pointer;border-radius:8px;transition:all .15s;}
+.login-tab.active{background:var(--wh);color:var(--brand);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.login-field{margin-bottom:16px;}
+.login-label{font-size:12px;font-weight:600;color:var(--N700);margin-bottom:6px;display:block;}
+.login-input-row{position:relative;}
+.login-input-row .lipre{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;z-index:1;}
+.login-input-row input{width:100%;height:48px;border:1.5px solid var(--N200);border-radius:12px;padding:0 14px;font-size:15px;outline:none;background:var(--N50);transition:all .2s;}
+.login-input-row input.pl42{padding-left:42px;}
+.login-input-row input:focus{border-color:var(--brand);}
+.login-sms-row{display:flex;gap:10px;}
+.login-sms-row input{flex:1;}
+.login-sms-btn{width:110px;height:48px;border:none;border-radius:12px;background:var(--brand);color:var(--wh);font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;}
+.login-submit{width:100%;height:50px;border-radius:14px;border:none;background:var(--brand);color:var(--wh);font-size:16px;font-weight:700;cursor:pointer;}
+.login-submit:active{background:var(--brand-d);}
+.login-error{font-size:12px;color:var(--er);margin-top:10px;display:none;text-align:center;}
+.login-demo{display:flex;align-items:center;margin:18px 0 14px;}
+.login-demo div.fl{flex:1;height:1px;background:var(--N200);}
+.login-demo span{font-size:11px;color:var(--N500);padding:0 10px;}
+.login-demo-cards{display:flex;flex-direction:column;gap:8px;}
+.login-demo-item{display:flex;align-items:center;justify-content:space-between;background:var(--brand-s);border:1.5px solid var(--brand-t);border-radius:14px;padding:10px 14px;cursor:pointer;}
+.login-demo-item .rname{font-size:13px;font-weight:600;color:var(--brand);}
+.login-demo-item .rinfo{font-size:11px;color:var(--N500);}
+
+/* ========== APP SHELL / PHONE FRAME ========== */
+.app-container{display:none;width:100%;}
+.phone-frame{width:375px;height:780px;background:var(--N50);border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.15);display:flex;flex-direction:column;position:relative;margin:0 auto;}
+.phone-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;}
+.phone-screen{display:none;flex-direction:column;min-height:100%;}
+.phone-screen.active{display:flex;animation:fadeInUp .25s ease-out;}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ========== MOBILE COMPONENTS ========== */
+.nbar{display:flex;align-items:center;padding:0 16px;height:52px;background:var(--brand);flex-shrink:0;}
+.nbar .nback{width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:var(--wh);font-size:20px;cursor:pointer;}
+.nbar .ntitle{flex:1;font-size:16px;font-weight:600;color:var(--wh);text-align:center;}
+.nbar .nact{font-size:13px;color:rgba(255,255,255,.85);cursor:pointer;min-width:36px;text-align:right;}
+.nbar.wh{background:var(--wh);border-bottom:0.5px solid var(--N200);}
+.nbar.wh .nback,.nbar.wh .ntitle{color:var(--N900);}
+.nbar.wh .nact{color:var(--brand);}
+
+.banner{background:var(--brand);padding:20px 18px 44px;color:var(--wh);flex-shrink:0;}
+.banner h2{font-size:18px;font-weight:700;margin-bottom:6px;}
+.banner-meta{font-size:12px;opacity:0.8;display:flex;gap:16px;margin-top:4px;}
+
+.float-card{background:var(--wh);border-radius:14px;margin:-28px 14px 0;padding:16px;box-shadow:var(--sh-hi);position:relative;z-index:2;flex-shrink:0;}
+.stats-row{display:flex;}
+.stats-item{flex:1;text-align:center;padding:8px 0;border-right:1px solid var(--N200);}
+.stats-item:last-child{border-right:none;}
+.stats-label{font-size:11px;color:var(--N500);margin-bottom:4px;display:block;}
+.stats-value{font-size:22px;font-weight:700;color:var(--brand);}
+.stats-value.ok{color:var(--ok);}.stats-value.wa{color:var(--wa);}.stats-value.er{color:var(--er);}
+
+.card{background:var(--wh);border-radius:14px;margin:12px 14px;padding:16px;box-shadow:var(--sh-lo);flex-shrink:0;}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.card-title{font-size:15px;font-weight:600;color:var(--N900);margin-bottom:12px;}
+.card-link{font-size:12px;color:var(--brand);cursor:pointer;}
+
+.tabs{display:flex;flex-wrap:wrap;gap:8px;padding:8px 14px;}
+.tab{padding:6px 14px;border-radius:20px;background:var(--N150);color:var(--N500);font-size:12px;font-weight:500;white-space:nowrap;cursor:pointer;border:none;transition:all .15s;}
+.tab.active{background:var(--brand);color:var(--wh);}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;min-height:44px;padding:0 20px;}
+.btn-sm{min-height:32px;font-size:12px;padding:0 12px;border-radius:20px;}
+.btn-block{width:100%;display:flex;}
+.btn-brand{background:var(--brand);color:var(--wh);}
+.btn-outline{background:transparent;color:var(--brand);border:1.5px solid var(--brand);}
+.btn-er{background:var(--er);color:var(--wh);}
+.btn-ok{background:var(--ok);color:var(--wh);}
+.btn-wa{background:var(--wa);color:var(--wh);}
+.btn-ghost{background:transparent;color:var(--N700);}
+.btn-gray{background:var(--N150);color:var(--N700);}
+
+.badge{display:inline-block;font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;}
+.badge-ok{background:var(--ok-bg);color:var(--ok);}
+.badge-wa{background:var(--wa-bg);color:#92400E;}
+.badge-er{background:var(--er-bg);color:var(--er);}
+.badge-brand{background:var(--brand-t);color:var(--brand);}
+.badge-in{background:var(--in-bg);color:var(--in);}
+.badge-pu{background:var(--pu-bg);color:var(--pu);}
+
+.stu-item{display:flex;align-items:center;padding:12px 0;border-bottom:0.5px solid var(--N150);cursor:pointer;}
+.stu-item:last-child{border-bottom:none;}
+.stu-avatar{width:40px;height:40px;border-radius:50%;background:var(--brand-t);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--brand);margin-right:12px;flex-shrink:0;}
+.stu-info{flex:1;min-width:0;}
+.stu-name{font-size:14px;font-weight:600;color:var(--N700);margin-bottom:2px;}
+.stu-meta{font-size:11px;color:var(--N500);}
+.stu-right{text-align:right;flex-shrink:0;}
+
+.alert{display:flex;align-items:flex-start;padding:10px 14px;border-radius:8px;font-size:12px;margin:12px 14px;}
+.alert-wa{background:var(--wa-bg);color:#92400E;border:1px solid var(--wa-bd);}
+.alert-in{background:var(--in-bg);color:var(--in);border:1px solid var(--in-bd);}
+.alert-er{background:var(--er-bg);color:var(--er);border:1px solid var(--er-bd);}
+.alert-ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd);}
+
+.inforow{display:flex;padding:8px 0;font-size:13px;border-bottom:0.5px solid var(--N150);}
+.inforow:last-child{border-bottom:none;}
+.inforow-label{color:var(--N500);min-width:64px;flex-shrink:0;}
+.inforow-value{flex:1;color:var(--N900);font-weight:500;text-align:right;word-break:break-all;overflow-wrap:break-word;min-width:0;}
+
+.timeline{padding:4px 0;}
+.tl-item{display:flex;position:relative;padding-bottom:18px;}
+.tl-item:last-child{padding-bottom:0;}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-right:12px;margin-top:4px;}
+.tl-dot.ok{background:var(--ok);}.tl-dot.brand{background:var(--brand);}.tl-dot.wa{background:var(--wa);}.tl-dot.er{background:var(--er);}
+.tl-dot.todo{background:var(--N300);}
+.tl-content{flex:1;}
+.tl-line{position:absolute;left:4px;top:18px;bottom:0;width:1px;background:var(--N200);}
+.tl-title{font-size:13px;font-weight:500;color:var(--N900);display:block;}
+.tl-desc{font-size:11px;color:var(--N500);display:block;}
+.tl-time{font-size:10px;color:var(--N400);display:block;margin-top:2px;}
+
+.bottom-bar{background:var(--wh);border-top:0.5px solid var(--N200);padding:8px 12px;display:flex;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom);}
+.bottom-bar .btn{flex:1;flex-direction:column;gap:2px;font-size:10px;font-weight:500;}
+
+.qgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 14px;}
+.qitem{background:var(--wh);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.qicon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.qc-blue{background:var(--brand-t);}.qc-green{background:var(--ok-bg);}.qc-orange{background:var(--wa-bg);}.qc-red{background:var(--er-bg);}.qc-pu{background:var(--pu-bg);}
+.qlabel{font-size:11px;color:var(--N500);display:block;}
+.qvalue{font-size:16px;font-weight:700;color:var(--N900);}
+
+.prog-track{height:8px;background:var(--N200);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;background:var(--brand);}
+.prog-text{text-align:center;font-size:12px;color:var(--N500);margin-top:6px;}
+
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 14px;}
+.qa-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+.qa-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.qa-label{font-size:11px;color:var(--N700);font-weight:500;text-align:center;}
+
+.searchbar{display:flex;align-items:center;background:var(--N100);border-radius:8px;padding:0 12px;height:36px;margin:12px 14px;gap:8px;flex-shrink:0;}
+.searchbar input{flex:1;height:100%;font-size:14px;background:transparent;border:none;outline:none;}
+
+.msg-card{background:var(--wh);border-radius:14px;padding:16px;margin:0 14px 10px;box-shadow:var(--sh-lo);cursor:pointer;}
+.msg-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.msg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-er{background:var(--er);}.dot-brand{background:var(--brand);}.dot-pu{background:var(--pu);}.dot-in{background:var(--in);}.dot-ok{background:var(--ok);}
+.msg-title-text{font-size:14px;font-weight:600;color:var(--N900);flex:1;}
+.msg-time{font-size:11px;color:var(--N400);}
+.msg-desc{font-size:12px;color:var(--N500);}
+
+.form-group{margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:600;color:var(--N500);display:block;margin-bottom:6px;}
+.form-input{width:100%;height:44px;border:1.5px solid var(--N200);border-radius:8px;padding:0 12px;font-size:14px;box-sizing:border-box;outline:none;}
+.form-input:focus{border-color:var(--brand);}
+.form-textarea{width:100%;border:1.5px solid var(--N200);border-radius:8px;padding:10px 12px;font-size:14px;box-sizing:border-box;outline:none;min-height:72px;resize:none;}
+.form-textarea:focus{border-color:var(--brand);}
+
+.tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:500;}
+.tag-ok{background:var(--ok-bg);color:var(--ok);}.tag-er{background:var(--er-bg);color:var(--er);}
+.tag-brand{background:var(--brand-t);color:var(--brand);}.tag-wa{background:var(--wa-bg);color:#92400E;}
+
+.method-tags{display:flex;flex-wrap:wrap;gap:8px;}
+.method-tag{padding:6px 14px;border-radius:14px;background:var(--N150);font-size:12px;color:var(--N500);cursor:pointer;}
+.method-tag.active{background:var(--brand);color:var(--wh);}
+
+.empty-state{text-align:center;padding:48px 24px;color:var(--N400);font-size:14px;}
+
+/* Sheet/BottomSheet */
+.sheet-overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:flex-end;}
+.sheet-overlay.show{display:flex;}
+.sheet{background:var(--wh);border-radius:16px 16px 0 0;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom));margin:0 auto;}
+.sheet-handle{width:36px;height:4px;background:var(--N300);border-radius:2px;margin:0 auto 14px;}
+.sheet-title{font-size:16px;font-weight:600;color:var(--N900);margin-bottom:14px;text-align:center;}
+.sheet-actions{display:flex;gap:8px;margin-top:16px;}
+.sheet-actions .btn{flex:1;}
+
+/* ========== ADMIN PC WEB LAYOUT ========== */
+.admin-layout{display:none;width:100%;min-height:100vh;min-width:1100px;}
+.admin-sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;background:#1E3A5F;z-index:200;display:flex;flex-direction:column;}
+.admin-sidebar .as-logo{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.1);}
+.admin-sidebar .as-logo h3{color:var(--wh);font-size:16px;font-weight:700;}
+.admin-sidebar .as-menu{flex:1;overflow-y:auto;padding:8px 0;}
+.admin-menu-grp{font-size:10px;color:rgba(255,255,255,.4);padding:12px 16px 4px;font-weight:600;letter-spacing:.5px;}
+.admin-menu-item{display:flex;align-items:center;padding:10px 16px;gap:10px;color:#C8D6E5;font-size:14px;cursor:pointer;transition:all .15s;}
+.admin-menu-item:hover,.admin-menu-item.active{background:rgba(255,255,255,.15);color:var(--wh);}
+.admin-menu-icon{font-size:18px;flex-shrink:0;}
+.admin-topnav{position:fixed;top:0;left:240px;right:0;height:56px;background:var(--wh);border-bottom:1px solid var(--N200);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;}
+.admin-breadcrumb{font-size:14px;color:var(--N700);}
+.admin-user{display:flex;align-items:center;gap:12px;}
+.admin-user span{font-size:13px;color:var(--N700);font-weight:500;cursor:pointer;}
+.admin-content{margin-left:240px;margin-top:56px;padding:24px;height:calc(100vh - 56px);overflow-y:auto;}
+.admin-panel-area{display:none;}
+.admin-panel-area.active{display:block;animation:fadeInUp .2s ease-out;}
+
+.admin-panel{background:var(--wh);border-radius:14px;box-shadow:var(--sh-lo);overflow:hidden;margin-bottom:16px;}
+.admin-panel-hd{padding:16px 20px;border-bottom:1px solid var(--N150);display:flex;justify-content:space-between;align-items:center;}
+.admin-panel-tt{font-size:15px;font-weight:600;color:var(--N900);}
+.admin-panel-bd{padding:20px;}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--wh);border-radius:14px;padding:20px;box-shadow:var(--sh-lo);}
+.stat-label{font-size:13px;color:var(--N500);display:block;margin-bottom:10px;}
+.stat-num{font-size:28px;font-weight:700;color:var(--N900);display:block;margin-bottom:4px;}
+.stat-sub{font-size:12px;color:var(--N400);}
+
+.admin-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.admin-tab{padding:6px 14px;border-radius:8px;font-size:13px;background:var(--N150);color:var(--N500);cursor:pointer;}
+.admin-tab.active{background:var(--brand);color:var(--wh);}
+
+.data-table{width:100%;min-width:600px;border-collapse:collapse;}
+.data-table th{background:var(--N50);padding:12px 16px;font-size:12px;font-weight:600;color:var(--N500);text-align:left;border-bottom:1px solid var(--N150);}
+.data-table td{padding:12px 16px;font-size:13px;color:var(--N700);border-bottom:1px solid var(--N150);}
+.data-table .act-cell{display:flex;gap:6px;}
+
+.rpt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.rpt-card{background:var(--wh);border-radius:14px;padding:20px;box-shadow:var(--sh-lo);cursor:pointer;transition:box-shadow .2s;}
+.rpt-card:hover{box-shadow:var(--sh-md);}
+.rpt-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px;}
+.rpt-title{font-size:14px;font-weight:600;color:var(--N900);display:block;margin-bottom:4px;}
+.rpt-desc{font-size:12px;color:var(--N400);}
+
+.amount{font-weight:700;color:var(--N900);}.amount-lg{font-size:20px;}.amount-er{color:var(--er);}
+
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.75);color:var(--wh);padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;display:none;}
+
+/* Utility */
+.mt8{margin-top:8px;}.mt12{margin-top:12px;}.mt16{margin-top:16px;}
+.mb8{margin-bottom:8px;}.mb12{margin-bottom:12px;}
+.fx-row{display:flex;align-items:center;gap:8px;}
+.fx-between{display:flex;align-items:center;justify-content:space-between;}
+.fx-1{flex:1;}
+.tac{text-align:center;}
+.px14{padding-left:14px;padding-right:14px;}
+
+/* Material preview modal */
+.mat-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--N150);}
+.mat-item:last-child{border-bottom:none;}
+.mat-name{font-size:14px;color:var(--N700);font-weight:500;}
+.mat-view{font-size:12px;color:var(--brand);cursor:pointer;font-weight:600;}
+
+/* Size stat table */
+.size-table{width:100%;border-collapse:collapse;margin-top:12px;table-layout:fixed;}
+.size-table th{background:var(--N50);padding:6px 4px;font-size:11px;font-weight:600;color:var(--N500);text-align:center;border-bottom:1px solid var(--N150);word-break:keep-all;}
+.size-table td{padding:6px 4px;font-size:12px;color:var(--N700);text-align:center;border-bottom:0.5px solid var(--N150);word-break:keep-all;overflow:hidden;text-overflow:ellipsis;}
+
+/* Student info card */
+.info-card{background:var(--wh);margin:12px 14px;border-radius:14px;overflow:hidden;box-shadow:var(--sh-lo);}
+.info-card-hd{background:var(--brand);padding:16px 20px;color:var(--wh);display:flex;align-items:center;gap:12px;}
+.info-card-hd .stu-avatar{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--wh);}
+.info-card-bd{padding:16px;}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN PAGE ==================== -->
+<div id="loginPage" class="login-wrap">
+  <div class="login-badge">🎓</div>
+  <div class="login-heroname">迎新收费管理系统</div>
+  <div class="login-herosub">ORIENTATION FEE MANAGEMENT SYSTEM</div>
+  <div class="login-card">
+    <div class="login-tabs">
+      <div class="login-tab active" onclick="switchLoginMode('password',this)">密码登录</div>
+      <div class="login-tab" onclick="switchLoginMode('sms',this)">验证码登录</div>
+    </div>
+    <div id="login-password-mode">
+      <div class="login-field"><div class="login-label">手机号 / 工号</div><div class="login-input-row"><span class="lipre">🆔</span><input class="pl42" id="loginUser" type="text" placeholder="请输入手机号或工号" value="13800000002"></div></div>
+      <div class="login-field"><div class="login-label">密码</div><div class="login-input-row"><span class="lipre">🔐</span><input class="pl42" id="loginPass" type="password" placeholder="请输入密码" value="123456"></div></div>
+    </div>
+    <div id="login-sms-mode" style="display:none;">
+      <div class="login-field"><div class="login-label">手机号</div><div class="login-input-row"><span class="lipre">📱</span><input class="pl42" id="loginPhone" type="text" placeholder="请输入手机号" value="13800000002"></div></div>
+      <div class="login-field"><div class="login-label">验证码</div><div class="login-sms-row"><div class="login-input-row" style="flex:1;"><span class="lipre">✉️</span><input class="pl42" id="loginSms" type="text" placeholder="请输入验证码"></div><button class="login-sms-btn" id="smsBtn" onclick="sendSmsCode()">获取验证码</button></div></div>
+    </div>
+    <button class="login-submit" onclick="doLogin()">登 录</button>
+    <div id="loginError" class="login-error"></div>
+    <div class="login-demo"><div class="fl"></div><span>演示账号（点击快速填入）</span><div class="fl"></div></div>
+    <div class="login-demo-cards">
+      <div class="login-demo-item" onclick="fillLogin('13800000001','123456','教师','2024级计算机1班')"><span class="rname">👨‍🏫 教师端</span><span class="rinfo">13800000001 / 123456</span></div>
+      <div class="login-demo-item" onclick="fillLogin('13800000002','123456','财务','财务处')"><span class="rname">💼 财务职工端</span><span class="rinfo">13800000002 / 123456</span></div>
+      <div class="login-demo-item" onclick="fillLogin('13800000003','123456','管理员','系统管理')"><span class="rname">⚙️ 后台管理端</span><span class="rinfo">13800000003 / 123456</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TEACHER PORTAL ==================== -->
+<div id="teacherApp" class="app-container">
+  <div class="phone-frame" id="teacherFrame">
+    <div class="phone-body" id="teacherBody">
+
+      <!-- T-Home: 班级缴费概览 -->
+      <div id="t-home" class="phone-screen active">
+        <div class="nbar"><div class="ntitle">班级缴费概览</div><div class="nact" onclick="navT('t-settings')">⚙️</div></div>
+        <div class="banner">
+          <h2>2024级 计算机科学与技术1班</h2>
+          <div class="banner-meta"><span>👥 总人数 45人</span><span>📅 2024-2025学年</span></div>
+        </div>
+        <div class="float-card">
+          <div class="stats-row">
+            <div class="stats-item"><span class="stats-label">已缴人数</span><span class="stats-value ok">30</span></div>
+            <div class="stats-item"><span class="stats-label">部分缴</span><span class="stats-value wa">5</span></div>
+            <div class="stats-item"><span class="stats-label">未缴人数</span><span class="stats-value er">10</span></div>
+          </div>
+          <div class="prog-track mt8"><div class="prog-fill" style="width:66.7%;"></div></div>
+          <div class="prog-text">班级缴费完成率 66.7%</div>
+        </div>
+        <div class="qgrid">
+          <div class="qitem" onclick="navT('t-pay-list')"><div class="qicon qc-blue">💰</div><div><span class="qlabel">应缴总额</span><span class="qvalue">¥562,500</span></div></div>
+          <div class="qitem"><div class="qicon qc-green">✅</div><div><span class="qlabel">已缴总额</span><span class="qvalue">¥375,000</span></div></div>
+          <div class="qitem" onclick="navT('t-checkin-status')"><div class="qicon qc-orange">📍</div><div><span class="qlabel">报到情况</span><span class="qvalue">38/45</span></div></div>
+          <div class="qitem" onclick="navT('t-military-size')"><div class="qicon qc-pu">🎒</div><div><span class="qlabel">军训尺码统计</span><span class="qvalue">查看 ›</span></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">快捷操作</span></div>
+          <div class="qa-grid" style="margin:0;">
+            <div class="qa-item" onclick="navT('t-pay-list')"><div class="qa-icon qc-blue">📋</div><span class="qa-label">缴费列表</span></div>
+            <div class="qa-item" onclick="navT('t-scholar')"><div class="qa-icon qc-pu">🎓</div><span class="qa-label">助学金</span></div>
+            <div class="qa-item" onclick="navT('t-loan')"><div class="qa-icon qc-green">🏦</div><span class="qa-label">贷款</span></div>
+            <div class="qa-item" onclick="navT('t-qrscan')"><div class="qa-icon qc-orange">📷</div><span class="qa-label">扫码签到</span></div>
+            <div class="qa-item" onclick="navT('t-materials')"><div class="qa-icon qc-red">📎</div><span class="qa-label">材料审核</span></div>
+            <div class="qa-item" onclick="navT('t-checkin-status')"><div class="qa-icon qc-green">✅</div><span class="qa-label">报到管理</span></div>
+            <div class="qa-item" onclick="navT('t-goods')"><div class="qa-icon qc-pu">📦</div><span class="qa-label">物品领取</span></div>
+            <div class="qa-item" onclick="navT('t-nondorm')"><div class="qa-icon qc-orange">🏠</div><span class="qa-label">不住宿审核</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">班级学生信息</span><span class="card-link" onclick="navT('t-stu-info')">全部 ›</span></div>
+          <div class="stu-item" onclick="navT('t-stu-detail')"><div class="stu-avatar">张</div><div class="stu-info"><div class="stu-name">张三</div><div class="stu-meta">202401001 · 计算机科学与技术 · A栋301</div></div><div class="stu-right"><span class="badge badge-ok">已缴清</span></div></div>
+          <div class="stu-item" onclick="navT('t-stu-detail')"><div class="stu-avatar">李</div><div class="stu-info"><div class="stu-name">李四</div><div class="stu-meta">202401002 · 计算机科学与技术 · A栋302</div></div><div class="stu-right"><span class="badge badge-wa">部分缴</span></div></div>
+        </div>
+      </div>
+
+      <!-- T-Pay-List: 缴费列表（含催缴） -->
+      <div id="t-pay-list" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navT('t-home')">←</div><div class="ntitle">学生缴费列表</div></div>
+        <div class="searchbar">🔍<input type="text" placeholder="搜索姓名或学号"></div>
+        <div class="tabs">
+          <button class="tab active" onclick="filterPayTab(this,'all')">全部(45)</button>
+          <button class="tab" onclick="filterPayTab(this,'paid')">已缴(30)</button>
+          <button class="tab" onclick="filterPayTab(this,'partial')">部分缴(5)</button>
+          <button class="tab" onclick="filterPayTab(this,'unpaid')">未缴(10)</button>
+        </div>
+        <div style="padding:0 14px;display:flex;gap:8px;margin-bottom:8px;">
+          <button class="btn btn-wa btn-sm" onclick="urgeSelected()">📨 催缴选中</button>
+          <button class="btn btn-er btn-sm" onclick="showToast('已向10名未缴学生发送批量催缴')">⚡ 一键催缴</button>
+        </div>
+        <div id="t-pay-list-items">
+          <div class="card">
+            <div class="stu-item" data-status="paid" onclick="navT('t-stu-detail')"><div class="stu-avatar">张</div><div class="stu-info"><div class="stu-name">张三</div><div class="stu-meta">202401001 · 计算机科学与技术</div></div><div class="stu-right"><span class="badge badge-ok">已缴清</span><div style="font-size:13px;color:var(--N500);margin-top:4px;">¥12,500</div></div></div>
+            <div class="stu-item" data-status="partial" onclick="navT('t-stu-detail')"><div class="stu-avatar">李</div><div class="stu-info"><div class="stu-name">李四</div><div class="stu-meta">202401002 · 计算机科学与技术</div></div><div class="stu-right"><span class="badge badge-wa">部分缴</span><div style="font-size:13px;color:var(--N500);margin-top:4px;">¥5,000/¥12,500</div></div></div>
+            <div class="stu-item" data-status="unpaid"><label style="display:flex;align-items:center;cursor:pointer;flex:1;" onclick="event.stopPropagation()"><input type="checkbox" class="urge-check" style="margin-right:10px;width:18px;height:18px;accent-color:var(--brand);" onchange="onUrgeCheck(this)"><div class="stu-avatar" style="margin-right:12px;">王</div><div class="stu-info"><div class="stu-name">王五</div><div class="stu-meta">202401003 · 计算机科学与技术</div></div></label><div class="stu-right"><span class="badge badge-er">未缴</span><div style="font-size:13px;color:var(--N500);margin-top:4px;">¥12,500</div></div></div>
+            <div class="stu-item" data-status="unpaid"><label style="display:flex;align-items:center;cursor:pointer;flex:1;" onclick="event.stopPropagation()"><input type="checkbox" class="urge-check" style="margin-right:10px;width:18px;height:18px;accent-color:var(--brand);" onchange="onUrgeCheck(this)"><div class="stu-avatar" style="margin-right:12px;">赵</div><div class="stu-info"><div class="stu-name">赵六</div><div class="stu-meta">202401004 · 计算机科学与技术 · 逾期5天</div></div></label><div class="stu-right"><span class="badge badge-er">逾期</span><div style="font-size:13px;color:var(--N500);margin-top:4px;">¥12,500</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T-Stu-Detail: 学生详情 -->
+      <div id="t-stu-detail" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navT('t-pay-list')">←</div><div class="ntitle">学生缴费详情</div></div>
+        <div class="info-card"><div class="info-card-hd" style="flex-wrap:wrap;"><div class="stu-avatar" style="width:48px;height:48px;font-size:20px;margin:0;">张</div><div style="flex:1;min-width:0;"><div style="font-size:17px;font-weight:700;">张三</div><div style="font-size:12px;opacity:.85;word-break:break-all;">202401001 · 计算机科学与技术1班</div></div><span class="badge badge-ok" style="background:rgba(255,255,255,.2);color:#fff;flex-shrink:0;">已缴清</span></div><div class="info-card-bd"><div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401001</span></div><div class="inforow"><span class="inforow-label">性别</span><span class="inforow-value">男</span></div><div class="inforow"><span class="inforow-label">学院</span><span class="inforow-value">计算机科学与技术学院</span></div><div class="inforow"><span class="inforow-label">班级</span><span class="inforow-value">2024级计算机1班</span></div><div class="inforow"><span class="inforow-label">宿舍</span><span class="inforow-value">A栋 301室 3号床</span></div><div class="inforow"><span class="inforow-label">电话</span><span class="inforow-value">13800010001</span></div><div class="inforow"><span class="inforow-label">家庭地址</span><span class="inforow-value">北京市海淀区XX路XX号</span></div><div class="inforow"><span class="inforow-label">家长电话</span><span class="inforow-value">13900010001</span></div></div></div>
+        <div class="card"><div class="card-title">费用明细</div>
+          <div class="inforow"><span class="inforow-label">学费</span><span class="inforow-value">¥8,000</span></div>
+          <div class="inforow"><span class="inforow-label">住宿费</span><span class="inforow-value">¥2,500</span></div>
+          <div class="inforow"><span class="inforow-label">教材费</span><span class="inforow-value">¥1,200</span></div>
+          <div class="inforow"><span class="inforow-label">保险费</span><span class="inforow-value">¥500</span></div>
+          <div class="inforow"><span class="inforow-label">军训服装费</span><span class="inforow-value">¥300</span></div>
+          <div style="padding-top:12px;margin-top:8px;border-top:0.5px solid var(--N150);display:flex;justify-content:space-between;font-weight:700;"><span>应缴总额</span><span class="amount amount-lg">¥12,500</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;"><span style="color:var(--N500);">已缴金额</span><span class="amount" style="color:var(--ok);">¥12,500</span></div>
+        </div>
+        <div class="card"><div class="card-title">缴费记录</div>
+          <div class="timeline">
+            <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">线上支付 - 微信</span><span class="tl-desc">¥8,000</span><span class="tl-time">2024-09-01 10:30</span></div><div class="tl-line"></div></div>
+            <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">线上支付 - 微信</span><span class="tl-desc">¥4,500</span><span class="tl-time">2024-09-15 14:20</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T-Scholar: 助学金审核 -->
+      <div id="t-scholar" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navT('t-home')">←</div><div class="ntitle">助学金审核</div></div>
+        <div class="tabs">
+          <button class="tab active" onclick="filterScholarTab(this,'all')">全部(15)</button>
+          <button class="tab" onclick="filterScholarTab(this,'pending')">待审核(3)</button>
+          <button class="tab" onclick="filterScholarTab(this,'first-pass')">初审通过(2)</button>
+          <button class="tab" onclick="filterScholarTab(this,'approved')">已通过(5)</button>
+          <button class="tab" onclick="filterScholarTab(this,'rejected')">已驳回(1)</button>
+          <button class="tab" onclick="filterScholarTab(this,'paid')">已发放(4)</button>
+        </div>
+        <div id="t-scholar-items">
+          <div class="card" data-status="pending" data-name="张三">
+            <div class="card-title">张三 — 国家助学金</div>
+            <div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401001</span></div>
+            <div class="inforow"><span class="inforow-label">金额</span><span class="inforow-value amount">¥4,000</span></div>
+            <div class="inforow"><span class="inforow-label">日期</span><span class="inforow-value">2024-09-01</span></div>
+            <div class="inforow"><span class="inforow-label">状态</span><span class="s-status badge badge-wa">待初审</span></div>
+            <div class="timeline mt8">
+              <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">学生提交申请</span><span class="tl-time">2024-09-01 10:00</span></div><div class="tl-line"></div></div>
+              <div class="tl-item"><div class="tl-dot brand"></div><div class="tl-content"><span class="tl-title">待班主任初审</span></div></div>
+            </div>
+            <div class="fx-row mt8"><button class="btn btn-sm" style="background:var(--in-bg);color:var(--in);" onclick="openSheet('sheet-materials')">📎 查看材料</button></div>
+            <div class="fx-row mt8 s-btns"><button class="btn btn-ok btn-sm" onclick="approveScholar(this,'first-pass')">✓ 初审通过</button><button class="btn btn-er btn-sm" onclick="rejectScholar(this,'rejected')">✕ 驳回</button></div>
+          </div>
+          <div class="card" data-status="first-pass" data-name="李四">
+            <div class="card-title">李四 — 学校助学金</div>
+            <div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401002</span></div>
+            <div class="inforow"><span class="inforow-label">金额</span><span class="inforow-value amount">¥2,000</span></div>
+            <div class="inforow"><span class="inforow-label">日期</span><span class="inforow-value">2024-09-02</span></div>
+            <div class="inforow"><span class="inforow-label">状态</span><span class="s-status badge badge-in">初审通过·待复审</span></div>
+            <div class="timeline mt8">
+              <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">学生提交申请</span><span class="tl-time">2024-09-02</span></div><div class="tl-line"></div></div>
+              <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">班主任初审通过</span><span class="tl-time">2024-09-03</span></div><div class="tl-line"></div></div>
+              <div class="tl-item"><div class="tl-dot brand"></div><div class="tl-content"><span class="tl-title">待领导复审</span></div></div>
+            </div>
+            <div class="fx-row mt8"><button class="btn btn-sm" style="background:var(--in-bg);color:var(--in);" onclick="openSheet('sheet-materials')">📎 查看材料</button></div>
+          </div>
+          <div class="card" data-status="approved" data-name="王五">
+            <div class="card-title">王五 — 国家励志奖学金</div>
+            <div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401003</span></div>
+            <div class="inforow"><span class="inforow-label">金额</span><span class="inforow-value amount">¥5,000</span></div>
+            <div class="inforow"><span class="inforow-label">状态</span><span class="s-status badge badge-ok">已通过</span></div>
+            <div class="timeline mt8">
+              <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">学生提交申请</span><span class="tl-time">2024-08-28</span></div><div class="tl-line"></div></div>
+              <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">班主任初审通过</span><span class="tl-time">2024-08-30</span></div><div class="tl-line"></div></div>
+              <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">领导复审通过</span><span class="tl-time">2024-09-02</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T-Loan: 助学贷款审核 -->
+      <div id="t-loan" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navT('t-home')">←</div><div class="ntitle">助学贷款审核</div></div>
+        <div class="tabs">
+          <button class="tab active" onclick="filterLoanTab(this,'all')">全部(8)</button>
+          <button class="tab" onclick="filterLoanTab(this,'pending')">待审核(2)</button>
+          <button class="tab" onclick="filterLoanTab(this,'first-pass')">初审通过(1)</button>
+          <button class="tab" onclick="filterLoanTab(this,'approved')">已通过(3)</button>
+          <button class="tab" onclick="filterLoanTab(this,'rejected')">已驳回(0)</button>
+          <button class="tab" onclick="filterLoanTab(this,'paid')">已发放(2)</button>
+        </div>
+        <div id="t-loan-items">
+          <div class="card" data-status="pending" data-name="赵六">
+            <div class="card-title">赵六 — 国家开发银行·生源地贷款</div>
+            <div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401004</span></div>
+            <div class="inforow"><span class="inforow-label">金额</span><span class="inforow-value amount">¥8,000</span></div>
+            <div class="inforow"><span class="inforow-label">机构</span><span class="inforow-value">国家开发银行</span></div>
+            <div class="inforow"><span class="inforow-label">状态</span><span class="s-status badge badge-wa">待初审</span></div>
+            <div class="timeline mt8">
+              <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">学生提交申请</span><span class="tl-time">2024-09-01</span></div><div class="tl-line"></div></div>
+              <div class="tl-item"><div class="tl-dot brand"></div><div class="tl-content"><span class="tl-title">待教师初审</span></div></div>
+            </div>
+            <div class="fx-row mt8"><button class="btn btn-sm" style="background:var(--in-bg);color:var(--in);" onclick="openSheet('sheet-materials')">📎 查看材料</button></div>
+            <div class="fx-row mt8 s-btns"><button class="btn btn-ok btn-sm" onclick="approveLoan(this,'first-pass')">✓ 初审通过</button><button class="btn btn-er btn-sm" onclick="rejectLoan(this,'rejected')">✕ 驳回</button></div>
+          </div>
+          <div class="card" data-status="first-pass" data-name="周八">
+            <div class="card-title">周八 — 中国银行·校园地贷款</div>
+            <div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401008</span></div>
+            <div class="inforow"><span class="inforow-label">金额</span><span class="inforow-value amount">¥6,000</span></div>
+            <div class="inforow"><span class="inforow-label">机构</span><span class="inforow-value">中国银行</span></div>
+            <div class="inforow"><span class="inforow-label">状态</span><span class="s-status badge badge-in">初审通过·待复审</span></div>
+            <div class="timeline mt8">
+              <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">学生提交申请</span><span class="tl-time">2024-08-28</span></div><div class="tl-line"></div></div>
+              <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">教师初审通过</span><span class="tl-time">2024-08-30</span></div><div class="tl-line"></div></div>
+              <div class="tl-item"><div class="tl-dot brand"></div><div class="tl-content"><span class="tl-title">待领导复审</span></div></div>
+            </div>
+            <div class="fx-row mt8"><button class="btn btn-sm" style="background:var(--in-bg);color:var(--in);" onclick="openSheet('sheet-materials')">📎 查看材料</button></div>
+          </div>
+          <div class="card" data-status="approved" data-name="吴九">
+            <div class="card-title">吴九 — 农商行·生源地贷款</div>
+            <div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401009</span></div>
+            <div class="inforow"><span class="inforow-label">金额</span><span class="inforow-value amount">¥10,000</span></div>
+            <div class="inforow"><span class="inforow-label">机构</span><span class="inforow-value">农村商业银行</span></div>
+            <div class="inforow"><span class="inforow-label">状态</span><span class="s-status badge badge-ok">已通过·待发放</span></div>
+            <div class="timeline mt8">
+              <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">学生提交</span><span class="tl-time">2024-08-25</span></div><div class="tl-line"></div></div>
+              <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">初审通过</span><span class="tl-time">2024-08-27</span></div><div class="tl-line"></div></div>
+              <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">复审通过</span><span class="tl-time">2024-09-01</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T-QRScan: 扫码签到 -->
+      <div id="t-qrscan" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navT('t-home')">←</div><div class="ntitle">扫码签到</div></div>
+        <div class="card">
+          <div style="text-align:center;padding:32px 16px;">
+            <div style="width:120px;height:120px;border:3px dashed var(--N300);border-radius:16px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:48px;">📷</div>
+            <div style="font-size:16px;font-weight:600;color:var(--N900);margin-bottom:6px;">扫描学生报到二维码</div>
+            <div style="font-size:13px;color:var(--N500);">对准学生出示的二维码完成现场签到</div>
+          </div>
+          <button class="btn btn-brand btn-block" onclick="showToast('正在打开扫码...')">📷 开始扫码</button>
+        </div>
+        <div class="card" style="display:none;" id="qr-result">
+          <div style="text-align:center;padding:16px;">
+            <div style="font-size:48px;color:var(--ok);">✅</div>
+            <div style="font-size:16px;font-weight:600;color:var(--ok);margin:8px 0;">签到成功</div>
+            <div style="font-size:14px;color:var(--N700);">张三 · 202401001</div>
+            <div style="font-size:12px;color:var(--N500);">计算机科学与技术1班</div>
+            <div style="font-size:12px;color:var(--N400);margin-top:4px;">2024-09-01 10:32:15</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T-Materials: 报到材料审核 -->
+      <div id="t-materials" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navT('t-home')">←</div><div class="ntitle">报到材料审核</div></div>
+        <div class="tabs">
+          <button class="tab active" onclick="filterMatTab(this,'all')">全部(42)</button>
+          <button class="tab" onclick="filterMatTab(this,'pending')">待审核(5)</button>
+          <button class="tab" onclick="filterMatTab(this,'passed')">已通过(35)</button>
+          <button class="tab" onclick="filterMatTab(this,'rejected')">已驳回(2)</button>
+        </div>
+        <div id="t-mat-items">
+          <div class="card" data-status="pending" data-name="王五">
+            <div class="card-header"><span class="card-title">王五</span><span class="s-status badge badge-wa">待审核</span></div>
+            <div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401003</span></div>
+            <div class="inforow"><span class="inforow-label">提交时间</span><span class="inforow-value">2024-09-01</span></div>
+            <div class="mat-item"><span class="mat-name">📄 身份证（正反面）</span><span class="mat-view" onclick="showToast('预览身份证图片')">预览</span></div>
+            <div class="mat-item"><span class="mat-name">📄 录取通知书</span><span class="mat-view" onclick="showToast('预览录取通知书')">预览</span></div>
+            <div class="mat-item"><span class="mat-name">📄 证件照</span><span class="mat-view" onclick="showToast('预览证件照')">预览</span></div>
+            <div class="fx-row mt8 s-btns"><button class="btn btn-ok btn-sm" onclick="approveItem(this,'passed','已通过')">✓ 通过</button><button class="btn btn-er btn-sm" onclick="rejectItem(this,'rejected','已驳回','sheet-reject-material')">✕ 驳回</button></div>
+          </div>
+          <div class="card" data-status="pending" data-name="吴九">
+            <div class="card-header"><span class="card-title">吴九</span><span class="s-status badge badge-wa">待审核</span></div>
+            <div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401009</span></div>
+            <div class="inforow"><span class="inforow-label">提交时间</span><span class="inforow-value">2024-09-02</span></div>
+            <div class="mat-item"><span class="mat-name">📄 身份证（正反面）</span><span class="mat-view" onclick="showToast('预览身份证图片')">预览</span></div>
+            <div class="mat-item"><span class="mat-name">📄 录取通知书</span><span class="mat-view" onclick="showToast('预览录取通知书')">预览</span></div>
+            <div class="mat-item"><span class="mat-name">📄 户口本</span><span class="mat-view" onclick="showToast('预览户口本')">预览</span></div>
+            <div class="fx-row mt8 s-btns"><button class="btn btn-ok btn-sm" onclick="approveItem(this,'passed','已通过')">✓ 通过</button><button class="btn btn-er btn-sm" onclick="rejectItem(this,'rejected','已驳回','sheet-reject-material')">✕ 驳回</button></div>
+          </div>
+          <div class="card" data-status="passed" data-name="张三">
+            <div class="card-header"><span class="card-title">张三</span><span class="s-status badge badge-ok">已通过</span></div>
+            <div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401001</span></div>
+            <div class="inforow"><span class="inforow-label">审核时间</span><span class="inforow-value">2024-09-01 14:30</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T-Checkin-Status: 报到情况 -->
+      <div id="t-checkin-status" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navT('t-home')">←</div><div class="ntitle">报到情况</div></div>
+        <div class="float-card" style="margin-bottom:8px;">
+          <div class="stats-row">
+            <div class="stats-item"><span class="stats-label">已报到</span><span class="stats-value ok">38</span></div>
+            <div class="stats-item"><span class="stats-label">未报到</span><span class="stats-value er">7</span></div>
+          </div>
+          <div class="prog-track mt8"><div class="prog-fill" style="width:84.4%;background:var(--ok);"></div></div>
+          <div class="prog-text">报到率 84.4%</div>
+        </div>
+        <div class="tabs">
+          <button class="tab active" onclick="switchTLocal(this)">未报到(7)</button>
+          <button class="tab" onclick="switchTLocal(this)">已报到(38)</button>
+        </div>
+        <div class="card">
+          <div class="stu-item" style="align-items:flex-start;">
+            <div class="stu-avatar" style="margin-top:4px;">周</div>
+            <div class="stu-info"><div class="stu-name">周八</div><div class="stu-meta">202401008 · 未报到</div></div>
+            <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+              <button class="btn btn-wa btn-sm" onclick="showToast('催报到通知已发送')">催报到</button>
+              <button class="btn btn-sm" style="background:var(--in-bg);color:var(--in);min-height:32px;font-size:12px;white-space:nowrap;" onclick="showToast('已标记为延缓报到')">延缓报到</button>
+            </div>
+          </div>
+          <div class="stu-item">
+            <div class="stu-avatar">吴</div>
+            <div class="stu-info"><div class="stu-name">吴九</div><div class="stu-meta">202401009 · 未报到</div></div>
+            <div class="stu-right"><button class="btn btn-wa btn-sm" onclick="showToast('催报到通知已发送')">催报到</button></div>
+          </div>
+          <div class="stu-item">
+            <div class="stu-avatar">郑</div>
+            <div class="stu-info"><div class="stu-name">郑十</div><div class="stu-meta">202401010 · 未报到</div></div>
+            <div class="stu-right"><span class="badge badge-in">已延缓</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T-Military-Size: 军训尺码统计 -->
+      <div id="t-military-size" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navT('t-home')">←</div><div class="ntitle">军训尺码统计</div></div>
+        <div class="card"><div class="card-title">服装尺码统计</div>
+          <table class="size-table"><thead><tr><th>性别</th><th>S</th><th>M</th><th>L</th><th>XL</th><th>XXL</th><th>XXXL</th><th>合计</th></tr></thead>
+          <tbody><tr><td style="font-weight:600;">男</td><td>2</td><td>8</td><td>10</td><td>4</td><td>1</td><td>1</td><td style="font-weight:600;">26</td></tr>
+          <tr><td style="font-weight:600;">女</td><td>5</td><td>7</td><td>5</td><td>2</td><td>0</td><td>0</td><td style="font-weight:600;">19</td></tr>
+          <tr style="background:var(--brand-s);"><td style="font-weight:700;">合计</td><td style="font-weight:600;">7</td><td style="font-weight:600;">15</td><td style="font-weight:600;">15</td><td style="font-weight:600;">6</td><td style="font-weight:600;">1</td><td style="font-weight:600;">1</td><td style="font-weight:700;">45</td></tr></tbody></table>
+        </div>
+        <div class="card"><div class="card-title">鞋码统计（不分性别）</div>
+          <table class="size-table"><thead><tr><th>尺码</th><th>35</th><th>36</th><th>37</th><th>38</th><th>39</th><th>40</th><th>41</th><th>42</th><th>43</th><th>44</th><th>45</th><th>46</th><th>合计</th></tr></thead>
+          <tbody><tr style="background:var(--brand-s);"><td style="font-weight:700;">人数</td><td>1</td><td>3</td><td>5</td><td>7</td><td>7</td><td>6</td><td>7</td><td>5</td><td>2</td><td>1</td><td>0</td><td>1</td><td style="font-weight:700;">45</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- T-Goods: 物品领取 -->
+      <div id="t-goods" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navT('t-home')">←</div><div class="ntitle">物品领取管理</div></div>
+        <div class="tabs">
+          <button class="tab active" onclick="filterGoodsTab(this,'all')">全部(45)</button>
+          <button class="tab" onclick="filterGoodsTab(this,'unclaimed')">未领取(7)</button>
+          <button class="tab" onclick="filterGoodsTab(this,'claimed')">已领取(38)</button>
+        </div>
+        <div id="t-goods-items">
+          <div class="card" data-status="unclaimed" data-name="周八">
+            <div class="card-header"><span class="card-title">周八</span><span class="s-status badge badge-er">未领取</span></div>
+            <div class="inforow"><span class="inforow-label">物品清单</span><span class="inforow-value">军训服装(M码/42鞋) · 床上用品 · 教材</span></div>
+            <div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401008</span></div>
+            <div class="fx-row mt8 s-btns"><button class="btn btn-ok btn-sm" onclick="approveItem(this,'claimed','已领取')">✓ 确认领取</button><button class="btn btn-er btn-sm" onclick="rejectItem(this,'rejected','已驳回','sheet-reject-goods')">✕ 驳回</button></div>
+          </div>
+          <div class="card" data-status="claimed" data-name="张三">
+            <div class="card-header"><span class="card-title">张三</span><span class="s-status badge badge-ok">已领取</span></div>
+            <div class="inforow"><span class="inforow-label">物品清单</span><span class="inforow-value">军训服装(L码/41鞋) · 床上用品 · 教材</span></div>
+            <div class="inforow"><span class="inforow-label">领取时间</span><span class="inforow-value">2024-09-01 14:30</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T-NonDorm: 不住宿审核 -->
+      <div id="t-nondorm" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navT('t-home')">←</div><div class="ntitle">不住宿审核</div></div>
+        <div class="tabs">
+          <button class="tab active" onclick="filterNondormTab(this,'all')">全部(9)</button>
+          <button class="tab" onclick="filterNondormTab(this,'pending')">待审核(3)</button>
+          <button class="tab" onclick="filterNondormTab(this,'passed')">已通过(5)</button>
+          <button class="tab" onclick="filterNondormTab(this,'rejected')">已驳回(1)</button>
+        </div>
+        <div id="t-nondorm-items">
+          <div class="card" data-status="pending" data-name="孙十一">
+            <div class="card-header"><span class="card-title">孙十一</span><span class="s-status badge badge-wa">待审核</span></div>
+            <div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401011</span></div>
+            <div class="inforow"><span class="inforow-label">申请原因</span><span class="inforow-value">家在本地，走读</span></div>
+            <div class="inforow"><span class="inforow-label">家庭地址</span><span class="inforow-value">上海市杨浦区XX路XX号</span></div>
+            <div class="fx-row mt8"><button class="btn btn-sm" style="background:var(--in-bg);color:var(--in);" onclick="showToast('预览不住宿证明材料')">📎 查看材料</button></div>
+            <div class="fx-row mt8 s-btns"><button class="btn btn-ok btn-sm" onclick="approveItem(this,'passed','已通过')">✓ 通过</button><button class="btn btn-er btn-sm" onclick="rejectItem(this,'rejected','已驳回','sheet-reject-nondorm')">✕ 驳回</button></div>
+          </div>
+          <div class="card" data-status="passed" data-name="钱十二">
+            <div class="card-header"><span class="card-title">钱十二</span><span class="s-status badge badge-ok">已通过</span></div>
+            <div class="inforow"><span class="inforow-label">学号</span><span class="inforow-value">202401012</span></div>
+            <div class="inforow"><span class="inforow-label">申请原因</span><span class="inforow-value">父母陪读，校外租房</span></div>
+            <div class="inforow"><span class="inforow-label">审核时间</span><span class="inforow-value">2024-09-01 16:00</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T-Stu-Info: 班级学生信息总览 -->
+      <div id="t-stu-info" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navT('t-home')">←</div><div class="ntitle">班级学生信息</div></div>
+        <div class="searchbar">🔍<input type="text" placeholder="搜索姓名或学号"></div>
+        <div class="card" style="padding-bottom:4px;"><div class="card-title">计算机科学与技术1班 · 45人</div>
+          <div class="stu-item" style="flex-wrap:wrap;" onclick="navT('t-stu-detail')"><div class="stu-avatar">张</div><div class="stu-info"><div class="stu-name">张三</div><div class="stu-meta">202401001 · 男 · 13800010001</div><div class="stu-meta">家庭地址: 北京市海淀区XX路XX号</div><div class="stu-meta">家长: 张大 · 13900010001</div></div><div class="stu-right"><div style="font-size:12px;color:var(--N500);">A栋 301</div></div></div>
+          <div class="stu-item" style="flex-wrap:wrap;" onclick="navT('t-stu-detail')"><div class="stu-avatar">李</div><div class="stu-info"><div class="stu-name">李四</div><div class="stu-meta">202401002 · 女 · 13800010002</div><div class="stu-meta">家庭地址: 上海市浦东新区YY路YY号</div><div class="stu-meta">家长: 李母 · 13900010002</div></div><div class="stu-right"><div style="font-size:12px;color:var(--N500);">A栋 302</div></div></div>
+          <div class="stu-item" style="flex-wrap:wrap;" onclick="navT('t-stu-detail')"><div class="stu-avatar">王</div><div class="stu-info"><div class="stu-name">王五</div><div class="stu-meta">202401003 · 男 · 13800010003</div><div class="stu-meta">家庭地址: 广州市天河区ZZ路ZZ号</div><div class="stu-meta">家长: 王父 · 13900010003</div></div><div class="stu-right"><div style="font-size:12px;color:var(--N500);">A栋 303</div></div></div>
+        </div>
+      </div>
+
+      <!-- T-Messages -->
+      <div id="t-msg" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navT('t-home')">←</div><div class="ntitle">消息中心</div></div>
+        <div style="padding:8px 14px;display:flex;gap:8px;">
+          <button class="btn btn-outline btn-sm" onclick="filterMsgs('all',this)" style="border-radius:20px;">全部</button>
+          <button class="btn btn-brand btn-sm active" onclick="filterMsgs('unread',this)" style="border-radius:20px;">未读(2)</button>
+          <button class="btn btn-outline btn-sm" onclick="filterMsgs('read',this)" style="border-radius:20px;">已读</button>
+        </div>
+        <div id="t-msg-items">
+          <div class="msg-card unread" data-read="0" onclick="markRead(this)">
+            <div class="msg-header"><div class="msg-dot dot-er"></div><span class="msg-title-text">催缴提醒</span><span class="msg-time">09:30</span></div>
+            <div class="msg-desc">您有3名学生学费逾期，请及时处理</div>
+          </div>
+          <div class="msg-card unread" data-read="0" onclick="markRead(this)">
+            <div class="msg-header"><div class="msg-dot dot-brand"></div><span class="msg-title-text">缴费完成通知</span><span class="msg-time">09:15</span></div>
+            <div class="msg-desc">2024级计算机1班张三已完成缴费 ¥12,500</div>
+          </div>
+          <div class="msg-card" data-read="1" style="opacity:.55;" onclick="markRead(this)">
+            <div class="msg-header"><div class="msg-dot dot-pu"></div><span class="msg-title-text">助学金审批提醒</span><span class="msg-time">昨天</span></div>
+            <div class="msg-desc">有2条助学金申请待查看</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- T-Settings: 设置/修改密码 -->
+      <div id="t-settings" class="phone-screen">
+        <div class="nbar wh"><div class="nback" onclick="navT('t-home')">←</div><div class="ntitle">设置</div></div>
+        <div class="card"><div class="card-title">个人信息</div>
+          <div class="inforow"><span class="inforow-label">姓名</span><span class="inforow-value">张老师</span></div>
+          <div class="inforow"><span class="inforow-label">工号</span><span class="inforow-value">T20240001</span></div>
+          <div class="inforow"><span class="inforow-label">手机号</span><span class="inforow-value">138****0001</span></div>
+          <div class="inforow"><span class="inforow-label">角色</span><span class="badge badge-brand">教师</span></div>
+        </div>
+        <div class="card"><div class="card-title">安全设置</div>
+          <div class="stu-item" onclick="openSheet('sheet-change-pwd')"><div class="stu-info"><div class="stu-name">修改密码</div><div class="stu-meta">使用原密码或手机验证码修改</div></div><div style="color:var(--N400);">›</div></div>
+          <div class="stu-item" onclick="openSheet('sheet-change-phone')"><div class="stu-info"><div class="stu-name">修改手机号</div><div class="stu-meta">需原手机号验证码验证</div></div><div style="color:var(--N400);">›</div></div>
+        </div>
+        <div class="card" style="margin-top:24px;">
+          <button class="btn btn-er btn-block" onclick="doLogout()">退出登录</button>
+        </div>
+      </div>
+
+    </div><!-- /phone-body -->
+
+    <!-- Teacher TabBar -->
+    <div class="bottom-bar">
+      <button class="btn" style="flex-direction:column;gap:2px;font-size:10px;min-height:56px;" onclick="navT('t-home')">🏠<span>首页</span></button>
+      <button class="btn" style="flex-direction:column;gap:2px;font-size:10px;min-height:56px;" onclick="navT('t-pay-list')">📋<span>缴费</span></button>
+      <button class="btn" style="flex-direction:column;gap:2px;font-size:10px;min-height:56px;" onclick="navT('t-scholar')">🎓<span>助学金</span></button>
+      <button class="btn" style="flex-direction:column;gap:2px;font-size:10px;min-height:56px;" onclick="navT('t-qrscan')">📷<span>签到</span></button>
+      <button class="btn" style="flex-direction:column;gap:2px;font-size:10px;min-height:56px;" onclick="navT('t-msg')">🔔<span>消息</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FINANCE PORTAL ==================== -->
+<div id="financeApp" class="app-container">
+  <div class="phone-frame" id="financeFrame">
+    <div class="phone-body" id="financeBody">
+
+      <!-- F-Home -->
+      <div id="f-home" class="phone-screen active">
+        <div class="nbar"><div class="ntitle">缴费仪表盘</div><div class="nact" onclick="navF('f-settings')">⚙️</div></div>
+        <div class="banner" style="padding-bottom:36px;">
+          <div style="font-size:12px;opacity:.8;">2024-09-15</div>
+          <div style="font-size:14px;margin-bottom:4px;">今日实收金额</div>
+          <div style="font-size:32px;font-weight:700;">¥125,000</div>
+          <div class="banner-meta" style="margin-top:8px;"><span>缴费笔数: 15笔</span><span>线上: 10笔</span><span>线下: 5笔</span></div>
+        </div>
+        <div class="qa-grid" style="margin-top:-8px;position:relative;z-index:3;">
+          <div class="qa-item" onclick="navF('f-collect')"><div class="qa-icon" style="background:var(--ok-bg);">💵</div><span class="qa-label">线下收款</span></div>
+          <div class="qa-item" onclick="navF('f-refund')"><div class="qa-icon" style="background:var(--brand-t);">↩️</div><span class="qa-label">退费处理</span></div>
+          <div class="qa-item" onclick="navF('f-invoice')"><div class="qa-icon" style="background:var(--pu-bg);">📄</div><span class="qa-label">票据管理</span></div>
+          <div class="qa-item" onclick="navF('f-urge')"><div class="qa-icon" style="background:var(--wa-bg);">📨</div><span class="qa-label">催缴任务</span></div>
+        </div>
+        <div class="qgrid">
+          <div class="qitem" onclick="navF('f-pay-filter')"><div class="qicon qc-blue">📋</div><div><span class="qlabel">缴费查询</span><span class="qvalue">按学院/班级</span></div></div>
+          <div class="qitem"><div class="qicon qc-orange">⏳</div><div><span class="qlabel">待确认线下</span><span class="qvalue">3笔</span></div></div>
+          <div class="qitem"><div class="qicon qc-pu">🔄</div><div><span class="qlabel">待处理补差</span><span class="qvalue">2笔</span></div></div>
+          <div class="qitem"><div class="qicon qc-green">🎓</div><div><span class="qlabel">待审批助学金</span><span class="qvalue">4笔</span></div></div>
+        </div>
+      </div>
+
+      <!-- F-Pay-Filter: 按学院/班级查看缴费 -->
+      <div id="f-pay-filter" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navF('f-home')">←</div><div class="ntitle">缴费查询</div></div>
+        <div class="card"><div class="form-group"><span class="form-label">学院</span><select class="form-input" onchange="updateClassSelect(this.value)" style="appearance:auto;"><option value="">全部学院</option><option>计算机科学与技术学院</option><option>软件学院</option><option>数据科学学院</option></select></div>
+        <div class="form-group"><span class="form-label">班级</span><select class="form-input" id="f-class-select" style="appearance:auto;"><option value="">全部班级</option><option>2024级计算机1班</option><option>2024级计算机2班</option></select></div>
+        <button class="btn btn-brand btn-block" onclick="showToast('已筛选计算机科学与技术学院缴费数据')">查询</button></div>
+        <div class="card">
+          <div class="stats-row">
+            <div class="stats-item"><span class="stats-label">应缴总额</span><span class="stats-value">¥1,125,000</span></div>
+            <div class="stats-item"><span class="stats-label">已缴总额</span><span class="stats-value ok">¥750,000</span></div>
+            <div class="stats-item"><span class="stats-label">缴费率</span><span class="stats-value">66.7%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- F-Collect -->
+      <div id="f-collect" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navF('f-home')">←</div><div class="ntitle">线下收款确认</div></div>
+        <div class="searchbar">🔍<input type="text" placeholder="搜索姓名或学号"></div>
+        <div class="card">
+          <div class="stu-item"><div class="stu-avatar">张</div><div class="stu-info"><div class="stu-name">张三</div><div class="stu-meta">202401001 · 计算机科学与技术</div><div style="margin-top:2px;"><span class="amount">¥12,500</span><span class="tag tag-brand" style="margin-left:8px;">现金</span></div></div><div><button class="btn btn-brand btn-sm" onclick="showToast('收款已确认')">确认</button></div></div>
+          <div class="stu-item"><div class="stu-avatar">李</div><div class="stu-info"><div class="stu-name">李四</div><div class="stu-meta">202401002 · 计算机科学与技术</div><div style="margin-top:2px;"><span class="amount">¥8,000</span><span class="tag tag-brand" style="margin-left:8px;">转账</span></div></div><div><button class="btn btn-brand btn-sm" onclick="showToast('收款已确认')">确认</button></div></div>
+        </div>
+      </div>
+
+      <!-- F-Refund -->
+      <div id="f-refund" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navF('f-home')">←</div><div class="ntitle">退费处理</div></div>
+        <div class="tabs">
+          <button class="tab active" onclick="switchTLocal(this)">待审核</button><button class="tab" onclick="switchTLocal(this)">处理中</button><button class="tab" onclick="switchTLocal(this)">已成功</button><button class="tab" onclick="switchTLocal(this)">已失败</button>
+        </div>
+        <div class="card"><div class="card-title">张三</div><div class="inforow"><span class="inforow-label">金额</span><span class="inforow-value amount">¥2,000</span></div><div class="inforow"><span class="inforow-label">原因</span><span class="inforow-value">重复缴费</span></div><div class="inforow"><span class="inforow-label">状态</span><span class="badge badge-wa">待审核</span></div><div class="fx-row mt8"><button class="btn btn-ok btn-sm" onclick="showToast('已通过')">通过</button><button class="btn btn-er btn-sm" onclick="showToast('已拒绝')">拒绝</button></div></div>
+        <div class="card"><div class="card-title">李四</div><div class="inforow"><span class="inforow-label">金额</span><span class="inforow-value amount">¥5,000</span></div><div class="inforow"><span class="inforow-label">原因</span><span class="inforow-value">减免退费</span></div><div class="inforow"><span class="inforow-label">状态</span><span class="badge badge-er">退费失败</span></div><button class="btn btn-brand btn-sm mt8" onclick="showToast('重试已发起')">重试</button></div>
+      </div>
+
+      <!-- F-Diff -->
+      <div id="f-diff" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navF('f-home')">←</div><div class="ntitle">补差退款</div></div>
+        <div class="alert alert-in">补差退款用于处理学生缴费金额与实际收费标准不一致的情况</div>
+        <div class="card"><div class="card-title">张三</div><div class="inforow"><span class="inforow-label">已缴</span><span class="inforow-value">¥12,500</span></div><div class="inforow"><span class="inforow-label">应收</span><span class="inforow-value">¥10,000</span></div><div class="inforow"><span class="inforow-label">差额</span><span class="inforow-value amount-er">¥2,500</span></div><button class="btn btn-brand btn-block mt8" onclick="showToast('退款已发起')">确认退款 ¥2,500</button></div>
+      </div>
+
+      <!-- F-Invoice -->
+      <div id="f-invoice" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navF('f-home')">←</div><div class="ntitle">票据管理</div></div>
+        <div class="searchbar">🔍<input type="text" placeholder="搜索姓名/学号/票据号"></div>
+        <div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><div><div style="font-size:14px;font-weight:600;">张三 · INV20240901001</div><div style="font-size:11px;color:var(--N500);">2024-09-01</div></div><span class="badge badge-ok">已开具</span></div><div class="fx-row"><button class="btn btn-outline btn-sm" onclick="showToast('票据已补打')">补打</button><button class="btn btn-er btn-sm" onclick="showToast('票据已作废')">作废</button></div></div>
+      </div>
+
+      <!-- F-Urge -->
+      <div id="f-urge" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navF('f-home')">←</div><div class="ntitle">催缴任务</div></div>
+        <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:15px;font-weight:600;">2024级新生催缴</span><span class="badge badge-brand">执行中</span></div>
+        <div class="prog-track"><div class="prog-fill" style="width:66.7%;"></div></div><div class="prog-text">已完成 30/45</div></div>
+        <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:15px;font-weight:600;">逾期生专项催缴</span><span class="badge badge-wa">待执行</span></div>
+        <div class="prog-track"><div class="prog-fill" style="width:0;background:var(--N400);"></div></div><div class="prog-text">已完成 0/10</div>
+        <div class="fx-row mt8"><button class="btn btn-brand btn-sm" onclick="showToast('任务已开始')">开始</button><button class="btn btn-er btn-sm" onclick="showToast('任务已取消')">取消</button></div></div>
+        <button class="btn btn-brand btn-block" style="margin:0 14px;" onclick="showToast('任务已创建')">+ 新建催缴任务</button>
+      </div>
+
+      <!-- F-Scholar -->
+      <div id="f-scholar" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navF('f-home')">←</div><div class="ntitle">助学金/贷款审批</div></div>
+        <div class="tabs"><button class="tab active" onclick="switchTLocal(this)">待审核</button><button class="tab" onclick="switchTLocal(this)">已通过</button><button class="tab" onclick="switchTLocal(this)">已驳回</button><button class="tab" onclick="switchTLocal(this)">已发放</button></div>
+        <div class="card"><div class="card-title">张三 — 国家助学金</div>
+          <div class="inforow"><span class="inforow-label">金额</span><span class="inforow-value amount">¥4,000</span></div>
+          <div class="inforow"><span class="inforow-label">类型</span><span class="badge badge-brand">助学金</span></div>
+          <div class="timeline mt8">
+            <div class="tl-item"><div class="tl-dot ok"></div><div class="tl-content"><span class="tl-title">提交申请</span><span class="tl-time">2024-09-01 10:00</span></div><div class="tl-line"></div></div>
+            <div class="tl-item"><div class="tl-dot brand"></div><div class="tl-content"><span class="tl-title">材料审核中</span></div></div>
+          </div>
+          <div class="fx-row mt8"><button class="btn btn-sm" style="background:var(--in-bg);color:var(--in);" onclick="openSheet('sheet-materials')">📎 查看材料</button></div>
+          <div class="fx-row mt8"><button class="btn btn-ok btn-sm" onclick="showToast('已通过')">通过</button><button class="btn btn-er btn-sm" onclick="openSheet('sheet-reject-scholar')">驳回</button></div>
+        </div>
+      </div>
+
+      <!-- F-Military-Size: 全校各学院军训尺码 -->
+      <div id="f-military" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navF('f-home')">←</div><div class="ntitle">全校军训尺码统计</div></div>
+        <div class="card"><div class="card-title">各学院服装尺码汇总</div>
+          <table class="size-table"><thead><tr><th>学院</th><th>S</th><th>M</th><th>L</th><th>XL</th><th>合计</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600;">计算机科学</td><td>7</td><td>15</td><td>15</td><td>8</td><td style="font-weight:600;">45</td></tr>
+            <tr><td style="font-weight:600;">软件学院</td><td>5</td><td>12</td><td>18</td><td>5</td><td style="font-weight:600;">40</td></tr>
+            <tr><td style="font-weight:600;">数据科学</td><td>3</td><td>10</td><td>12</td><td>10</td><td style="font-weight:600;">35</td></tr>
+            <tr style="background:var(--brand-s);"><td style="font-weight:700;">合计</td><td style="font-weight:600;">15</td><td style="font-weight:600;">37</td><td style="font-weight:600;">45</td><td style="font-weight:600;">23</td><td style="font-weight:700;">120</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+
+      <!-- F-Verify -->
+      <div id="f-verify" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navF('f-home')">←</div><div class="ntitle">现场核验</div></div>
+        <div style="padding:14px;">
+          <button class="btn btn-gray btn-block" style="margin-bottom:12px;" onclick="showToast('扫码功能开发中')">📷 扫码核验</button>
+          <div class="searchbar" style="margin:0;">🔍<input type="text" placeholder="输入学号查询"></div>
+        </div>
+        <div class="card"><div class="tac"><div style="font-size:48px;color:var(--ok);">✓</div><div style="font-size:18px;font-weight:600;">张三</div><div style="font-size:13px;color:var(--N500);">202401001</div><span class="badge badge-ok">已缴费</span><div class="amount" style="font-size:24px;">¥12,500</div></div></div>
+      </div>
+
+      <!-- F-Onsite -->
+      <div id="f-onsite" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navF('f-home')">←</div><div class="ntitle">现场登记</div></div>
+        <div class="card"><div class="card-title">登记缴费信息</div>
+        <div class="searchbar" style="margin:0 0 12px;">🔍<input type="text" placeholder="搜索姓名或学号"></div>
+        <div class="form-group"><span class="form-label">缴费金额</span><input class="form-input" type="number" value="12500"></div>
+        <div class="form-group"><span class="form-label">缴费方式</span><div class="method-tags"><span class="method-tag active">现金</span><span class="method-tag">刷卡</span><span class="method-tag">转账</span></div></div>
+        <button class="btn btn-brand btn-block" onclick="showToast('登记成功')">确认登记</button></div>
+      </div>
+
+      <!-- F-Messages -->
+      <div id="f-msg" class="phone-screen">
+        <div class="nbar"><div class="nback" onclick="navF('f-home')">←</div><div class="ntitle">消息中心</div></div>
+        <div class="msg-card"><div class="msg-header"><div class="msg-dot dot-ok"></div><span class="msg-title-text">退费申请</span><span class="badge badge-er" style="padding:1px 6px;font-size:10px;">NEW</span><span class="msg-time">10:00</span></div><div class="msg-desc">5笔退费待审核</div></div>
+        <div class="msg-card"><div class="msg-header"><div class="msg-dot dot-brand"></div><span class="msg-title-text">收费汇总</span><span class="msg-time">09:00</span></div><div class="msg-desc">今日¥125,000 · 15笔</div></div>
+      </div>
+
+      <!-- F-Settings -->
+      <div id="f-settings" class="phone-screen">
+        <div class="nbar wh"><div class="nback" onclick="navF('f-home')">←</div><div class="ntitle">设置</div></div>
+        <div class="card"><div class="card-title">个人信息</div>
+          <div class="inforow"><span class="inforow-label">姓名</span><span class="inforow-value">李财务</span></div>
+          <div class="inforow"><span class="inforow-label">工号</span><span class="inforow-value">F20240001</span></div>
+          <div class="inforow"><span class="inforow-label">角色</span><span class="badge badge-ok">财务职工</span></div>
+        </div>
+        <div class="card"><div class="card-title">安全设置</div>
+          <div class="stu-item" onclick="openSheet('sheet-change-pwd')"><div class="stu-info"><div class="stu-name">修改密码</div></div><div style="color:var(--N400);">›</div></div>
+          <div class="stu-item" onclick="openSheet('sheet-change-phone')"><div class="stu-info"><div class="stu-name">修改手机号</div></div><div style="color:var(--N400);">›</div></div>
+        </div>
+        <div class="card" style="margin-top:24px;"><button class="btn btn-er btn-block" onclick="doLogout()">退出登录</button></div>
+      </div>
+
+    </div><!-- /phone-body -->
+
+    <!-- Finance TabBar -->
+    <div class="bottom-bar">
+      <button class="btn" style="flex-direction:column;gap:2px;font-size:10px;min-height:56px;" onclick="navF('f-home')">🏠<span>首页</span></button>
+      <button class="btn" style="flex-direction:column;gap:2px;font-size:10px;min-height:56px;" onclick="navF('f-pay-filter')">📋<span>查询</span></button>
+      <button class="btn" style="flex-direction:column;gap:2px;font-size:10px;min-height:56px;" onclick="navF('f-scholar')">🎓<span>审批</span></button>
+      <button class="btn" style="flex-direction:column;gap:2px;font-size:10px;min-height:56px;" onclick="navF('f-military')">📊<span>尺码</span></button>
+      <button class="btn" style="flex-direction:column;gap:2px;font-size:10px;min-height:56px;" onclick="navF('f-msg')">🔔<span>消息</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ADMIN PORTAL ==================== -->
+<div id="adminApp" class="admin-layout">
+  <div class="admin-sidebar">
+    <div class="as-logo"><h3>迎新收费管理系统</h3></div>
+    <div class="as-menu">
+      <div class="admin-menu-grp">核心管理</div>
+      <div class="admin-menu-item active" onclick="adminNav('dashboard',this)"><span class="admin-menu-icon">📊</span>工作台</div>
+      <div class="admin-menu-item" onclick="adminNav('fee-config',this)"><span class="admin-menu-icon">⚙️</span>收费配置</div>
+      <div class="admin-menu-item" onclick="adminNav('bill-mgmt',this)"><span class="admin-menu-icon">📋</span>账单管理</div>
+      <div class="admin-menu-grp">业务处理</div>
+      <div class="admin-menu-item" onclick="adminNav('refund-mgmt',this)"><span class="admin-menu-icon">↩️</span>退费管理</div>
+      <div class="admin-menu-item" onclick="adminNav('invoice-mgmt',this)"><span class="admin-menu-icon">📄</span>电子票据</div>
+      <div class="admin-menu-item" onclick="adminNav('urge-mgmt',this)"><span class="admin-menu-icon">📨</span>催缴管理</div>
+      <div class="admin-menu-item" onclick="adminNav('scholar-mgmt',this)"><span class="admin-menu-icon">🎓</span>助学金/贷款</div>
+      <div class="admin-menu-grp">系统管理</div>
+      <div class="admin-menu-item" onclick="adminNav('reports',this)"><span class="admin-menu-icon">📈</span>财务报表</div>
+      <div class="admin-menu-item" onclick="adminNav('dorm-mgmt',this)"><span class="admin-menu-icon">🏠</span>宿舍管理</div>
+      <div class="admin-menu-item" onclick="adminNav('password-mgmt',this)"><span class="admin-menu-icon">🔑</span>密码重置</div>
+      <div class="admin-menu-item" onclick="adminNav('msg-mgmt',this)"><span class="admin-menu-icon">🔔</span>消息通知</div>
+      <div class="admin-menu-item" onclick="adminNav('sys-config',this)"><span class="admin-menu-icon">🔧</span>系统配置</div>
+      <div style="margin-top:12px;padding:8px 16px;"><span class="admin-menu-item" onclick="doLogout()" style="color:#EF4444;cursor:pointer;">🚪 退出登录</span></div>
+    </div>
+  </div>
+  <div class="admin-topnav">
+    <span class="admin-breadcrumb" id="adminCrumb">首页 / 工作台</span>
+    <div class="admin-user"><span onclick="adminNav('password-mgmt',document.querySelector('[onclick*=\"password-mgmt\"]'))">🔑 密码重置</span><span onclick="doLogout()" style="color:var(--er);">退出</span></div>
+  </div>
+  <div class="admin-content">
+
+    <!-- Dashboard -->
+    <div id="a-dashboard" class="admin-panel-area active">
+      <div class="stat-grid">
+        <div class="stat-card"><span class="stat-label">总学生数</span><span class="stat-num">1,200</span><span class="stat-sub">2024级新生</span></div>
+        <div class="stat-card"><span class="stat-label">应缴总额</span><span class="stat-num">¥15,000,000</span><span class="stat-sub">本学期</span></div>
+        <div class="stat-card"><span class="stat-label">已缴总额</span><span class="stat-num">¥10,002,500</span><span class="stat-sub">到账率 66.7%</span></div>
+        <div class="stat-card"><span class="stat-label">待处理退费</span><span class="stat-num">8笔</span><span class="stat-sub">¥24,500</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="admin-panel"><div class="admin-panel-hd"><span class="admin-panel-tt">收费进度</span></div><div class="admin-panel-bd"><div class="prog-track"><div class="prog-fill" style="width:66.7%;"></div></div><div class="prog-text">总完成率 66.7%</div></div></div>
+        <div class="admin-panel"><div class="admin-panel-hd"><span class="admin-panel-tt">待办事项</span></div><div class="admin-panel-bd">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--N150);"><span class="badge badge-brand">5</span><span>待审核退费</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--N150);"><span class="badge badge-ok">4</span><span>待审批助学金</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 0;"><span class="badge badge-er">12</span><span>逾期未缴费</span></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- Fee Config -->
+    <div id="a-fee-config" class="admin-panel-area">
+      <div style="font-size:20px;font-weight:700;color:var(--N900);margin-bottom:16px;">收费配置</div>
+      <div class="admin-tabs"><span class="admin-tab active" onclick="switchTLocal(this)">收费主体</span><span class="admin-tab" onclick="switchTLocal(this)">收费项目</span><span class="admin-tab" onclick="switchTLocal(this)">收费标准</span></div>
+      <div class="admin-panel">
+        <div class="admin-panel-hd"><span class="admin-panel-tt">收费主体管理</span><button class="btn btn-brand btn-sm" onclick="addFeeSubject()">+ 新增</button></div>
+        <div class="admin-panel-bd" style="padding:0;">
+          <table class="data-table"><thead><tr><th>ID</th><th>名称</th><th>类型</th><th>金额/标准</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="fee-subject-table">
+            <tr><td>1</td><td>2024级计算机科学与技术</td><td>按专业</td><td>¥12,500/年</td><td><span class="tag tag-ok">启用</span></td><td class="act-cell"><button class="btn btn-outline btn-sm">编辑</button><button class="btn btn-er btn-sm">删除</button></td></tr>
+            <tr><td>2</td><td>2024级软件工程</td><td>按专业</td><td>¥12,500/年</td><td><span class="tag tag-ok">启用</span></td><td class="act-cell"><button class="btn btn-outline btn-sm">编辑</button><button class="btn btn-er btn-sm">删除</button></td></tr>
+            <tr><td>3</td><td>2024级数据科学</td><td>按专业</td><td>¥13,000/年</td><td><span class="tag tag-ok">启用</span></td><td class="act-cell"><button class="btn btn-outline btn-sm">编辑</button><button class="btn btn-er btn-sm">删除</button></td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bill Mgmt -->
+    <div id="a-bill-mgmt" class="admin-panel-area">
+      <div style="font-size:20px;font-weight:700;color:var(--N900);margin-bottom:16px;">账单管理</div>
+      <div style="display:flex;gap:12px;margin-bottom:16px;"><div class="searchbar" style="flex:1;max-width:320px;margin:0;">🔍<input placeholder="搜索姓名或学号"></div><button class="btn btn-brand" onclick="showToast('账单生成已触发')">批量生成账单</button></div>
+      <div class="admin-panel"><div class="admin-panel-hd"><span class="admin-panel-tt">账单列表</span></div><div class="admin-panel-bd" style="padding:0;">
+        <table class="data-table"><thead><tr><th>学号</th><th>姓名</th><th>金额</th><th>已缴</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          <tr><td>202401001</td><td>张三</td><td>¥12,500</td><td>¥12,500</td><td><span class="tag tag-ok">已缴</span></td><td class="act-cell"><button class="btn btn-outline btn-sm">详情</button></td></tr>
+          <tr><td>202401002</td><td>李四</td><td>¥12,500</td><td>¥5,000</td><td><span class="tag tag-wa">未缴</span></td><td class="act-cell"><button class="btn btn-outline btn-sm">修改</button><button class="btn btn-outline btn-sm">减免</button></td></tr>
+        </tbody></table>
+      </div></div>
+    </div>
+
+    <!-- Refund Mgmt -->
+    <div id="a-refund-mgmt" class="admin-panel-area">
+      <div style="font-size:20px;font-weight:700;color:var(--N900);margin-bottom:16px;">退费管理</div>
+      <div class="admin-tabs"><span class="admin-tab active" onclick="switchTLocal(this)">待审核(5)</span><span class="admin-tab" onclick="switchTLocal(this)">处理中(2)</span><span class="admin-tab" onclick="switchTLocal(this)">已成功(10)</span></div>
+      <div class="admin-panel"><div class="admin-panel-bd" style="padding:0;">
+        <table class="data-table"><thead><tr><th>学号</th><th>姓名</th><th>金额</th><th>原因</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          <tr><td>202401001</td><td>张三</td><td>¥2,000</td><td>重复缴费</td><td><span class="tag tag-wa">待审核</span></td><td class="act-cell"><button class="btn btn-ok btn-sm">通过</button><button class="btn btn-er btn-sm">拒绝</button></td></tr>
+          <tr><td>202401002</td><td>李四</td><td>¥5,000</td><td>减免退费</td><td><span class="tag tag-ok">已成功</span></td><td class="act-cell"><button class="btn btn-outline btn-sm">详情</button></td></tr>
+        </tbody></table>
+      </div></div>
+    </div>
+
+    <!-- Dormitory Mgmt -->
+    <div id="a-dorm-mgmt" class="admin-panel-area">
+      <div style="font-size:20px;font-weight:700;color:var(--N900);margin-bottom:16px;">宿舍与选宿管理</div>
+      <div class="admin-panel">
+        <div class="admin-panel-hd"><span class="admin-panel-tt">楼栋管理</span><button class="btn btn-brand btn-sm" onclick="addBuilding()">+ 新增楼栋</button></div>
+        <div class="admin-panel-bd" style="padding:0;">
+          <table class="data-table"><thead><tr><th>ID</th><th>楼栋名称</th><th>类型</th><th>房间数</th><th>容纳人数</th><th>住宿费/年</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="building-table">
+            <tr><td>1</td><td>A栋（男生）</td><td>男生宿舍</td><td>60</td><td>240</td><td>¥2,500</td><td><span class="tag tag-ok">启用</span></td><td class="act-cell"><button class="btn btn-outline btn-sm">编辑</button><button class="btn btn-er btn-sm">删除</button></td></tr>
+            <tr><td>2</td><td>B栋（女生）</td><td>女生宿舍</td><td>50</td><td>200</td><td>¥2,500</td><td><span class="tag tag-ok">启用</span></td><td class="act-cell"><button class="btn btn-outline btn-sm">编辑</button><button class="btn btn-er btn-sm">删除</button></td></tr>
+            <tr><td>3</td><td>C栋（研究生）</td><td>研究生</td><td>30</td><td>60</td><td>¥3,000</td><td><span class="tag tag-ok">启用</span></td><td class="act-cell"><button class="btn btn-outline btn-sm">编辑</button><button class="btn btn-er btn-sm">删除</button></td></tr>
+          </tbody></table>
+        </div>
+      </div>
+      <div class="admin-panel"><div class="admin-panel-hd"><span class="admin-panel-tt">选宿统计</span></div><div class="admin-panel-bd">
+        <div style="display:flex;gap:24px;margin-bottom:16px;">
+          <div class="stat-card" style="flex:1;"><span class="stat-label">已选宿</span><span class="stat-num" style="font-size:22px;">380</span></div>
+          <div class="stat-card" style="flex:1;"><span class="stat-label">未选宿</span><span class="stat-num" style="font-size:22px;">60</span></div>
+          <div class="stat-card" style="flex:1;"><span class="stat-label">不住宿</span><span class="stat-num" style="font-size:22px;">40</span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Password Reset -->
+    <div id="a-password-mgmt" class="admin-panel-area">
+      <div style="font-size:20px;font-weight:700;color:var(--N900);margin-bottom:16px;">密码重置</div>
+      <div class="admin-panel">
+        <div class="admin-panel-hd"><span class="admin-panel-tt">重置教师/财务职工密码</span></div>
+        <div class="admin-panel-bd">
+          <div class="form-group"><span class="form-label">选择用户类型</span>
+            <div style="display:flex;gap:8px;"><button class="btn btn-outline btn-sm" onclick="switchTLocal(this)" style="border-radius:8px;">教师</button><button class="btn btn-outline btn-sm" onclick="switchTLocal(this)" style="border-radius:8px;">财务职工</button></div>
+          </div>
+          <div class="form-group"><span class="form-label">工号 / 手机号</span><input class="form-input" placeholder="请输入工号或手机号"></div>
+          <button class="btn btn-brand" onclick="showToast('密码已重置为默认密码: 123456')">重置为默认密码</button>
+          <div class="alert alert-in mt8">重置后密码为默认密码（手机号后6位），用户首次登录需修改密码</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reports -->
+    <div id="a-reports" class="admin-panel-area">
+      <div style="font-size:20px;font-weight:700;color:var(--N900);margin-bottom:16px;">财务报表</div>
+      <div class="rpt-grid">
+        <div class="rpt-card" onclick="showToast('查看收费进度报表')"><div class="rpt-icon" style="background:var(--brand-t);">📊</div><span class="rpt-title">收费进度</span><span class="rpt-desc">按专业/班级统计</span></div>
+        <div class="rpt-card" onclick="showToast('查看流水明细')"><div class="rpt-icon" style="background:var(--ok-bg);">📋</div><span class="rpt-title">流水明细</span><span class="rpt-desc">收费记录明细</span></div>
+        <div class="rpt-card" onclick="showToast('查看支付方式统计')"><div class="rpt-icon" style="background:var(--pu-bg);">💳</div><span class="rpt-title">支付方式</span><span class="rpt-desc">分类统计</span></div>
+        <div class="rpt-card" onclick="showToast('查看收费趋势')"><div class="rpt-icon" style="background:var(--wa-bg);">📈</div><span class="rpt-title">收费趋势</span><span class="rpt-desc">日/周/月趋势</span></div>
+        <div class="rpt-card" onclick="showToast('查看欠费统计')"><div class="rpt-icon" style="background:var(--er-bg);">⚠️</div><span class="rpt-title">欠费统计</span><span class="rpt-desc">名单与金额</span></div>
+        <div class="rpt-card" onclick="showToast('查看退费统计')"><div class="rpt-icon" style="background:var(--in-bg);">↩️</div><span class="rpt-title">退费统计</span><span class="rpt-desc">金额与笔数</span></div>
+        <div class="rpt-card" onclick="showToast('查看补差统计')"><div class="rpt-icon" style="background:var(--N150);">🔄</div><span class="rpt-title">补差统计</span><span class="rpt-desc">补差退款明细</span></div>
+        <div class="rpt-card" onclick="showToast('迎新大屏开发中')"><div class="rpt-icon" style="background:var(--brand-t);">🖥️</div><span class="rpt-title">迎新大屏</span><span class="rpt-desc">实时数据展示</span></div>
+      </div>
+    </div>
+
+    <!-- Invoice Mgmt -->
+    <div id="a-invoice-mgmt" class="admin-panel-area"><div style="font-size:20px;font-weight:700;color:var(--N900);margin-bottom:16px;">电子票据</div><div class="empty-state">票据查询 / 补打 / 作废 — 功能开发中</div></div>
+    <div id="a-urge-mgmt" class="admin-panel-area"><div style="font-size:20px;font-weight:700;color:var(--N900);margin-bottom:16px;">催缴管理</div><div class="empty-state">催缴规则 / 任务 / 发送记录 — 功能开发中</div></div>
+    <div id="a-scholar-mgmt" class="admin-panel-area"><div style="font-size:20px;font-weight:700;color:var(--N900);margin-bottom:16px;">助学金/贷款管理</div><div class="empty-state">审批管理 / 发放记录 / 统计 — 功能开发中</div></div>
+    <div id="a-msg-mgmt" class="admin-panel-area"><div style="font-size:20px;font-weight:700;color:var(--N900);margin-bottom:16px;">消息通知</div><div class="empty-state">模板 / 发送记录 / 推送配置 — 功能开发中</div></div>
+    <div id="a-sys-config" class="admin-panel-area"><div style="font-size:20px;font-weight:700;color:var(--N900);margin-bottom:16px;">系统配置</div><div class="empty-state">学年学期 / 收费开关 / 通知 / 权限 — 功能开发中</div></div>
+
+  </div>
+</div>
+
+<!-- ==================== BOTTOM SHEETS ==================== -->
+<div class="sheet-overlay" id="sheet-materials" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">审核材料</div>
+    <div class="mat-item"><span class="mat-name">📄 身份证（正反面）.jpg</span><span class="mat-view" onclick="showToast('预览身份证图片')">预览</span></div>
+    <div class="mat-item"><span class="mat-name">📄 录取通知书.pdf</span><span class="mat-view" onclick="showToast('预览通知书')">预览</span></div>
+    <div class="mat-item"><span class="mat-name">📄 家庭情况证明.pdf</span><span class="mat-view" onclick="showToast('预览证明文件')">预览</span></div>
+    <div class="mat-item"><span class="mat-name">📄 证件照.jpg</span><span class="mat-view" onclick="showToast('预览证件照')">预览</span></div>
+    <button class="btn btn-gray btn-block mt12" onclick="closeSheet()">关闭</button>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="sheet-approve-scholar" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">审核通过 — 助学金</div>
+    <div class="form-group"><span class="form-label">审核意见</span><textarea class="form-textarea" placeholder="请输入审核意见（选填）">材料齐全，符合申请条件，建议通过。</textarea></div>
+    <div class="alert alert-ok">初审通过后将转至领导复审</div>
+    <div class="sheet-actions"><button class="btn btn-gray" onclick="closeSheet()">取消</button><button class="btn btn-ok" onclick="confirmApproveScholar()">确认通过</button></div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="sheet-reject-scholar" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">驳回 — 助学金</div>
+    <div class="form-group"><span class="form-label">驳回原因（必填）</span><textarea class="form-textarea" placeholder="请输入驳回原因">材料不完整，请补充家庭收入证明后重新提交。</textarea></div>
+    <div class="sheet-actions"><button class="btn btn-gray" onclick="closeSheet()">取消</button><button class="btn btn-er" onclick="confirmRejectScholar()">确认驳回</button></div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="sheet-approve-loan" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">审核通过 — 助学贷款</div>
+    <div class="form-group"><span class="form-label">审核意见</span><textarea class="form-textarea" placeholder="请输入审核意见">贷款材料真实有效，符合贷款条件。</textarea></div>
+    <div class="sheet-actions"><button class="btn btn-gray" onclick="closeSheet()">取消</button><button class="btn btn-ok" onclick="confirmApproveLoan()">确认通过</button></div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="sheet-reject-loan" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">驳回 — 助学贷款</div>
+    <div class="form-group"><span class="form-label">驳回原因（必填）</span><textarea class="form-textarea" placeholder="请输入驳回原因">回执验证码无效，请核实后重新提交。</textarea></div>
+    <div class="sheet-actions"><button class="btn btn-gray" onclick="closeSheet()">取消</button><button class="btn btn-er" onclick="confirmRejectLoan()">确认驳回</button></div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="sheet-reject-material" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">驳回 — 报到材料</div>
+    <div class="form-group"><span class="form-label">驳回原因（必填）</span><textarea class="form-textarea" placeholder="请输入驳回原因">证件照不清晰，请重新上传白底证件照。</textarea></div>
+    <div class="sheet-actions"><button class="btn btn-gray" onclick="closeSheet()">取消</button><button class="btn btn-er" onclick="confirmRejectItem('已驳回','材料已驳回')">确认驳回</button></div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="sheet-reject-goods" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">驳回 — 物品领取</div>
+    <div class="form-group"><span class="form-label">驳回原因（必填）</span><textarea class="form-textarea" placeholder="请输入驳回原因">军训服装尺码不符，请重新选择尺码。</textarea></div>
+    <div class="sheet-actions"><button class="btn btn-gray" onclick="closeSheet()">取消</button><button class="btn btn-er" onclick="confirmRejectItem('rejected','物品领取已驳回')">确认驳回</button></div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="sheet-reject-nondorm" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">驳回 — 不住宿申请</div>
+    <div class="form-group"><span class="form-label">驳回原因（必填）</span><textarea class="form-textarea" placeholder="请输入驳回原因">家庭地址距离学校超过合理走读范围，请提供租房合同。</textarea></div>
+    <div class="sheet-actions"><button class="btn btn-gray" onclick="closeSheet()">取消</button><button class="btn btn-er" onclick="confirmRejectItem('rejected','不住宿申请已驳回')">确认驳回</button></div>
+  </div>
+</div>
+
+<!-- Change Password Sheet -->
+<div class="sheet-overlay" id="sheet-change-pwd" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">修改密码</div>
+    <div class="form-group"><span class="form-label">原密码</span><input class="form-input" type="password" placeholder="请输入原密码"></div>
+    <div style="text-align:center;color:var(--N500);margin:12px 0;font-size:12px;">— 或通过手机验证码 —</div>
+    <div class="form-group"><span class="form-label">手机验证码</span><div style="display:flex;gap:10px;"><input class="form-input" style="flex:1;" placeholder="请输入验证码"><button class="btn btn-brand btn-sm" style="width:110px;" onclick="showToast('验证码已发送')">获取验证码</button></div></div>
+    <div class="form-group"><span class="form-label">新密码</span><input class="form-input" type="password" placeholder="请输入新密码（至少6位）"></div>
+    <div class="form-group"><span class="form-label">确认新密码</span><input class="form-input" type="password" placeholder="请再次输入新密码"></div>
+    <div class="sheet-actions"><button class="btn btn-gray" onclick="closeSheet()">取消</button><button class="btn btn-brand" onclick="closeSheet();showToast('密码修改成功')">确认修改</button></div>
+  </div>
+</div>
+
+<!-- Change Phone Sheet -->
+<div class="sheet-overlay" id="sheet-change-phone" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">修改手机号</div>
+    <div class="form-group"><span class="form-label">原手机号验证码</span><div style="display:flex;gap:10px;"><input class="form-input" style="flex:1;" placeholder="请输入验证码"><button class="btn btn-brand btn-sm" style="width:110px;" onclick="showToast('验证码已发送至原手机')">获取验证码</button></div></div>
+    <div class="alert alert-in">验证通过后方可输入新手机号</div>
+    <div class="form-group"><span class="form-label">新手机号</span><input class="form-input" placeholder="请输入新手机号"></div>
+    <div class="form-group"><span class="form-label">新手机号验证码</span><div style="display:flex;gap:10px;"><input class="form-input" style="flex:1;" placeholder="请输入验证码"><button class="btn btn-brand btn-sm" style="width:110px;" onclick="showToast('验证码已发送')">获取验证码</button></div></div>
+    <div class="sheet-actions"><button class="btn btn-gray" onclick="closeSheet()">取消</button><button class="btn btn-brand" onclick="closeSheet();showToast('手机号修改成功')">确认修改</button></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ========== State ==========
+let currentRole = 'teacher';
+let currentLoginMode = 'password';
+let _activeCard = null;
+
+// ========== Login ==========
+function switchLoginMode(mode, el) {
+  currentLoginMode = mode;
+  document.querySelectorAll('#loginPage .login-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('login-password-mode').style.display = mode === 'password' ? 'block' : 'none';
+  document.getElementById('login-sms-mode').style.display = mode === 'sms' ? 'block' : 'none';
+}
+
+function fillLogin(user, pass, role, desc) {
+  document.getElementById('loginUser').value = user;
+  document.getElementById('loginPass').value = pass;
+  document.getElementById('loginPhone').value = user;
+  currentRole = role === '管理员' ? 'admin' : (role === '财务' ? 'finance' : 'teacher');
+  showToast('已填入 ' + role + ' 演示账号: ' + user);
+}
+
+function sendSmsCode() {
+  const btn = document.getElementById('smsBtn');
+  let sec = 60; btn.disabled = true;
+  const timer = setInterval(function(){ sec--; btn.textContent = sec + 's后重试'; if(sec <= 0){ clearInterval(timer); btn.textContent = '获取验证码'; btn.disabled = false; } }, 1000);
+  showToast('验证码已发送（演示：123456）');
+}
+
+function doLogin() {
+  // Auto-detect role from stored demo mapping
+  const user = document.getElementById('loginUser').value || document.getElementById('loginPhone').value;
+  if (user === '13800000003') currentRole = 'admin';
+  else if (user === '13800000002') currentRole = 'finance';
+  else currentRole = 'teacher';
+
+  document.getElementById('loginPage').style.display = 'none';
+  if (currentRole === 'admin') {
+    document.body.className = 'ra';
+    document.getElementById('adminApp').style.display = 'block';
+  } else {
+    document.body.className = currentRole === 'finance' ? 'rf' : '';
+    const appId = currentRole === 'finance' ? 'financeApp' : 'teacherApp';
+    document.getElementById(appId).style.display = 'flex';
+  }
+}
+
+function doLogout() {
+  document.getElementById('adminApp').style.display = 'none';
+  document.getElementById('teacherApp').style.display = 'none';
+  document.getElementById('financeApp').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.body.className = '';
+  currentRole = 'teacher';
+}
+
+// ========== Teacher Navigation ==========
+function navT(pageId) {
+  const body = document.getElementById('teacherBody');
+  body.querySelectorAll('.phone-screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(pageId);
+  if (target) target.classList.add('active');
+  body.scrollTop = 0;
+}
+
+// ========== Finance Navigation ==========
+function navF(pageId) {
+  const body = document.getElementById('financeBody');
+  body.querySelectorAll('.phone-screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(pageId);
+  if (target) target.classList.add('active');
+  body.scrollTop = 0;
+}
+
+// ========== Admin Navigation ==========
+function adminNav(section, el) {
+  document.querySelectorAll('#adminApp .admin-menu-item').forEach(m => m.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.querySelectorAll('#adminApp .admin-panel-area').forEach(c => c.classList.remove('active'));
+  const target = document.getElementById('a-' + section);
+  if (target) target.classList.add('active');
+  const labels = {
+    dashboard:'工作台','fee-config':'收费配置','bill-mgmt':'账单管理','payment-mgmt':'缴费管理',
+    'refund-mgmt':'退费管理','invoice-mgmt':'电子票据','urge-mgmt':'催缴管理','scholar-mgmt':'助学金/贷款',
+    reports:'财务报表','dorm-mgmt':'宿舍管理','password-mgmt':'密码重置','msg-mgmt':'消息通知','sys-config':'系统配置'
+  };
+  document.getElementById('adminCrumb').textContent = '首页 / ' + (labels[section] || section);
+}
+
+// ========== Payment List - Urge with Selection ==========
+function onUrgeCheck(cb) {
+  // Track checkbox state for selective urging
+}
+function urgeSelected() {
+  var boxes = document.querySelectorAll('#t-pay-list-items .urge-check:checked');
+  if (boxes.length === 0) { showToast('请先勾选要催缴的学生'); return; }
+  var names = [];
+  boxes.forEach(function(b) { var card = b.closest('.stu-item'); if (card) names.push(card.querySelector('.stu-name').textContent); });
+  showToast('已向 ' + names.join('、') + ' 发送催缴通知');
+}
+function filterPayTab(el, status) {
+  var parent = el.parentElement;
+  parent.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  var items = document.querySelectorAll('#t-pay-list-items .stu-item');
+  items.forEach(function(item) {
+    if (status === 'all') item.style.display = 'flex';
+    else item.style.display = item.getAttribute('data-status') === status ? 'flex' : 'none';
+  });
+}
+
+// ========== Generic Status Updaters ==========
+function approveItem(btn, newStatus, newLabel) {
+  var card = btn.closest('.card');
+  if (!card) return;
+  card.setAttribute('data-status', newStatus);
+  var statusEl = card.querySelector('.s-status');
+  if (statusEl) { statusEl.className = 's-status badge badge-ok'; statusEl.textContent = newLabel; }
+  var btns = card.querySelector('.s-btns');
+  if (btns) btns.style.display = 'none';
+  showToast('操作成功');
+}
+function rejectItem(btn, newStatus, newLabel, sheetId) {
+  _activeCard = btn.closest('.card');
+  if (sheetId) { openSheet(sheetId); }
+}
+function confirmRejectItem(newStatus, msg) {
+  closeSheet();
+  if (!_activeCard) return;
+  _activeCard.setAttribute('data-status', newStatus);
+  var statusEl = _activeCard.querySelector('.s-status');
+  if (statusEl) { statusEl.className = 's-status badge badge-er'; statusEl.textContent = newStatus === 'rejected' ? '已驳回' : newStatus; }
+  var btns = _activeCard.querySelector('.s-btns');
+  if (btns) btns.style.display = 'none';
+  _activeCard = null;
+  showToast(msg);
+}
+
+// ========== Scholar ==========
+function filterScholarTab(el, status) {
+  var parent = el.parentElement;
+  parent.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  var cards = document.querySelectorAll('#t-scholar-items .card');
+  cards.forEach(function(c) {
+    if (status === 'all') c.style.display = 'block';
+    else c.style.display = c.getAttribute('data-status') === status ? 'block' : 'none';
+  });
+}
+function approveScholar(btn, newStatus) {
+  _activeCard = btn.closest('.card');
+  openSheet('sheet-approve-scholar');
+}
+function confirmApproveScholar() {
+  closeSheet();
+  if (!_activeCard) return;
+  _activeCard.setAttribute('data-status', 'first-pass');
+  var st = _activeCard.querySelector('.s-status');
+  if (st) { st.className = 's-status badge badge-in'; st.textContent = '初审通过·待复审'; }
+  var tl = _activeCard.querySelector('.timeline');
+  if (tl) {
+    var dots = tl.querySelectorAll('.tl-dot'); dots.forEach(function(d) { d.className = 'tl-dot ok'; });
+    var lastItem = tl.querySelector('.tl-item:last-child .tl-content');
+    if (lastItem) { lastItem.querySelector('.tl-title').textContent = '待领导复审'; }
+  }
+  var btns = _activeCard.querySelector('.s-btns');
+  if (btns) btns.style.display = 'none';
+  _activeCard = null;
+  showToast('初审已通过，已转领导复审');
+}
+function rejectScholar(btn, newStatus) {
+  _activeCard = btn.closest('.card');
+  openSheet('sheet-reject-scholar');
+}
+function confirmRejectScholar() {
+  closeSheet();
+  if (!_activeCard) return;
+  _activeCard.setAttribute('data-status', 'rejected');
+  var st = _activeCard.querySelector('.s-status');
+  if (st) { st.className = 's-status badge badge-er'; st.textContent = '已驳回'; }
+  var btns = _activeCard.querySelector('.s-btns');
+  if (btns) btns.style.display = 'none';
+  _activeCard = null;
+  showToast('已驳回，学生将收到通知');
+}
+
+// ========== Loan ==========
+function filterLoanTab(el, status) {
+  var parent = el.parentElement;
+  parent.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  var cards = document.querySelectorAll('#t-loan-items .card');
+  cards.forEach(function(c) {
+    if (status === 'all') c.style.display = 'block';
+    else c.style.display = c.getAttribute('data-status') === status ? 'block' : 'none';
+  });
+}
+function approveLoan(btn, newStatus) {
+  _activeCard = btn.closest('.card');
+  openSheet('sheet-approve-loan');
+}
+function confirmApproveLoan() {
+  closeSheet();
+  if (!_activeCard) return;
+  _activeCard.setAttribute('data-status', 'first-pass');
+  var st = _activeCard.querySelector('.s-status');
+  if (st) { st.className = 's-status badge badge-in'; st.textContent = '初审通过·待复审'; }
+  var tl = _activeCard.querySelector('.timeline');
+  if (tl) {
+    var dots = tl.querySelectorAll('.tl-dot'); dots.forEach(function(d) { d.className = 'tl-dot ok'; });
+  }
+  var btns = _activeCard.querySelector('.s-btns');
+  if (btns) btns.style.display = 'none';
+  _activeCard = null;
+  showToast('初审已通过');
+}
+function rejectLoan(btn, newStatus) {
+  _activeCard = btn.closest('.card');
+  openSheet('sheet-reject-loan');
+}
+function confirmRejectLoan() {
+  closeSheet();
+  if (!_activeCard) return;
+  _activeCard.setAttribute('data-status', 'rejected');
+  var st = _activeCard.querySelector('.s-status');
+  if (st) { st.className = 's-status badge badge-er'; st.textContent = '已驳回'; }
+  var btns = _activeCard.querySelector('.s-btns');
+  if (btns) btns.style.display = 'none';
+  _activeCard = null;
+  showToast('已驳回');
+}
+
+// ========== Materials ==========
+function filterMatTab(el, status) {
+  var parent = el.parentElement;
+  parent.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  var cards = document.querySelectorAll('#t-mat-items .card');
+  cards.forEach(function(c) {
+    if (status === 'all') c.style.display = 'block';
+    else c.style.display = c.getAttribute('data-status') === status ? 'block' : 'none';
+  });
+}
+
+// ========== Goods ==========
+function filterGoodsTab(el, status) {
+  var parent = el.parentElement;
+  parent.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  var cards = document.querySelectorAll('#t-goods-items .card');
+  cards.forEach(function(c) {
+    if (status === 'all') c.style.display = 'block';
+    else c.style.display = c.getAttribute('data-status') === status ? 'block' : 'none';
+  });
+}
+
+// ========== NonDorm ==========
+function filterNondormTab(el, status) {
+  var parent = el.parentElement;
+  parent.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  var cards = document.querySelectorAll('#t-nondorm-items .card');
+  cards.forEach(function(c) {
+    if (status === 'all') c.style.display = 'block';
+    else c.style.display = c.getAttribute('data-status') === status ? 'block' : 'none';
+  });
+}
+
+// ========== Messages ==========
+function filterMsgs(type, el) {
+  var parent = el.parentElement;
+  parent.querySelectorAll('.btn').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+  var cards = document.querySelectorAll('#t-msg-items .msg-card');
+  cards.forEach(function(c) {
+    if (type === 'all') c.style.display = 'block';
+    else if (type === 'unread') c.style.display = c.classList.contains('unread') ? 'block' : 'none';
+    else c.style.display = c.getAttribute('data-read') === '1' ? 'block' : 'none';
+  });
+}
+function markRead(el) {
+  if (el.getAttribute('data-read') === '0' || el.classList.contains('unread')) {
+    el.setAttribute('data-read', '1');
+    el.classList.remove('unread');
+    el.style.opacity = '0.55';
+    var dot = el.querySelector('.msg-dot');
+    if (dot) dot.style.display = 'none';
+  }
+}
+
+// ========== Local Tab Switch ==========
+function switchTLocal(el) {
+  var parent = el.parentElement;
+  if (parent) parent.querySelectorAll('.tab, .admin-tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+}
+
+// ========== Fee Config Add ==========
+function addFeeSubject() {
+  const tbody = document.getElementById('fee-subject-table');
+  const newId = tbody.querySelectorAll('tr').length + 1;
+  const row = document.createElement('tr');
+  row.innerHTML = '<td>' + newId + '</td><td><input class="form-input" style="height:32px;font-size:12px;" placeholder="输入名称"></td><td><select class="form-input" style="height:32px;font-size:12px;"><option>按专业</option><option>按个人</option><option>按学院</option></select></td><td><input class="form-input" style="height:32px;font-size:12px;width:100px;" placeholder="金额"></td><td><span class="tag tag-wa">待启用</span></td><td class="act-cell"><button class="btn btn-ok btn-sm" onclick="showToast(\'保存成功\')">保存</button><button class="btn btn-er btn-sm" onclick="this.closest(\'tr\').remove()">取消</button></td>';
+  tbody.appendChild(row);
+  showToast('新增行已添加，请填写信息后保存');
+}
+
+// ========== Dormitory Building Add ==========
+function addBuilding() {
+  const tbody = document.getElementById('building-table');
+  const newId = tbody.querySelectorAll('tr').length + 1;
+  const row = document.createElement('tr');
+  row.innerHTML = '<td>' + newId + '</td><td><input class="form-input" style="height:32px;font-size:12px;" placeholder="楼栋名称"></td><td><select class="form-input" style="height:32px;font-size:12px;"><option>男生宿舍</option><option>女生宿舍</option><option>研究生</option><option>留学生</option></select></td><td><input class="form-input" style="height:32px;font-size:12px;width:60px;" placeholder="房间数"></td><td><input class="form-input" style="height:32px;font-size:12px;width:60px;" placeholder="容纳"></td><td><input class="form-input" style="height:32px;font-size:12px;width:90px;" placeholder="金额"></td><td><span class="tag tag-wa">待启用</span></td><td class="act-cell"><button class="btn btn-ok btn-sm" onclick="showToast(\'楼栋添加成功\')">保存</button><button class="btn btn-er btn-sm" onclick="this.closest(\'tr\').remove()">取消</button></td>';
+  tbody.appendChild(row);
+  showToast('新增楼栋行已添加');
+}
+
+// ========== Sheet ==========
+function openSheet(id) {
+  document.getElementById(id).classList.add('show');
+}
+function closeSheet() {
+  document.querySelectorAll('.sheet-overlay').forEach(s => s.classList.remove('show'));
+}
+
+// ========== Toast ==========
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(function(){ t.style.display = 'none'; }, 1500);
+}
+
+// ========== Class Select Update ==========
+function updateClassSelect(college) {
+  const sel = document.getElementById('f-class-select');
+  sel.innerHTML = '<option value="">全部班级</option>';
+  if (college === '计算机科学与技术学院') {
+    sel.innerHTML += '<option>2024级计算机1班</option><option>2024级计算机2班</option>';
+  } else if (college === '软件学院') {
+    sel.innerHTML += '<option>2024级软件1班</option><option>2024级软件2班</option>';
+  } else if (college === '数据科学学院') {
+    sel.innerHTML += '<option>2024级数据科学1班</option><option>2024级数据科学2班</option>';
+  } else {
+    sel.innerHTML += '<option>2024级计算机1班</option><option>2024级计算机2班</option><option>2024级软件1班</option><option>2024级数据科学1班</option>';
+  }
+}
+
+// ========== Method Tags ==========
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('method-tag') && e.target.closest('.method-tags')) {
+    e.target.parentElement.querySelectorAll('.method-tag').forEach(t => t.classList.remove('active'));
+    e.target.classList.add('active');
+  }
+});
+</script>
+
+</body>
+</html>

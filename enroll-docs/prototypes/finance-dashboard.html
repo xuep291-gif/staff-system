@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>财务管理 - 高校收费管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+            background: #f2f3f5;
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+        .header-banner {
+            background: linear-gradient(135deg, #2B6CB0 0%, #1e4d8c 100%);
+            padding: 20px 16px;
+            color: #fff;
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .avatar i {
+            font-size: 22px;
+        }
+        .user-text h2 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .user-text p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        .date-selector {
+            background: rgba(255,255,255,0.15);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px;
+            backdrop-filter: blur(10px);
+        }
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .stat-value.green {
+            color: #86efac;
+        }
+        .stat-value.orange {
+            color: #fcd34d;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 0 4px;
+        }
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #fff;
+        }
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+            position: relative;
+        }
+        .action-icon i {
+            font-size: 22px;
+        }
+        .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+        }
+        .action-text {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            margin: 14px;
+            padding: 14px 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .card-more {
+            font-size: 12px;
+            color: #6b7280;
+            text-decoration: none;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 0.5px solid #f0f2f5;
+        }
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        .task-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+        .task-icon.orange {
+            background: #fef3c7;
+        }
+        .task-icon.orange i {
+            color: #d97706;
+            font-size: 18px;
+        }
+        .task-icon.blue {
+            background: #dbeafe;
+        }
+        .task-icon.blue i {
+            color: #2B6CB0;
+            font-size: 18px;
+        }
+        .task-info {
+            flex: 1;
+        }
+        .task-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 3px;
+        }
+        .task-desc {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .task-action {
+            padding: 6px 14px;
+            background: #2B6CB0;
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .payment-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 0.5px solid #f0f2f5;
+        }
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+        .payment-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #dbeafe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2B6CB0;
+        }
+        .payment-info {
+            flex: 1;
+        }
+        .payment-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 2px;
+        }
+        .payment-meta {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .payment-amount {
+            font-size: 15px;
+            font-weight: 700;
+            color: #2B6CB0;
+        }
+
+        .refund-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 0.5px solid #f0f2f5;
+        }
+        .refund-item:last-child {
+            border-bottom: none;
+        }
+        .refund-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #fee2e2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        .refund-icon i {
+            color: #b91c1c;
+            font-size: 16px;
+        }
+        .refund-info {
+            flex: 1;
+        }
+        .refund-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 2px;
+        }
+        .refund-meta {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .refund-amount {
+            font-size: 15px;
+            font-weight: 700;
+            color: #b91c1c;
+        }
+
+        .chart-placeholder {
+            height: 160px;
+            background: linear-gradient(180deg, rgba(43,108,176,0.05) 0%, rgba(43,108,176,0) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .chart-placeholder i {
+            font-size: 32px;
+            color: #dbeafe;
+        }
+        .chart-placeholder p {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-top: 0.5px solid #e5e7eb;
+            display: flex;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6px 0 8px;
+            text-decoration: none;
+            color: #9ca3af;
+        }
+        .tab-item.active {
+            color: #2B6CB0;
+        }
+        .tab-item i {
+            font-size: 22px;
+            margin-bottom: 2px;
+        }
+        .tab-item span {
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部Banner -->
+    <div class="header-banner">
+        <div class="header-top">
+            <div class="user-info">
+                <div class="avatar">
+                    <i class="ti ti-user"></i>
+                </div>
+                <div class="user-text">
+                    <h2>财务：张老师</h2>
+                    <p>财务管理中心</p>
+                </div>
+            </div>
+            <div class="date-selector">
+                <i class="ti ti-calendar"></i>
+                <span>今日 2026-05-15</span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">今日收款笔数</div>
+                <div class="stat-value green">156笔</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">今日收款金额</div>
+                <div class="stat-value green">¥328,500</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">今日退款金额</div>
+                <div class="stat-value orange">¥5,000</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">待确认收款</div>
+                <div class="stat-value">12笔</div>
+            </div>
+        </div>
+
+        <div class="action-grid">
+            <a href="#" class="action-item">
+                <div class="action-icon">
+                    <i class="ti ti-cash"></i>
+                </div>
+                <div class="action-text">线下收款</div>
+            </a>
+            <a href="#" class="action-item">
+                <div class="action-icon">
+                    <i class="ti ti-clipboard-check"></i>
+                    <span class="badge">12</span>
+                </div>
+                <div class="action-text">待确认</div>
+            </a>
+            <a href="#" class="action-item">
+                <div class="action-icon">
+                    <i class="ti ti-arrow-back"></i>
+                </div>
+                <div class="action-text">退费处理</div>
+            </a>
+            <a href="#" class="action-item">
+                <div class="action-icon">
+                    <i class="ti ti-receipt"></i>
+                </div>
+                <div class="action-text">票据管理</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 待办任务 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">待办任务</div>
+            <a href="#" class="card-more">查看全部 &rarr;</a>
+        </div>
+        <div class="task-item">
+            <div class="task-icon orange">
+                <i class="ti ti-clipboard-check"></i>
+            </div>
+            <div class="task-info">
+                <div class="task-title">线下收款确认</div>
+                <div class="task-desc">12笔待确认 · 今日新增 3笔</div>
+            </div>
+            <button class="task-action">处理</button>
+        </div>
+        <div class="task-item">
+            <div class="task-icon blue">
+                <i class="ti ti-arrow-back"></i>
+            </div>
+            <div class="task-info">
+                <div class="task-title">退费申请审核</div>
+                <div class="task-desc">5笔待处理 · 今日新增 1笔</div>
+            </div>
+            <button class="task-action">审核</button>
+        </div>
+    </div>
+
+    <!-- 今日收款流水 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">今日收款流水</div>
+            <a href="#" class="card-more">查看更多 &rarr;</a>
+        </div>
+        <div class="payment-item">
+            <div class="payment-avatar">张</div>
+            <div class="payment-info">
+                <div class="payment-name">张三</div>
+                <div class="payment-meta">202401001 · 学费 · 14:32</div>
+            </div>
+            <div class="payment-amount">+¥5,000</div>
+        </div>
+        <div class="payment-item">
+            <div class="payment-avatar">李</div>
+            <div class="payment-info">
+                <div class="payment-name">李四</div>
+                <div class="payment-meta">202401002 · 住宿费 · 14:28</div>
+            </div>
+            <div class="payment-amount">+¥2,500</div>
+        </div>
+        <div class="payment-item">
+            <div class="payment-avatar">王</div>
+            <div class="payment-info">
+                <div class="payment-name">王五</div>
+                <div class="payment-meta">202401003 · 教材费 · 14:25</div>
+            </div>
+            <div class="payment-amount">+¥500</div>
+        </div>
+        <div class="payment-item">
+            <div class="payment-avatar">赵</div>
+            <div class="payment-info">
+                <div class="payment-name">赵六</div>
+                <div class="payment-meta">202401004 · 学费 · 14:20</div>
+            </div>
+            <div class="payment-amount">+¥5,000</div>
+        </div>
+    </div>
+
+    <!-- 退费申请 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">退费申请</div>
+            <a href="#" class="card-more">查看更多 &rarr;</a>
+        </div>
+        <div class="refund-item">
+            <div class="refund-icon">
+                <i class="ti ti-arrow-back"></i>
+            </div>
+            <div class="refund-info">
+                <div class="refund-name">张三 - 学费退费</div>
+                <div class="refund-meta">202401001 · 申请时间 14:15</div>
+            </div>
+            <div class="refund-amount">-¥2,000</div>
+        </div>
+        <div class="refund-item">
+            <div class="refund-icon">
+                <i class="ti ti-arrow-back"></i>
+            </div>
+            <div class="refund-info">
+                <div class="refund-name">李四 - 住宿费退费</div>
+                <div class="refund-meta">202401002 · 申请时间 13:50</div>
+            </div>
+            <div class="refund-amount">-¥1,500</div>
+        </div>
+    </div>
+
+    <!-- 收费趋势 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">收费趋势</div>
+            <div style="font-size: 12px; color: #6b7280;">近7天</div>
+        </div>
+        <div class="chart-placeholder">
+            <i class="ti ti-chart-bar"></i>
+            <p>图表区域 · 收费金额趋势</p>
+        </div>
+    </div>
+
+    <!-- 底部TabBar -->
+    <div class="tab-bar">
+        <a href="#" class="tab-item active">
+            <i class="ti ti-home"></i>
+            <span>首页</span>
+        </a>
+        <a href="#" class="tab-item">
+            <i class="ti ti-clipboard-check"></i>
+            <span>待办</span>
+        </a>
+        <a href="#" class="tab-item">
+            <i class="ti ti-chart-pie"></i>
+            <span>统计</span>
+        </a>
+        <a href="#" class="tab-item">
+            <i class="ti ti-user"></i>
+            <span>我的</span>
+        </a>
+    </div>
+</body>
+</html>

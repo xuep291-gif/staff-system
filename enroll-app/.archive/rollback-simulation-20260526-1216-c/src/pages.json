@@ -1,0 +1,393 @@
+{
+  "pages": [
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationBarTitleText": "登录"
+      }
+    },
+    {
+      "path": "pages/bind/index",
+      "style": {
+        "navigationBarTitleText": "身份绑定"
+      }
+    },
+    {
+      "path": "pages/teacher/home/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "班级缴费概览"
+      }
+    },
+    {
+      "path": "pages/teacher/fee-home/index",
+      "style": {
+        "navigationBarTitleText": "缴费管理"
+      }
+    },
+    {
+      "path": "pages/teacher/student-detail/index",
+      "style": {
+        "navigationBarTitleText": "学生详情"
+      }
+    },
+    {
+      "path": "pages/teacher/doc-home/index",
+      "style": {
+        "navigationBarTitleText": "资料审核"
+      }
+    },
+    {
+      "path": "pages/teacher/doc-review/index",
+      "style": {
+        "navigationBarTitleText": "资料审核详情"
+      }
+    },
+    {
+      "path": "pages/teacher/doc-done/index",
+      "style": {
+        "navigationBarTitleText": "审核完成"
+      }
+    },
+    {
+      "path": "pages/teacher/aid-home/index",
+      "style": {
+        "navigationBarTitleText": "助学金管理"
+      }
+    },
+    {
+      "path": "pages/teacher/aid-review/index",
+      "style": {
+        "navigationBarTitleText": "助学金审核"
+      }
+    },
+    {
+      "path": "pages/teacher/aid-done/index",
+      "style": {
+        "navigationBarTitleText": "审核完成"
+      }
+    },
+    {
+      "path": "pages/teacher/dorm-home/index",
+      "style": {
+        "navigationBarTitleText": "住宿管理"
+      }
+    },
+    {
+      "path": "pages/teacher/dorm-detail/index",
+      "style": {
+        "navigationBarTitleText": "宿舍详情"
+      }
+    },
+    {
+      "path": "pages/teacher/checkin/index",
+      "style": {
+        "navigationBarTitleText": "报到确认"
+      }
+    },
+    {
+      "path": "pages/teacher/messages/index",
+      "style": {
+        "navigationBarTitleText": "消息中心"
+      }
+    },
+    {
+      "path": "pages/teacher/settings/index",
+      "style": {
+        "navigationBarTitleText": "设置"
+      }
+    },
+    {
+      "path": "pages/teacher/loan-home/index",
+      "style": {
+        "navigationBarTitleText": "助学贷款"
+      }
+    },
+    {
+      "path": "pages/teacher/loan-review/index",
+      "style": {
+        "navigationBarTitleText": "贷款审核"
+      }
+    },
+    {
+      "path": "pages/teacher/room-change/index",
+      "style": {
+        "navigationBarTitleText": "换宿审核"
+      }
+    },
+    {
+      "path": "pages/teacher/room-change-review/index",
+      "style": {
+        "navigationBarTitleText": "换宿审核详情"
+      }
+    },
+    {
+      "path": "pages/teacher/dorm-withdraw/index",
+      "style": {
+        "navigationBarTitleText": "退宿审核"
+      }
+    },
+    {
+      "path": "pages/teacher/dorm-withdraw-review/index",
+      "style": {
+        "navigationBarTitleText": "退宿审核详情"
+      }
+    },
+    {
+      "path": "pages/teacher/supply/index",
+      "style": {
+        "navigationBarTitleText": "用品发放"
+      }
+    },
+    {
+      "path": "pages/teacher/uniform/index",
+      "style": {
+        "navigationBarTitleText": "军训服尺码"
+      }
+    },
+    {
+      "path": "pages/teacher/uniform/detail",
+      "style": {
+        "navigationBarTitleText": "尺码详情"
+      }
+    },
+    {
+      "path": "pages/teacher/uniform/stats",
+      "style": {
+        "navigationBarTitleText": "尺码统计"
+      }
+    },
+    {
+      "path": "pages/teacher/non-dorm/index",
+      "style": {
+        "navigationBarTitleText": "校外住宿审核"
+      }
+    },
+    {
+      "path": "pages/teacher/non-dorm-review/index",
+      "style": {
+        "navigationBarTitleText": "校外住宿审核"
+      }
+    },
+    {
+      "path": "pages/finance/home/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "缴费仪表盘"
+      }
+    },
+    {
+      "path": "pages/finance/collect/index",
+      "style": {
+        "navigationBarTitleText": "线下收款确认"
+      }
+    },
+    {
+      "path": "pages/finance/refund/index",
+      "style": {
+        "navigationBarTitleText": "退费处理"
+      }
+    },
+    {
+      "path": "pages/finance/payout-aid/index",
+      "style": {
+        "navigationBarTitleText": "待打款助学金"
+      }
+    },
+    {
+      "path": "pages/finance/payout-loan/index",
+      "style": {
+        "navigationBarTitleText": "待打款助学贷款"
+      }
+    },
+    {
+      "path": "pages/finance/processed/index",
+      "style": {
+        "navigationBarTitleText": "已处理记录"
+      }
+    },
+    {
+      "path": "pages/finance/diff/index",
+      "style": {
+        "navigationBarTitleText": "补差退款"
+      }
+    },
+    {
+      "path": "pages/finance/receipt/index",
+      "style": {
+        "navigationBarTitleText": "票据管理"
+      }
+    },
+    {
+      "path": "pages/finance/urge/index",
+      "style": {
+        "navigationBarTitleText": "催缴任务"
+      }
+    },
+    {
+      "path": "pages/finance/messages/index",
+      "style": {
+        "navigationBarTitleText": "消息中心"
+      }
+    },
+    {
+      "path": "pages/finance/settings/index",
+      "style": {
+        "navigationBarTitleText": "设置"
+      }
+    },
+    {
+      "path": "pages/finance/uniform/index",
+      "style": {
+        "navigationBarTitleText": "军训服尺码"
+      }
+    },
+    {
+      "path": "pages/finance/aid-review/index",
+      "style": {
+        "navigationBarTitleText": "助学金审核"
+      }
+    },
+    {
+      "path": "pages/finance/loan-review/index",
+      "style": {
+        "navigationBarTitleText": "贷款审核"
+      }
+    },
+    {
+      "path": "pages/finance/approval/index",
+      "style": {
+        "navigationBarTitleText": "审批处理"
+      }
+    },
+    {
+      "path": "pages/finance/stats/index",
+      "style": {
+        "navigationBarTitleText": "统计概览"
+      }
+    },
+    {
+      "path": "pages/finance/verify/index",
+      "style": {
+        "navigationBarTitleText": "缴费核验"
+      }
+    },
+    {
+      "path": "pages/finance/onsite/index",
+      "style": {
+        "navigationBarTitleText": "现场收款登记"
+      }
+    },
+    {
+      "path": "pages/government/home/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "政务职工端"
+      }
+    },
+    {
+      "path": "pages/government/dorm-home/index",
+      "style": {
+        "navigationBarTitleText": "换房审批"
+      }
+    },
+    {
+      "path": "pages/government/dorm-review/index",
+      "style": {
+        "navigationBarTitleText": "换房审批详情"
+      }
+    },
+    {
+      "path": "pages/government/dorm-done/index",
+      "style": {
+        "navigationBarTitleText": "审批完成"
+      }
+    },
+    {
+      "path": "pages/government/aid-home/index",
+      "style": {
+        "navigationBarTitleText": "助学金终审"
+      }
+    },
+    {
+      "path": "pages/government/aid-review/index",
+      "style": {
+        "navigationBarTitleText": "助学金复审"
+      }
+    },
+    {
+      "path": "pages/government/loan-home/index",
+      "style": {
+        "navigationBarTitleText": "助学贷款复审"
+      }
+    },
+    {
+      "path": "pages/government/loan-review/index",
+      "style": {
+        "navigationBarTitleText": "助学贷款复审"
+      }
+    },
+    {
+      "path": "pages/government/aid-done/index",
+      "style": {
+        "navigationBarTitleText": "审批完成"
+      }
+    },
+    {
+      "path": "pages/government/checkin/index",
+      "style": {
+        "navigationBarTitleText": "报到统计"
+      }
+    },
+    {
+      "path": "pages/government/messages/index",
+      "style": {
+        "navigationBarTitleText": "消息中心"
+      }
+    },
+    {
+      "path": "pages/government/settings/index",
+      "style": {
+        "navigationBarTitleText": "设置"
+      }
+    },
+    {
+      "path": "pages/government/app-process/index",
+      "style": {
+        "navigationBarTitleText": "申请处理"
+      }
+    },
+    {
+      "path": "pages/government/room-change/index",
+      "style": {
+        "navigationBarTitleText": "换房审批"
+      }
+    },
+    {
+      "path": "pages/government/non-dorm/index",
+      "style": {
+        "navigationBarTitleText": "校外住宿审核"
+      }
+    },
+    {
+      "path": "pages/government/non-dorm-review/index",
+      "style": {
+        "navigationBarTitleText": "校外住宿审核详情"
+      }
+    }
+  ],
+  "subPackages": [],
+  "preloadRule": {},
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+    }
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "迎新收费管理系统",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#F2F4F8"
+  }
+}

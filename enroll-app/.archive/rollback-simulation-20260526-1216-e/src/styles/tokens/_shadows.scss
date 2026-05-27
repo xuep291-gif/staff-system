@@ -1,0 +1,12 @@
+// ═══════════════════════════════════════
+// Design Tokens: Shadows
+// Strictly follows unified-ui-spec-v5.0 §5
+// NOTE: No gradients allowed per §12
+// ═══════════════════════════════════════
+
+:root {
+  --card-shadow-low: 0 1px 3px rgba(0,0,0,.06);
+  --card-shadow-high: 0 4px 16px rgba(0,0,0,.10), 0 1px 4px rgba(0,0,0,.06);
+  --tabbar-shadow: 0 -2px 8px rgba(0,0,0,.06);
+  --toast-bg: rgba(0,0,0,.78);
+}

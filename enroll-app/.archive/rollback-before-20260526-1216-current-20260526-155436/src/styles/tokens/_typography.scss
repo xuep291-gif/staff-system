@@ -1,0 +1,39 @@
+// ═══════════════════════════════════════
+// Design Tokens: Typography
+// Strictly follows unified-ui-spec-v5.0 §3
+// Base: 375px design → 750rpx mini-program
+// ═══════════════════════════════════════
+
+:root {
+  // ── Font family ──
+  --font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+
+  // ── Font sizes (px * 2 = rpx) ──
+  --fs-9: 18rpx;
+  --fs-10: 20rpx;
+  --fs-11: 22rpx;
+  --fs-12: 24rpx;
+  --fs-13: 26rpx;
+  --fs-14: 28rpx;
+  --fs-15: 30rpx;
+  --fs-16: 32rpx;
+  --fs-18: 36rpx;
+  --fs-20: 40rpx;
+  --fs-22: 44rpx;
+  --fs-24: 48rpx;
+  --fs-28: 56rpx;
+  --fs-36: 72rpx;
+
+  // ── Font weights ──
+  --fw-400: 400;
+  --fw-500: 500;
+  --fw-600: 600;
+  --fw-700: 700;
+
+  // ── Line heights ──
+  --lh-1: 1.0;
+  --lh-1-2: 1.2;
+  --lh-1-4: 1.4;
+  --lh-1-5: 1.5;
+  --lh-1-6: 1.6;
+}

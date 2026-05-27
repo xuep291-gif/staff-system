@@ -1,0 +1,54 @@
+// ═══════════════════════════════════════
+// Design Tokens: Colors
+// Strictly follows unified-ui-spec-v5.0 §2
+// ═══════════════════════════════════════
+
+:root {
+  // ── Role theme colors (base) ──
+  --tc: #2B6CB0;  --tc-t: #DBEAFE;  --tc-d: #1E4D8C;  // Teacher blue
+  --fc: #15803D;  --fc-t: #DCFCE7;  --fc-d: #166534;  // Finance green
+  --ac: #7C3AED;  --ac-t: #EDE9FE;  --ac-d: #6D28D9;  // Government purple
+
+  // ── Active brand theme (default: teacher blue) ──
+  --brand: var(--tc);
+  --brand-t: var(--tc-t);
+  --brand-d: var(--tc-d);
+  --brand-s: #EFF6FF;
+
+  // ── Semantic colors ──
+  --ok: #15803D;   --ok-bg: #DCFCE7;   --ok-bd: #86EFAC;
+  --wa: #D97706;   --wa-bg: #FEF3C7;   --wa-bd: #FCD34D;
+  --er: #B91C1C;   --er-bg: #FEE2E2;   --er-bd: #FCA5A5;
+  --in: #0369A1;   --in-bg: #E0F2FE;   --in-bd: #7DD3FC;
+  --pu: #7C3AED;   --pu-bg: #EDE9FE;   --pu-bd: #C4B5FD;
+
+  // ── Neutral colors ──
+  --N900: #111827;
+  --N700: #374151;
+  --N500: #6B7280;
+  --N400: #9CA3AF;
+  --N200: #E5E7EB;
+  --N50: #F2F3F5;
+  --N25: #F8F9FB;
+  --white: #FFFFFF;
+
+  // ── Shadows ──
+  --sh-lo: 0 1px 3px rgba(0,0,0,.06);
+  --sh-md: 0 4px 12px rgba(0,0,0,.09);
+  --sh-hi: 0 8px 24px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.06);
+}
+
+// ── Role theme overrides ──
+body.rf {
+  --brand: var(--fc);
+  --brand-t: var(--fc-t);
+  --brand-d: var(--fc-d);
+  --brand-s: #F0FDF4;
+}
+
+body.ra {
+  --brand: var(--ac);
+  --brand-t: var(--ac-t);
+  --brand-d: var(--ac-d);
+  --brand-s: #F5F3FF;
+}

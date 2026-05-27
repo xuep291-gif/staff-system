@@ -1,0 +1,100 @@
+
+// 着重文本样式
+.global-rss-emphasizeText {
+	color: #1661ab;
+}
+
+// 色块标题
+.global-subheading {
+	color: #333 !important;
+	font-size:24px !important;
+	border-left-color: #ea6767 !important;
+	font-weight: bold;
+	margin: 24px 0 10px 0 !important;
+}
+
+
+// 标题
+.global-big-headline {
+	color: #333 !important;
+	font-size:30px !important;
+	font-weight: bold;
+	margin: 10px 0 0 !important;
+}
+
+// rss户型图标题
+.global-rss-title {
+	display: flex!important;
+	justify-content: center!important;
+	width: 165px!important;
+	padding: 2px 4px!important;
+	background-color: #DC4657!important;
+	color: #ffffff!important;
+	font-size: 42rpx!important;
+	border-radius: 30px 0 30px 0!important;
+	margin-bottom: 10px!important;
+}
+
+// 色块标题
+.global-rss-subtitle {
+	border-left-style: none!important;
+	color: #333 !important;
+	font-size: 20px !important;
+	font-weight: bold;
+	margin: 2px 0 10px 0 !important;
+}
+
+
+// 居中内容
+.global-center-content {
+	margin: 0 0 10px 0 !important;
+	display: flex;
+	justify-content: center;
+}
+
+
+.global-start-content {
+	margin: 0 0 10px 0 !important;
+	display: flex;
+	justify-content: start;
+}
+
+
+// 大标题
+.global-rss-bigtitle {
+	font-size: 29px !important;
+	font-weight: bold;
+	margin: 10px 0 8px 0 !important;
+	text-align: center !important;
+}
+
+// 户型表格
+.global-rss-table {
+	color: #dc4657 !important;
+	background-color: #dc465710;
+	border: 1px #fff solid;
+}
+// 小标题
+.global-small-title {
+	margin: 0 0 0 6px !important;
+	font-weight: bold;
+	font-size: 20px;
+}
+
+//选项框--未选中
+.global-unselect {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0rpx 20rpx;
+	font-size: 30rpx;
+	color: black;
+	border-radius: 70rpx;
+	background-color: #99e1f7;
+	height: 60rpx;
+	border: 1px solid #99e1f7;
+}
+//选项框--选中
+.globla-selected {
+	border: 1px solid red;
+}

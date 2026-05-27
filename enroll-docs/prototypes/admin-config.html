@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收费标准配置 - 高校收费管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+            background: #f2f3f5;
+            color: #374151;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 240px;
+            background: #1e3a5f;
+            color: #fff;
+            z-index: 1000;
+        }
+        .sidebar-header {
+            padding: 20px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-header i {
+            font-size: 20px;
+        }
+        .sidebar-menu {
+            padding: 12px 0;
+        }
+        .menu-group {
+            margin-bottom: 8px;
+        }
+        .menu-label {
+            padding: 8px 16px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .menu-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        .menu-item.active {
+            background: #2B6CB0;
+            color: #fff;
+        }
+        .menu-item i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+
+        /* 顶部导航 */
+        .top-nav {
+            background: #fff;
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .breadcrumb {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .breadcrumb span {
+            margin: 0 6px;
+        }
+        .breadcrumb a {
+            color: #6b7280;
+            text-decoration: none;
+        }
+        .breadcrumb a:hover {
+            color: #2B6CB0;
+        }
+        .breadcrumb .current {
+            color: #374151;
+            font-weight: 500;
+        }
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #dbeafe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .user-avatar i {
+            color: #2B6CB0;
+            font-size: 16px;
+        }
+        .user-name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* 页面内容 */
+        .page-content {
+            padding: 24px;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .page-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            color: #374151;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #f9fafb;
+        }
+        .btn.primary {
+            background: #2B6CB0;
+            color: #fff;
+            border-color: #2B6CB0;
+        }
+        .btn.primary:hover {
+            background: #1e4d8c;
+        }
+        .btn i {
+            font-size: 16px;
+        }
+
+        /* 卡片 */
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            margin-bottom: 16px;
+        }
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .card-body {
+            padding: 20px;
+        }
+
+        /* 搜索栏 */
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .search-input {
+            flex: 1;
+            max-width: 300px;
+            position: relative;
+        }
+        .search-input input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+        }
+        .search-input input:focus {
+            border-color: #2B6CB0;
+        }
+        .search-input i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 16px;
+        }
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #374151;
+            outline: none;
+            cursor: pointer;
+        }
+        .filter-select:focus {
+            border-color: #2B6CB0;
+        }
+
+        /* 表格 */
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead {
+            background: #f9fafb;
+        }
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        td {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: #374151;
+            border-bottom: 1px solid #f0f2f5;
+        }
+        tr:hover td {
+            background: #f9fafb;
+        }
+
+        /* 标签 */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .badge-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* 操作按钮 */
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            background: none;
+            color: #6b7280;
+            font-size: 13px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .action-btn:hover {
+            color: #2B6CB0;
+        }
+        .action-btn.danger:hover {
+            color: #b91c1c;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .pagination-info {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .pagination-pages {
+            display: flex;
+            gap: 6px;
+        }
+        .page-btn {
+            padding: 6px 12px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #374151;
+            cursor: pointer;
+        }
+        .page-btn:hover {
+            background: #f9fafb;
+        }
+        .page-btn.active {
+            background: #2B6CB0;
+            color: #fff;
+            border-color: #2B6CB0;
+        }
+        .page-btn:disabled {
+            color: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 16px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+        .stat-change {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .stat-change.positive {
+            color: #15803d;
+        }
+        .stat-change.negative {
+            color: #b91c1c;
+        }
+    </style>
+</head>
+<body>
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1><i class="ti ti-building"></i> 高校收费管理系统</h1>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-group">
+                <div class="menu-label">收费配置</div>
+                <a href="#" class="menu-item active">
+                    <i class="ti ti-settings"></i>
+                    收费标准
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="ti ti-list"></i>
+                    收费项目
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="ti ti-building-arch"></i>
+                    收费主体
+                </a>
+            </div>
+            <div class="menu-group">
+                <div class="menu-label">账单管理</div>
+                <a href="#" class="menu-item">
+                    <i class="ti ti-file-text"></i>
+                    学生账单
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="ti ti-refresh"></i>
+                    手动生成
+                </a>
+            </div>
+            <div class="menu-group">
+                <div class="menu-label">缴费管理</div>
+                <a href="#" class="menu-item">
+                    <i class="ti ti-credit-card"></i>
+                    在线缴费
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="ti ti-cash"></i>
+                    线下收费
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="ti ti-arrow-back"></i>
+                    退费管理
+                </a>
+            </div>
+            <div class="menu-group">
+                <div class="menu-label">统计报表</div>
+                <a href="#" class="menu-item">
+                    <i class="ti ti-chart-bar"></i>
+                    收费进度
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="ti ti-chart-pie"></i>
+                    财务报表
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <!-- 顶部导航 -->
+        <div class="top-nav">
+            <div class="breadcrumb">
+                <a href="#">首页</a>
+                <span>/</span>
+                <a href="#">收费配置</a>
+                <span>/</span>
+                <span class="current">收费标准设置</span>
+            </div>
+            <div class="user-menu">
+                <div class="user-name">系统管理员</div>
+                <div class="user-avatar">
+                    <i class="ti ti-user"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页面内容 -->
+        <div class="page-content">
+            <div class="page-header">
+                <div class="page-title">收费标准设置</div>
+                <div class="page-actions">
+                    <button class="btn">
+                        <i class="ti ti-upload"></i>
+                        批量导入
+                    </button>
+                    <button class="btn">
+                        <i class="ti ti-download"></i>
+                        导出
+                    </button>
+                    <button class="btn primary">
+                        <i class="ti ti-plus"></i>
+                        新增标准
+                    </button>
+                </div>
+            </div>
+
+            <!-- 统计卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">收费标准总数</div>
+                    <div class="stat-value">128</div>
+                    <div class="stat-change positive">较上月 +12</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">涉及专业数</div>
+                    <div class="stat-value">45</div>
+                    <div class="stat-change">全校专业</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">启用标准</div>
+                    <div class="stat-value">120</div>
+                    <div class="stat-change">93.8%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">个人调整</div>
+                    <div class="stat-value">35</div>
+                    <div class="stat-change">特殊学生</div>
+                </div>
+            </div>
+
+            <!-- 收费标准列表 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">收费标准列表</div>
+                </div>
+                <div class="card-body">
+                    <div class="search-bar">
+                        <div class="search-input">
+                            <i class="ti ti-search"></i>
+                            <input type="text" placeholder="搜索专业、学年...">
+                        </div>
+                        <select class="filter-select">
+                            <option>全部学年</option>
+                            <option>2024-2025</option>
+                            <option>2023-2024</option>
+                        </select>
+                        <select class="filter-select">
+                            <option>全部学院</option>
+                            <option>计算机学院</option>
+                            <option>外语学院</option>
+                        </select>
+                        <select class="filter-select">
+                            <option>全部状态</option>
+                            <option>启用</option>
+                            <option>禁用</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>标准编号</th>
+                                    <th>学年</th>
+                                    <th>专业</th>
+                                    <th>收费项目</th>
+                                    <th>金额</th>
+                                    <th>类型</th>
+                                    <th>状态</th>
+                                    <th>更新时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>STD-2024-001</td>
+                                    <td>2024-2025</td>
+                                    <td>计算机科学与技术</td>
+                                    <td>学费</td>
+                                    <td>¥5,000</td>
+                                    <td>专业标准</td>
+                                    <td><span class="badge badge-success">启用</span></td>
+                                    <td>2026-05-10 14:30</td>
+                                    <td>
+                                        <button class="action-btn"><i class="ti ti-edit"></i></button>
+                                        <button class="action-btn danger"><i class="ti ti-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>STD-2024-002</td>
+                                    <td>2024-2025</td>
+                                    <td>计算机科学与技术</td>
+                                    <td>住宿费（4人间）</td>
+                                    <td>¥2,500</td>
+                                    <td>专业标准</td>
+                                    <td><span class="badge badge-success">启用</span></td>
+                                    <td>2026-05-10 14:30</td>
+                                    <td>
+                                        <button class="action-btn"><i class="ti ti-edit"></i></button>
+                                        <button class="action-btn danger"><i class="ti ti-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>STD-2024-003</td>
+                                    <td>2024-2025</td>
+                                    <td>计算机科学与技术</td>
+                                    <td>教材费</td>
+                                    <td>¥500</td>
+                                    <td>专业标准</td>
+                                    <td><span class="badge badge-success">启用</span></td>
+                                    <td>2026-05-10 14:30</td>
+                                    <td>
+                                        <button class="action-btn"><i class="ti ti-edit"></i></button>
+                                        <button class="action-btn danger"><i class="ti ti-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>STD-2024-004</td>
+                                    <td>2024-2025</td>
+                                    <td>英语</td>
+                                    <td>学费</td>
+                                    <td>¥4,500</td>
+                                    <td>专业标准</td>
+                                    <td><span class="badge badge-success">启用</span></td>
+                                    <td>2026-05-10 14:30</td>
+                                    <td>
+                                        <button class="action-btn"><i class="ti ti-edit"></i></button>
+                                        <button class="action-btn danger"><i class="ti ti-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>STD-2024-005</td>
+                                    <td>2024-2025</td>
+                                    <td>英语</td>
+                                    <td>住宿费（6人间）</td>
+                                    <td>¥2,000</td>
+                                    <td>专业标准</td>
+                                    <td><span class="badge badge-success">启用</span></td>
+                                    <td>2026-05-10 14:30</td>
+                                    <td>
+                                        <button class="action-btn"><i class="ti ti-edit"></i></button>
+                                        <button class="action-btn danger"><i class="ti ti-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>STD-2024-PER-001</td>
+                                    <td>2024-2025</td>
+                                    <td>计算机科学与技术</td>
+                                    <td>学费（困难生减免）</td>
+                                    <td>¥2,500</td>
+                                    <td>个人标准</td>
+                                    <td><span class="badge badge-success">启用</span></td>
+                                    <td>2026-05-12 10:15</td>
+                                    <td>
+                                        <button class="action-btn"><i class="ti ti-edit"></i></button>
+                                        <button class="action-btn danger"><i class="ti ti-trash"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination">
+                        <div class="pagination-info">显示 1-6 条，共 128 条</div>
+                        <div class="pagination-pages">
+                            <button class="page-btn" disabled>上一页</button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">...</button>
+                            <button class="page-btn">22</button>
+                            <button class="page-btn">下一页</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

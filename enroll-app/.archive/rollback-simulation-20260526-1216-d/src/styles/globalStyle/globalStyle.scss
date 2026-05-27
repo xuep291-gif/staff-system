@@ -1,0 +1,374 @@
+/* 定义全局样式 */
+
+/* ********************************************属性定义************************************************ */
+// 主标题字风格
+$global_title_textcolor: #000; // 字体颜色
+$global_title_textweight: 700; // 字体宽度
+$global_title_textsize: 38rpx; // 字体大小
+$global_title_subtitle_space: 10rpx; // 标题于副标题间隔
+
+// 副标题字体风格
+$global_subtitle_textcolor: #8a8a8a; // 副标题颜色
+$global_subtitle_textweight: '';
+$global_subtitle_textsize: 28rpx; // 副标题字号大小
+
+// 分组容器风格
+$chief_container_padding: 20rpx; // 容器内边距
+$chief_container_icon_size: '';
+$chief_container_title_textcolor: #000; // 容器内标题字体颜色
+$chief_container_title_textweight: 500; // 容器内标题字体宽度
+$chief_container_title_textsize: 34rpx; // 容器内标题字号大小
+$chief_container_subtitle_textcolor: #8a8a8a;  // 容器内副标题颜色
+$chief_container_subtitle_textweight: '';
+$chief_container_subtitle_textsize: 28rpx; // 容器内副标题字号大小
+$chief_container_title_subtitle_space: 10rpx; // 容器内标题与副标题之间的距离
+$chief_container_margin: '';
+$chief_container_margin_bottom: 30rpx; // 容器底部外边距
+$chief_container_shadow: '';
+$chief_container_corner_radius: 20rpx; // 容器圆角
+$chief_container_background: #fff; // 容器底色
+
+// 头像组件风格
+// $avatar_size: '';
+$avatar_size_width: 130rpx; //头像高度
+$avatar_size_height: 130rpx; //头像宽度
+$avatar_border: 50%; // 头像圆角
+$avatar_small_title_textcolor: '';
+$avatar_small_title_textweight: '';
+$avatar_small_title_textsize: '';
+$avatar_medium_title_textcolor: '';
+$avatar_medium_title_textweight: '';
+$avatar_medium_title_textsize: '';
+$avatar_large_title_textcolor: '';
+$avatar_large_title_textweight: '';
+$avatar_large_title_textsize: '';
+
+// 列表组件风格
+$listitem_title_textcolor: '';
+$listitem_title_textweight: '';
+$listitem_title_textsize: '';
+$listitem_subtitle_textcolor: '';
+$listitem_subtitle_textweight: '';
+$listitem_subtitle_textsize: '';
+
+// 路由项组件风格
+$navlistbox_title_textcolor: #000; //路由项标题颜色
+$navlistbox_title_textweight: 700; //路由项标题字体粗度
+$navlistbox_title_textsize: 40rpx; //路由项标题字号大小
+$navlistbox_title_boxheight: 100rpx; //路由项高度
+$navlistbox_icon_size: 50rpx; //路由项图标大小
+$navlistbox_icon_boxsize: '';
+$navlistbox_icon_margin: 20rpx; // 路由图标外边距
+$navlistbox_border: 2rpx solid #8a8a8a; // 路由项边框样式
+$navlistbox_border_radius: 20rpx; // 圆角
+$navlistbox_height: 100rpx; //路由组件高度
+
+// 按钮组件风格
+$button_height: 100rpx; // 按钮高度
+$button_textColor: #f5f5dc; // 字体颜色
+$button_textSize: 40rpx; // 字体大小
+$button_comfirm_backgroundColor: #097bd0;  // 确认按钮底色
+$button_uncertain_backgroundColor: rgba(9, 123, 208, 0.5); // 不可点击状态的确认按钮底色
+$button_delete_backgroundColor: red; //删除按钮底色
+$button_delete_height: 96rpx; //删除按钮的高度
+$button_radius: 16rpx; // 按钮默认圆角
+$button_margin_top: 60rpx; // 按钮与元素之间的距离
+$button_spaceBetween: 20rpx; // 按钮与按钮之间的距离
+
+// 底部固定按容器钮组件风格
+$bottom_button_box_width: 90%; //页面的90%
+$bottom_button_box_padding: 20rpx;
+$bottom_button_box_margin_bottom: 30rpx;
+
+// 图表图例组件风格
+$global_chart_legend_height: 20rpx; // 色块高度
+$global_chart_legend_width: 46rpx; // 色块宽度
+
+// tag组件风格
+$global_tag_textFontSize: 30rpx; // tag内字号大小
+$global_tag_textColor: #2c88d9; // tag内字体颜色
+$global_tag_color: #2c88d9; // tag颜色
+$global_tag_backgroundColor_gray: #353940; //灰色底色
+$global_tag_backgroundColor_frenchGray: #F5F5F7; //浅灰色底色
+$global_tag_borderStyle: solid; // tag边框样式
+$global_tag_borderWidth: 2rpx; // tag边框宽度
+$global_tag_padding: 20rpx; // tagpadding
+$global_tag_padding_left: 5rpx; // 左padding
+$global_tag_padding_right: 5rpx; // 右padding
+$global_tag_borderRadius: 35rpx; // tag圆角
+$global-tag-height: 70rpx; // tag高度
+$global-tag-height-two: 60rpx; // tag高度
+
+// 基础全局样式属性
+$house-container-padding: 12px; // 容器内边距
+$house-container-margin: 12px; // 容器外边距
+$house-page-padding: 12px; // 页面内边距
+$house-page-margin: 12px; // 页面外边距
+
+/********************************************** 样式 *********************************************************/
+/* 主容器*/
+.global-container {
+	padding: 20rpx 20rpx 80rpx 20rpx;
+	display: flex;
+	flex-direction: column;
+}
+
+/* 容器 */
+.chief-container {
+	display: flex;
+	flex-direction: column;
+	background-color: $chief_container_background;
+	border-radius: $chief_container_corner_radius;
+	padding: $chief_container_padding;
+	margin-bottom: $chief_container_margin_bottom;
+	
+	// 容器内标题
+	.chief-title {
+		color: $chief_container_title_textcolor;
+		font-weight: $chief_container_title_textweight;
+		font-size: $chief_container_title_textsize;
+		margin-bottom: $chief_container_title_subtitle_space;
+	}
+	
+	// 容器内副标题
+	.chief-subtitle {
+		color: $chief_container_subtitle_textcolor;
+		font-size: $chief_container_subtitle_textsize;
+	}
+}
+
+/* 底部固定按钮容器 */
+.global-bottom-button-box {
+	position: fixed;
+	bottom: 0;
+	padding: $bottom_button_box_padding;
+	width: $bottom_button_box_width;
+}
+
+/* 主标题 */
+.global-title {
+	color: $global_title_textcolor;
+	font-weight: $global_title_textweight;
+	font-size: $global_title_textsize;
+	margin-bottom: $global_title_subtitle_space;
+}
+
+/* 副标题 */
+.global-subtitle {
+	color: $global_subtitle_textcolor;
+	font-size: $global_subtitle_textsize;
+	margin-bottom: $global_title_subtitle_space;
+}
+
+/* 色块 */
+.global-colorLump {
+	height: 20rpx;
+	width: 46rpx;
+}
+
+/* 按钮 */
+/* 确认按钮-不可点击状态 */
+.global-button-off {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0rpx 10rpx 0rpx 10rpx;
+	height: $button_height;
+	font-size: $button_textSize;
+	color: $button_textColor;
+	border-radius: $button_radius;
+	background-color: $button_uncertain_backgroundColor;
+	margin-bottom: $button_spaceBetween;
+}
+
+/* 确认按钮-可点击状态 */
+.global-button {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0rpx 10rpx 0rpx 10rpx;
+	height: $button_height;
+	font-size: $button_textSize;
+	color: $button_textColor;
+	border-radius: $button_radius;
+	background-color: $button_comfirm_backgroundColor;
+	margin-bottom: $button_spaceBetween;
+}
+
+/* 取消按钮 */
+.global-button-cancel {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0rpx 10rpx 0rpx 10rpx;
+	border: 2rpx solid $button_comfirm_backgroundColor;
+	border-radius: $button_radius;
+	color: $button_comfirm_backgroundColor;
+	font-size: $button_textSize;
+	height: $button_delete_height;
+	margin-bottom: $button_spaceBetween;
+}
+
+/* 删除/退出按钮 */
+.global-button-delete {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border: 2rpx solid $button_delete_backgroundColor;
+	padding: 0rpx 10rpx 0rpx 10rpx;
+	height: $button_delete_height;
+	font-size: $button_textSize;
+	color: $button_delete_backgroundColor;
+	border-radius: $button_radius;
+	margin-bottom: $button_spaceBetween;
+}
+
+// 路由
+.global-navigation {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: $navlistbox_height;
+	border-radius: $navlistbox_border_radius;
+	background-color: #fff;
+	
+	// 路由项图标
+	.global-navigation-icon {
+		width: $navlistbox_icon_size;
+		height: $navlistbox_icon_size;
+		margin-right: $navlistbox_icon_margin;
+	}
+	
+	// 路由项标题
+	.global-navigation-title {
+		font-size: $navlistbox_title_textsize;
+		color: $navlistbox_title_textcolor;
+		font-weight: $navlistbox_title_textweight;
+	}
+}
+
+// 增加按钮
+.global-button-add {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border: 2rpx dashed #cdcdcd;
+	padding: 0rpx 10rpx 0rpx 10rpx;
+	height: $button_delete_height;
+	font-size: $button_textSize;
+	color: #cdcdcd;
+	border-radius: $button_radius;
+	margin-bottom: $button_spaceBetween;
+}
+
+// 标准tag
+.global-tag {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0rpx $global_tag_padding;
+	font-size: $global_tag_textFontSize;
+	color: $global_tag_textColor;
+	border: $global_tag_borderWidth $global_tag_borderStyle $global_tag_color;
+	height: $global-tag-height;
+}
+
+
+// 半圆tag
+.global-tag-semicircle {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0rpx $global_tag_padding;
+	font-size: $global_tag_textFontSize;
+	color: $global_tag_textColor;
+	border: $global_tag_borderWidth $global_tag_borderStyle $global_tag_color;
+	border-radius: $global-tag-height;
+	height: ($global-tag-height - 2);
+	background-color: #2c88d930;
+}
+
+// 圆角tag
+.global-tag-radius {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0rpx $global_tag_padding;
+	font-size: $global_tag_textFontSize;
+	color: $global_tag_textColor;
+	border: $global_tag_borderWidth $global_tag_borderStyle $global_tag_color;
+	border-radius: 20rpx;
+	height: $global-tag-height;
+}
+
+// 无边框tag
+.global-tag-borderless {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0rpx $global_tag_padding;
+	font-size: $global_tag_textFontSize;
+	color: $global_tag_textColor;
+	border-radius: $global-tag-height;
+	height: ($global-tag-height - 2);
+	background-color: #2c88d930;
+}
+
+// 有底色tag
+.global-tag-background {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0rpx $global_tag_padding;
+	font-size: $global_tag_textFontSize;
+	color: white;
+	border-radius: $global-tag-height;
+	background-color: #20894d;
+	height: $global-tag-height;
+}
+
+// 有底色tag-灰色
+.global-tag-background-gray {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0rpx $global_tag_padding;
+	font-size: $global_tag_textFontSize;
+	color: white;
+	border-radius: $global-tag-height;
+	background-color: $global_tag_backgroundColor_gray;
+	height: $global-tag-height;
+}
+
+// 有底色的tag-浅灰色
+.global-tag-background-frenchGrey {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0rpx $global_tag_padding;
+	font-size: $global_tag_textFontSize;
+	color: black;
+	border-radius: $global-tag-height;
+	background-color: $global_tag_backgroundColor_frenchGray;
+	height: $global-tag-height-two;
+}
+
+// 色块
+.global-colorLump {
+	height: $global_chart_legend_height;
+	width: $global_chart_legend_width;
+}
+
+// 基础页面布局
+.house-base {
+	display: flex;
+	flex-direction: column;
+	padding: 12px 12px 36px 12px;
+}
+
+
+
+
+
+
+

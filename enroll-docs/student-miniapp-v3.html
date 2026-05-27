@@ -1,0 +1,2071 @@
+2<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>华东科技大学 · 迎新缴费小程序 v3</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+/* ── Tokens ── */
+:root{
+  --pri:#2B6CB0;--pri-d:#1E4D8C;--pri-t:#DBEAFE;--pri-s:#EFF6FF;--pri-dark:#1E3A5F;
+  --ok:#15803D;--ok-bg:#DCFCE7;--ok-bd:#86EFAC;
+  --wa:#D97706;--wa-bg:#FEF3C7;--wa-bd:#FCD34D;
+  --er:#B91C1C;--er-bg:#FEE2E2;--er-bd:#FCA5A5;
+  --in:#0369A1;--in-bg:#E0F2FE;--in-bd:#7DD3FC;
+  --pu:#7C3AED;--pu-bg:#EDE9FE;--pu-bd:#C4B5FD;
+  --N900:#111827;--N700:#374151;--N500:#6B7280;--N400:#9CA3AF;
+  --N200:#E5E7EB;--N50:#F2F3F5;--N25:#F8F9FB;--wh:#FFFFFF;
+  --sh-hi:0 4px 16px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.06);
+  --sh-lo:0 1px 3px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;
+  background:#111827;min-height:100vh;padding:32px 16px;
+  display:flex;flex-direction:column;align-items:center;gap:0}
+
+/* ── Layout ── */
+.app-header{color:rgba(255,255,255,.5);font-size:11px;font-weight:600;letter-spacing:.5px;
+  text-align:center;padding:0 0 24px;width:100%}
+.app-header strong{color:rgba(255,255,255,.9);font-size:13px;display:block;margin-bottom:4px}
+
+/* ── Phone Frame ── */
+.phone{width:375px;height:812px;background:var(--N50);border-radius:44px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 0 0 10px #222,0 0 0 12px #444,0 40px 100px rgba(0,0,0,.7);
+  flex-shrink:0}
+
+/* ── Screen System ── */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;
+  background:var(--N50);transition:transform .3s ease,opacity .3s ease;
+  transform:translateX(100%);opacity:0;pointer-events:none;z-index:1}
+.screen.active{transform:translateX(0);opacity:1;pointer-events:all;z-index:2}
+.screen.prev{transform:translateX(-30%);opacity:0;z-index:1}
+
+/* ── Status Bar ── */
+.sbar{height:44px;background:var(--pri);display:flex;align-items:center;
+  justify-content:space-between;padding:0 20px;flex-shrink:0}
+.sbar.wh{background:var(--wh);border-bottom:1px solid var(--N200)}
+.sbar-t{color:#fff;font-size:15px;font-weight:600}
+.sbar.wh .sbar-t{color:var(--N900)}
+.sbar-r{color:#fff;font-size:13px;display:flex;align-items:center;gap:5px}
+.sbar.wh .sbar-r{color:var(--N500)}
+
+/* ── Nav Bar ── */
+.navbar{background:var(--wh);border-bottom:1px solid var(--N200);
+  display:flex;align-items:center;gap:10px;padding:0 16px;height:48px;flex-shrink:0}
+.navbar.pri{background:var(--pri);border:none}
+.nb-back{font-size:22px;color:var(--N700);cursor:pointer;display:flex;align-items:center;
+  padding:4px;margin-left:-4px;flex-shrink:0}
+.navbar.pri .nb-back{color:#fff}
+.nb-title{font-size:17px;font-weight:600;color:var(--N900);flex:1}
+.navbar.pri .nb-title{color:#fff}
+.nb-right{margin-left:auto;font-size:12px;font-weight:600;color:var(--pri);cursor:pointer;white-space:nowrap}
+.navbar.pri .nb-right{color:rgba(255,255,255,.85)}
+
+/* ── Scroll Area ── */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;display:flex;flex-direction:column}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ── Banner ── */
+.banner{background:var(--pri);padding:14px 18px 44px;flex-shrink:0}
+.banner-row{display:flex;align-items:center;justify-content:space-between}
+.avatar{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:700;flex-shrink:0}
+.b-name{color:#fff;font-size:18px;font-weight:700;line-height:1.2}
+.b-sub{color:rgba(255,255,255,.65);font-size:11px;margin-top:2px}
+.bell-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;
+  position:relative;cursor:pointer;flex-shrink:0}
+.bell-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;
+  background:#EF4444;border:2px solid var(--pri)}
+
+/* ── Float Card ── */
+.float-card{background:var(--wh);border-radius:14px;box-shadow:var(--sh-hi);
+  margin:-28px 14px 0;padding:16px;position:relative;z-index:10;flex-shrink:0}
+.fc-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.fc-tt{font-size:13px;font-weight:600;color:var(--N700)}
+.fc-lk{font-size:11px;color:var(--pri);font-weight:600;cursor:pointer}
+.prog-wrap{background:var(--N50);border-radius:4px;height:6px;margin-bottom:12px}
+.prog-fill{background:var(--pri);border-radius:4px;height:6px}
+.stats-row{display:flex}
+.stat-item{flex:1;text-align:center;padding:4px 0;border-right:1px solid var(--N200)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-size:22px;font-weight:700;color:var(--pri);line-height:1.1}
+.stat-num.wa{color:var(--wa)}.stat-num.ok{color:var(--ok)}.stat-num.N{color:var(--N900)}
+.stat-lbl{font-size:10px;font-weight:600;color:var(--N400);letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
+
+/* ── Content Area ── */
+.content{background:var(--N50);padding:16px 14px 100px;display:flex;flex-direction:column;gap:12px;flex:1}
+.content.nb{padding-top:12px}
+.content.no-tab{padding-bottom:24px}
+.sec-lbl{font-size:10px;font-weight:600;color:var(--N400);letter-spacing:.5px;text-transform:uppercase;margin-bottom:-4px}
+
+/* ── Cards ── */
+.card{background:var(--wh);border-radius:14px;border:1px solid rgba(0,0,0,.07);box-shadow:var(--sh-lo);overflow:hidden}
+.card.urgent{border-color:var(--er-bd)}
+.card.info-c{border-color:var(--in-bd)}
+.card.ok-c{border-color:var(--ok-bd)}
+.card.wa-c{border-color:var(--wa-bd)}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px}
+.card-tt{font-size:15px;font-weight:600;color:var(--N900)}
+.card-body{padding:0 16px 14px}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:20px;
+  font-size:11px;font-weight:600;border:1px solid;white-space:nowrap}
+.badge.ok{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-bd)}
+.badge.wa{color:var(--wa);background:var(--wa-bg);border-color:var(--wa-bd)}
+.badge.er{color:var(--er);background:var(--er-bg);border-color:var(--er-bd)}
+.badge.in{color:var(--in);background:var(--in-bg);border-color:var(--in-bd)}
+.badge.pu{color:var(--pu);background:var(--pu-bg);border-color:var(--pu-bd)}
+.badge.gy{color:var(--N500);background:var(--N50);border-color:var(--N200)}
+
+/* ── Buttons ── */
+.btn-pri{height:44px;border-radius:8px;border:none;background:var(--pri);color:#fff;
+  font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;font-family:inherit}
+.btn-pri:active{background:var(--pri-d)}
+.btn-pri:disabled{background:var(--N50);color:var(--N400);cursor:not-allowed}
+.btn-sec{height:44px;border-radius:8px;border:1.5px solid var(--pri);background:transparent;
+  color:var(--pri);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;width:100%;font-family:inherit;gap:6px}
+.btn-sec.gy{border-color:var(--N200);color:var(--N400);cursor:not-allowed}
+.btn-er{height:44px;border-radius:8px;border:1px solid var(--er-bd);background:var(--er-bg);
+  color:var(--er);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;width:100%;font-family:inherit;gap:6px}
+.btn-pill{height:32px;border-radius:20px;padding:0 14px;background:var(--pri);color:#fff;
+  font-size:12px;font-weight:600;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
+.btn-pill.sm{height:28px;font-size:11px;padding:0 12px}
+.btn-pill.ok{background:var(--ok)}
+.btn-pill-o{height:32px;border-radius:20px;padding:0 12px;background:transparent;color:var(--N500);
+  font-size:11px;border:1px solid var(--N200);cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
+.btn-row{display:flex;gap:10px}
+
+/* ── Info Bar ── */
+.info-bar{border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start}
+.info-bar.wa{background:var(--wa-bg);border:1px solid var(--wa-bd)}
+.info-bar.in{background:var(--in-bg);border:1px solid var(--in-bd)}
+.info-bar.pu{background:var(--pu-bg);border:1px solid var(--pu-bd)}
+.info-bar.ok{background:var(--ok-bg);border:1px solid var(--ok-bd)}
+.info-bar.er{background:var(--er-bg);border:1px solid var(--er-bd)}
+.ib-text{font-size:12px;line-height:1.5;flex:1}
+
+/* ── Bill Items ── */
+.bill-items{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.bill-item{display:flex;align-items:center;justify-content:space-between;
+  font-size:13px;padding:8px 12px;border-radius:8px;background:var(--N25)}
+.bi-name{color:var(--N700);font-weight:400;display:flex;align-items:center;gap:6px;flex:1}
+.bi-price{color:var(--N900);font-weight:600;white-space:nowrap}
+.bi-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--N200);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;font-size:10px;margin-right:8px}
+.bi-check.on{background:var(--pri);border-color:var(--pri);color:#fff}
+
+/* ── Amount ── */
+.amount-row{display:flex;align-items:baseline;gap:6px;margin-bottom:12px}
+.amount-big{font-size:22px;font-weight:700;color:var(--wa)}
+.amount-unit{font-size:13px;color:var(--N500)}
+
+/* ── Steps ── */
+.step-item{display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid var(--N50)}
+.step-item:last-child{border-bottom:none}
+.step-ic{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:18px;flex-shrink:0;margin-top:1px}
+.step-ic.done{background:var(--ok-bg);color:var(--ok)}
+.step-ic.act{background:var(--pri-t);color:var(--pri)}
+.step-ic.pend{background:var(--N50);color:var(--N400)}
+.step-body{flex:1}
+.step-tt{font-size:13px;font-weight:600;color:var(--N700);margin-bottom:2px}
+.step-sub{font-size:11px;color:var(--N500)}
+
+/* ── Grid ── */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px 14px}
+.ge{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;
+  padding:8px 4px;border-radius:12px}
+.ge-ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.ge-ic.bl{background:var(--pri-t);color:var(--pri)}
+.ge-ic.gn{background:var(--ok-bg);color:var(--ok)}
+.ge-ic.or{background:var(--wa-bg);color:var(--wa)}
+.ge-ic.rd{background:var(--er-bg);color:var(--er)}
+.ge-ic.pu{background:var(--pu-bg);color:var(--pu)}
+.ge-ic.cy{background:var(--in-bg);color:var(--in)}
+.ge-ic.gy{background:var(--N50);color:var(--N400)}
+.ge-lbl{font-size:13px;font-weight:600;color:var(--N700);text-align:center}
+
+/* ── Notice List ── */
+.notice-list{display:flex;flex-direction:column}
+.nitem{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;
+  border-bottom:1px solid var(--N50);cursor:pointer}
+.nitem:last-child{border-bottom:none}
+.ndot{width:8px;height:8px;border-radius:50%;background:var(--pri);flex-shrink:0;margin-top:5px}
+.ndot.read{background:var(--N200)}
+.nbody{flex:1}
+.ntt{font-size:13px;font-weight:600;color:var(--N700);margin-bottom:2px}
+.ndesc{font-size:11px;color:var(--N500);line-height:1.5}
+.ntime{font-size:11px;color:var(--N400);margin-top:2px}
+
+/* ── TabBar ── */
+.tabbar{height:56px;background:var(--wh);border-top:1px solid var(--N200);
+  display:flex;align-items:center;padding:0 8px;flex-shrink:0}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;padding:6px 4px;border-radius:10px}
+.tab-ic-bg{width:32px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.tab-item.on .tab-ic-bg{background:var(--pri-s)}
+.tab-ic{font-size:22px}
+.tab-item.on .tab-ic{color:var(--pri)}
+.tab-item:not(.on) .tab-ic{color:var(--N400)}
+.tab-lbl{font-size:10px;font-weight:600}
+.tab-item.on .tab-lbl{color:var(--pri)}
+.tab-item:not(.on) .tab-lbl{color:var(--N400)}
+
+/* ── Pay Methods ── */
+.pay-methods{display:flex;flex-direction:column;gap:8px;padding:0 16px 14px}
+.pay-method{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;
+  border:1.5px solid var(--N200);cursor:pointer}
+.pay-method.on{border-color:var(--pri);background:var(--pri-s)}
+.pm-icon{font-size:24px;width:32px;text-align:center}
+.pm-name{font-size:14px;font-weight:600;color:var(--N700);flex:1}
+.pm-radio{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--N200);
+  display:flex;align-items:center;justify-content:center}
+.pm-radio.on{border-color:var(--pri);background:var(--pri)}
+.pm-radio.on::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff}
+
+/* ── Tab Selector ── */
+.tab-sel{display:flex;background:var(--N50);border-radius:10px;padding:3px;margin-bottom:14px}
+.ts-item{flex:1;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;cursor:pointer;color:var(--N500)}
+.ts-item.on{background:var(--wh);color:var(--pri);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+/* ── Hist Items ── */
+.hist-item{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid var(--N50);cursor:pointer}
+.hist-item:last-child{border-bottom:none}
+.hi-left{display:flex;flex-direction:column;gap:3px}
+.hi-tt{font-size:13px;font-weight:600;color:var(--N700)}
+.hi-sub{font-size:11px;color:var(--N400)}
+.hi-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.hi-amt{font-size:15px;font-weight:700;color:var(--N900)}
+.hi-amt.plus{color:var(--ok)}
+.hi-amt.minus{color:var(--er)}
+
+/* ── Receipt ── */
+.receipt{margin:0 16px 14px;background:var(--N25);border-radius:12px;
+  border:1px solid var(--N200);padding:14px}
+.rrow{display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;border-bottom:1px dashed var(--N200);font-size:12px}
+.rrow:last-child{border-bottom:none}
+.rkey{color:var(--N500)}
+.rval{color:var(--N700);font-weight:600}
+
+/* ── Form ── */
+.form-group{display:flex;flex-direction:column;gap:12px;padding:0 16px 14px}
+.form-lbl{font-size:11px;font-weight:600;color:var(--N500);margin-bottom:4px}
+.form-inp{width:100%;height:44px;border-radius:12px;border:1px solid var(--N200);
+  background:var(--wh);padding:0 12px;font-size:14px;color:var(--N900);
+  font-family:inherit;outline:none}
+.form-inp:focus{border-color:var(--pri)}
+.form-ta{width:100%;height:80px;border-radius:12px;border:1px solid var(--N200);
+  background:var(--wh);padding:10px 12px;font-size:14px;color:var(--N900);
+  font-family:inherit;outline:none;resize:none}
+.form-ta:focus{border-color:var(--pri)}
+.form-sel{width:100%;height:44px;border-radius:12px;border:1px solid var(--N200);
+  background:var(--wh);padding:0 12px;font-size:14px;color:var(--N900);
+  font-family:inherit;outline:none;appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239CA3AF' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center}
+.upload-area{border:1.5px dashed var(--N200);border-radius:12px;padding:20px;
+  text-align:center;cursor:pointer;background:var(--N25)}
+.upload-ic{font-size:28px;color:var(--N400);margin-bottom:6px}
+.upload-txt{font-size:12px;color:var(--N500);line-height:1.5}
+
+/* ── Row List ── */
+.row-list{display:flex;flex-direction:column}
+.rli{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid var(--N50);cursor:pointer}
+.rli:last-child{border-bottom:none}
+.rli-left{display:flex;align-items:center;gap:10px}
+.rli-lbl{font-size:13px;color:var(--N700)}
+.rli-val{font-size:13px;color:var(--N500)}
+.rli-chevron{color:var(--N400);font-size:16px}
+
+/* ── Dorm ── */
+.dorm-card-header{display:flex;gap:12px;padding:14px 16px;align-items:flex-start}
+.dorm-ic{width:44px;height:44px;border-radius:12px;background:var(--in-bg);
+  display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--in);flex-shrink:0}
+.dorm-meta{flex:1}
+.dorm-name{font-size:15px;font-weight:600;color:var(--N900);margin-bottom:4px}
+.dorm-sub{font-size:12px;color:var(--N500)}
+.dorm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 14px}
+.dg-item{background:var(--N25);border-radius:10px;padding:10px 12px}
+.dg-lbl{font-size:10px;font-weight:600;color:var(--N400);letter-spacing:.5px;margin-bottom:4px;text-transform:uppercase}
+.dg-val{font-size:13px;font-weight:600;color:var(--N700)}
+
+/* ── Diff ── */
+.diff-item{padding:12px 16px;border-bottom:1px solid var(--N50)}
+.diff-item:last-child{border-bottom:none}
+.diff-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.diff-tt{font-size:13px;font-weight:600;color:var(--N700)}
+.diff-meta{font-size:11px;color:var(--N400);display:flex;gap:8px;margin-bottom:8px}
+.diff-amounts{display:flex;gap:12px}
+.da-item{flex:1;background:var(--N25);border-radius:8px;padding:8px 10px}
+.da-lbl{font-size:10px;color:var(--N400);font-weight:600;letter-spacing:.5px;margin-bottom:2px}
+.da-val{font-size:13px;font-weight:700;color:var(--N900)}
+.da-val.er{color:var(--er)}
+.da-val.ok{color:var(--ok)}
+
+/* ── Room Selector ── */
+.room-filter{display:flex;gap:8px;padding:12px 14px;overflow-x:auto;flex-shrink:0;background:var(--wh)}
+.room-filter::-webkit-scrollbar{display:none}
+.rf-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--N200);
+  font-size:12px;font-weight:600;color:var(--N500);cursor:pointer;white-space:nowrap;background:var(--wh)}
+.rf-btn.on{border-color:var(--pri);color:var(--pri);background:var(--pri-s)}
+.room-list{display:flex;flex-direction:column;gap:8px;padding:0 14px 14px}
+.room-item{background:var(--wh);border-radius:12px;border:1px solid rgba(0,0,0,.07);
+  box-shadow:var(--sh-lo);padding:12px 14px;cursor:pointer}
+.room-item.sel{border-color:var(--pri);background:var(--pri-s)}
+.ri-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.ri-name{font-size:13px;font-weight:600;color:var(--N700)}
+.ri-price{font-size:13px;font-weight:700;color:var(--pri)}
+.ri-tags{display:flex;gap:6px;flex-wrap:wrap}
+.ri-tag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+.ri-tag.avail{background:var(--ok-bg);color:var(--ok)}
+.ri-tag.type{background:var(--in-bg);color:var(--in)}
+.ri-tag.warn{background:var(--wa-bg);color:var(--wa)}
+.ri-tag.full{background:var(--N50);color:var(--N400)}
+.bed-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bed-item{background:var(--wh);border-radius:10px;border:1.5px solid var(--N200);
+  padding:10px;text-align:center;cursor:pointer}
+.bed-item.on{border-color:var(--pri);background:var(--pri-s)}
+.bed-item.taken{background:var(--N50);border-color:var(--N200);cursor:not-allowed;opacity:.6}
+.bed-num{font-size:16px;font-weight:700;color:var(--N700)}
+.bed-item.on .bed-num{color:var(--pri)}
+.bed-status{font-size:10px;color:var(--N400);margin-top:2px}
+.bed-status.avail{color:var(--ok)}
+
+/* ── Precharge ── */
+.prec-stat{padding:16px;text-align:center;border-bottom:1px solid var(--N50)}
+.prec-num{font-size:36px;font-weight:700;color:var(--pri)}
+.prec-lbl{font-size:12px;color:var(--N500);margin-top:4px}
+.prec-valid{font-size:11px;color:var(--N400);margin-top:4px}
+
+/* ── Aid / Loan ── */
+.aid-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--N50);cursor:pointer}
+.aid-item:last-child{border-bottom:none}
+.aid-ic{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.aid-body{flex:1}
+.aid-tt{font-size:13px;font-weight:600;color:var(--N700);margin-bottom:3px}
+.aid-sub{font-size:11px;color:var(--N400)}
+.aid-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.aid-amt{font-size:14px;font-weight:700;color:var(--pri)}
+
+/* ── Helpers ── */
+.divider{height:1px;background:var(--N50);margin:0 16px}
+.gap-col{display:flex;flex-direction:column;gap:10px}
+.fs11{font-size:11px}.fs12{font-size:12px}.fs13{font-size:13px}
+.fw6{font-weight:600}
+.fc-N500{color:var(--N500)}.fc-N400{color:var(--N400)}.fc-N700{color:var(--N700)}
+.mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}
+.center{text-align:center}
+.empty-wrap{padding:48px 20px;text-align:center}
+.empty-ic{font-size:48px;color:var(--N200);margin-bottom:8px}
+.empty-txt{font-size:14px;color:var(--N500)}
+.empty-sub{font-size:12px;color:var(--N400);margin-top:4px}
+.info-hint{font-size:11px;color:var(--N400);text-align:center}
+.tag-sm{display:inline-flex;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600}
+
+/* ── Profile List ── */
+.profile-header{padding:20px 16px;display:flex;gap:14px;align-items:center;border-bottom:1px solid var(--N50)}
+.profile-av{width:56px;height:56px;border-radius:50%;background:var(--pri);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700;flex-shrink:0}
+.profile-name{font-size:18px;font-weight:700;color:var(--N900)}
+.profile-sub{font-size:12px;color:var(--N500);margin-top:2px}
+.menu-group{display:flex;flex-direction:column}
+.menu-item{display:flex;align-items:center;gap:12px;padding:14px 16px;
+  border-bottom:1px solid var(--N50);cursor:pointer}
+.menu-item:last-child{border-bottom:none}
+.menu-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.menu-lbl{font-size:14px;color:var(--N700);flex:1}
+.menu-val{font-size:12px;color:var(--N400)}
+.menu-badge{background:var(--er);color:#fff;font-size:10px;font-weight:700;
+  border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
+
+/* ── Modal ── */
+.modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:100;
+  display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--wh);border-radius:20px 20px 0 0;width:100%;padding:20px 16px 32px;
+  max-height:85%;overflow-y:auto}
+.modal-handle{width:40px;height:4px;background:var(--N200);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:17px;font-weight:700;color:var(--N900);margin-bottom:16px}
+.modal-actions{display:flex;gap:10px;margin-top:16px}
+
+/* ── Success State ── */
+.success-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
+.success-ic{width:72px;height:72px;border-radius:50%;background:var(--ok-bg);
+  display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--ok);margin-bottom:20px}
+.success-title{font-size:20px;font-weight:700;color:var(--N900);margin-bottom:8px}
+.success-sub{font-size:14px;color:var(--N500);text-align:center;line-height:1.6}
+
+/* ── Countdown ── */
+.countdown-bar{background:var(--wa-bg);border-bottom:1px solid var(--wa-bd);padding:10px 16px;
+  display:flex;align-items:center;gap:10px;flex-shrink:0}
+.countdown-num{font-size:20px;font-weight:700;color:var(--wa)}
+
+/* ── Page nav indicator ── */
+.page-nav{position:fixed;bottom:20px;right:20px;background:rgba(17,24,39,.9);border-radius:12px;
+  padding:10px 14px;color:#fff;font-size:11px;font-weight:600;z-index:9999;
+  display:flex;flex-direction:column;gap:4px;pointer-events:none;opacity:0;
+  transition:opacity .3s}
+.page-nav.show{opacity:1;pointer-events:all}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <strong>华东科技大学 · 迎新缴费小程序 v3</strong>
+  完整可交互原型 · 点击按钮/入口跳转页面 · 左上角「‹」返回
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PHONE FRAME — all screens rendered inside
+═══════════════════════════════════════════ -->
+<div class="phone" id="app">
+
+<!-- ════ S01 首页 ════ -->
+<div class="screen active" id="s-home">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="scroll">
+    <div class="banner">
+      <div class="banner-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar">张</div>
+          <div><div class="b-name">张同学</div><div class="b-sub">计算机科学 2026届 · 20260001</div></div>
+        </div>
+        <div class="bell-btn" onclick="go('s-msg')"><i class="ti ti-bell"></i><div class="bell-dot"></div></div>
+      </div>
+    </div>
+    <div class="float-card">
+      <div class="fc-hd"><span class="fc-tt">迎新报到进度</span><span class="fc-lk" onclick="go('s-steps')">查看步骤 ›</span></div>
+      <div class="prog-wrap"><div class="prog-fill" style="width:33%"></div></div>
+      <div class="stats-row">
+        <div class="stat-item"><div class="stat-num wa">12,800</div><div class="stat-lbl">待缴 (元)</div></div>
+        <div class="stat-item"><div class="stat-num ok">500</div><div class="stat-lbl">预缴可用</div></div>
+        <div class="stat-item"><div class="stat-num N">3/9</div><div class="stat-lbl">步骤完成</div></div>
+      </div>
+    </div>
+    <div class="content">
+      <!-- 补差警告 -->
+      <div class="info-bar er" style="border-radius:12px;cursor:pointer" onclick="go('s-diff')">
+        <i class="ti ti-alert-triangle" style="color:var(--er);font-size:18px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--er)">宿舍调整产生补差 <strong>+¥300</strong>，截止 <strong>6月22日</strong>，距今2天 <span style="text-decoration:underline;font-weight:600">去处理 ›</span></div>
+      </div>
+      <div class="sec-lbl">当前账单</div>
+      <div class="card urgent">
+        <div class="card-hd"><span class="card-tt">2025-2026学年账单</span><span class="badge wa"><i class="ti ti-alert-triangle" style="font-size:10px"></i>待缴</span></div>
+        <div class="card-body">
+          <div class="amount-row"><span class="amount-big">12,800</span><span class="amount-unit">元 · 截止 2026-09-05</span></div>
+          <div class="bill-items">
+            <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">学费 <span class="tag-sm" style="background:var(--er-bg);color:var(--er)">必缴</span></span><span class="bi-price">10,000</span></div>
+            <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">住宿费</span><span class="bi-price">1,500</span></div>
+            <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">教材费 <span class="tag-sm" style="background:var(--er-bg);color:var(--er)">必缴</span></span><span class="bi-price">800</span></div>
+            <div class="bill-item"><div class="bi-check"></div><span class="bi-name">军训服装费</span><span class="bi-price">500</span></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn-pri" style="flex:2" onclick="go('s-pay')"><i class="ti ti-credit-card"></i>去缴费</button>
+            <button class="btn-sec" style="flex:1" onclick="go('s-bill-detail')">账单明细</button>
+          </div>
+        </div>
+      </div>
+      <div class="sec-lbl">迎新进度</div>
+      <div class="card">
+        <div class="step-item"><div class="step-ic done"><i class="ti ti-id-badge"></i></div><div class="step-body"><div class="step-tt">身份绑定</div><div class="step-sub">已完成 · 09月01日</div></div><span class="badge ok"><i class="ti ti-check" style="font-size:10px"></i>完成</span></div>
+        <div class="step-item"><div class="step-ic done"><i class="ti ti-home"></i></div><div class="step-body"><div class="step-tt">宿舍分配</div><div class="step-sub">3栋512室 · 已调换至4人间</div></div><button class="btn-pill sm ok" onclick="go('s-dorm')">查看</button></div>
+        <div class="step-item"><div class="step-ic act"><i class="ti ti-credit-card"></i></div><div class="step-body"><div class="step-tt">迎新缴费</div><div class="step-sub">待缴 12,800元 + 补差 300元</div></div><button class="btn-pill sm" onclick="go('s-pay')">去缴费</button></div>
+        <div class="step-item"><div class="step-ic pend"><i class="ti ti-clipboard-check"></i></div><div class="step-body"><div class="step-tt">资料审核</div><div class="step-sub">需先完成缴费</div></div><span class="badge gy">未开始</span></div>
+        <div class="step-item"><div class="step-ic pend"><i class="ti ti-flag"></i></div><div class="step-body"><div class="step-tt">现场报到</div><div class="step-sub">09月08日 · 东门广场</div></div><span class="badge gy">未开始</span></div>
+      </div>
+      <div class="sec-lbl">快捷入口</div>
+      <div class="card" style="padding:0">
+        <div class="grid3">
+          <div class="ge" onclick="go('s-bill-detail')"><div class="ge-ic bl"><i class="ti ti-file-invoice"></i></div><div class="ge-lbl">查账单</div></div>
+          <div class="ge" onclick="go('s-records')"><div class="ge-ic cy"><i class="ti ti-list-check"></i></div><div class="ge-lbl">缴费记录</div></div>
+          <div class="ge" onclick="go('s-receipt')"><div class="ge-ic gn"><i class="ti ti-receipt"></i></div><div class="ge-lbl">我的票据</div></div>
+          <div class="ge" onclick="go('s-refund')"><div class="ge-ic or"><i class="ti ti-arrow-back-up"></i></div><div class="ge-lbl">退费申请</div></div>
+          <div class="ge" onclick="go('s-dorm')"><div class="ge-ic cy"><i class="ti ti-building"></i></div><div class="ge-lbl">我的宿舍</div></div>
+          <div class="ge" onclick="go('s-precharge')"><div class="ge-ic rd"><i class="ti ti-coin"></i></div><div class="ge-lbl">预缴余额</div></div>
+          <div class="ge" onclick="go('s-aid')"><div class="ge-ic pu"><i class="ti ti-heart-handshake"></i></div><div class="ge-lbl">助学金</div></div>
+          <div class="ge" onclick="go('s-loan')"><div class="ge-ic gn"><i class="ti ti-school"></i></div><div class="ge-lbl">助学贷款</div></div>
+          <div class="ge" onclick="go('s-urge')"><div class="ge-ic gy"><i class="ti ti-speakerphone"></i></div><div class="ge-lbl">催缴通知</div></div>
+        </div>
+      </div>
+      <div class="sec-lbl">最新通知</div>
+      <div class="card" style="cursor:pointer" onclick="go('s-msg')">
+        <div class="notice-list">
+          <div class="nitem"><div class="ndot"></div><div class="nbody"><div class="ntt">宿舍补差订单生成</div><div class="ndesc">您的宿舍已从6人间调整为4人间，需补缴差额¥300，截止6月22日。</div><div class="ntime">刚刚</div></div></div>
+          <div class="nitem"><div class="ndot"></div><div class="nbody"><div class="ntt">缴费截止日期提醒</div><div class="ndesc">2025-2026学年账单将于09月05日截止，请尽快完成缴费。</div><div class="ntime">2小时前</div></div></div>
+          <div class="nitem"><div class="ndot read"></div><div class="nbody"><div class="ntt">宿舍分配结果</div><div class="ndesc">已分配至3栋512室，6人间。</div><div class="ntime">昨天 14:30</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <div class="tab-item on"><div class="tab-ic-bg"><i class="ti ti-home tab-ic"></i></div><span class="tab-lbl">首页</span></div>
+    <div class="tab-item" onclick="go('s-bills')"><div class="tab-ic-bg"><i class="ti ti-file-text tab-ic"></i></div><span class="tab-lbl">账单</span></div>
+    <div class="tab-item" onclick="go('s-dorm-select')"><div class="tab-ic-bg"><i class="ti ti-building tab-ic"></i></div><span class="tab-lbl">选宿</span></div>
+    <div class="tab-item" onclick="go('s-profile')"><div class="tab-ic-bg"><i class="ti ti-user tab-ic"></i></div><span class="tab-lbl">我的</span></div>
+  </div>
+</div>
+
+<!-- ════ S02 账单 Tab（历史账单列表）════ -->
+<div class="screen" id="s-bills">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="scroll">
+    <div style="background:var(--wh);padding:14px 16px 10px;border-bottom:1px solid var(--N200)">
+      <div style="font-size:18px;font-weight:700;color:var(--N900)">我的账单</div>
+      <div class="tab-sel" style="margin-top:12px;margin-bottom:0">
+        <div class="ts-item on">当前学年</div>
+        <div class="ts-item">历史账单</div>
+      </div>
+    </div>
+    <div class="content nb">
+      <div class="card urgent">
+        <div class="card-hd"><span class="card-tt">2025-2026学年账单</span><span class="badge wa">待缴</span></div>
+        <div class="card-body">
+          <div class="amount-row"><span class="amount-big">12,800</span><span class="amount-unit">元应缴 · 已缴 0</span></div>
+          <div class="bill-items">
+            <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">学费 <span class="tag-sm" style="background:var(--er-bg);color:var(--er)">必缴</span></span><span class="bi-price">10,000</span></div>
+            <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">住宿费</span><span class="bi-price">1,500</span></div>
+            <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">教材费</span><span class="bi-price">800</span></div>
+            <div class="bill-item"><div class="bi-check"></div><span class="bi-name">军训服装费</span><span class="bi-price">500</span></div>
+            <div class="bill-item" style="background:var(--er-bg);border:1px solid var(--er-bd)">
+              <div class="bi-check on" style="background:var(--er);border-color:var(--er)"><i class="ti ti-check"></i></div>
+              <span class="bi-name" style="color:var(--er)">宿舍补差（4人间）<span class="tag-sm" style="background:var(--er-bg);color:var(--er);border:1px solid var(--er-bd)">补差</span></span>
+              <span class="bi-price" style="color:var(--er)">+300</span>
+            </div>
+          </div>
+          <div class="info-bar in" style="border-radius:8px;margin-bottom:12px">
+            <i class="ti ti-info-circle" style="color:var(--in);font-size:14px;flex-shrink:0"></i>
+            <div class="ib-text" style="color:var(--in);font-size:11px">已按优先级排列：学费 → 教材费 → 住宿费 → 其他</div>
+          </div>
+          <div class="btn-row">
+            <button class="btn-pri" style="flex:2" onclick="go('s-pay')"><i class="ti ti-credit-card"></i>去缴费</button>
+            <button class="btn-sec" style="flex:1" onclick="go('s-bill-detail')">明细</button>
+          </div>
+        </div>
+      </div>
+      <div class="sec-lbl">历史账单</div>
+      <div class="card">
+        <div class="hist-item" onclick="go('s-bill-detail')">
+          <div class="hi-left"><div class="hi-tt">2024-2025学年账单</div><div class="hi-sub">BILL2024-2025-001</div></div>
+          <div class="hi-right"><div class="hi-amt">¥11,500</div><span class="badge ok">已缴</span></div>
+        </div>
+        <div class="hist-item" onclick="go('s-bill-detail')">
+          <div class="hi-left"><div class="hi-tt">2023-2024学年账单</div><div class="hi-sub">BILL2023-2024-001</div></div>
+          <div class="hi-right"><div class="hi-amt">¥11,500</div><span class="badge ok">已缴</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <div class="tab-item" onclick="go('s-home')"><div class="tab-ic-bg"><i class="ti ti-home tab-ic"></i></div><span class="tab-lbl">首页</span></div>
+    <div class="tab-item on"><div class="tab-ic-bg"><i class="ti ti-file-text tab-ic"></i></div><span class="tab-lbl">账单</span></div>
+    <div class="tab-item" onclick="go('s-dorm-select')"><div class="tab-ic-bg"><i class="ti ti-building tab-ic"></i></div><span class="tab-lbl">选宿</span></div>
+    <div class="tab-item" onclick="go('s-profile')"><div class="tab-ic-bg"><i class="ti ti-user tab-ic"></i></div><span class="tab-lbl">我的</span></div>
+  </div>
+</div>
+
+<!-- ════ S03 账单明细 ════ -->
+<div class="screen" id="s-bill-detail">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">账单明细</span>
+    <span class="nb-right" onclick="go('s-pay')">去缴费</span>
+  </div>
+  <div class="scroll">
+    <div style="background:var(--pri);padding:16px 18px 32px">
+      <div class="fs12" style="color:rgba(255,255,255,.7)">2025-2026学年 · 华东科技大学</div>
+      <div style="font-size:32px;font-weight:700;color:#fff;margin:8px 0">¥ 13,100</div>
+      <div class="fs12" style="color:rgba(255,255,255,.7)">应缴总额（含补差¥300）· 截止 2026-09-05</div>
+    </div>
+    <div class="float-card" style="margin-top:-20px">
+      <div class="stats-row">
+        <div class="stat-item"><div class="stat-num wa">13,100</div><div class="stat-lbl">应缴</div></div>
+        <div class="stat-item"><div class="stat-num ok">0</div><div class="stat-lbl">已缴</div></div>
+        <div class="stat-item"><div class="stat-num N">500</div><div class="stat-lbl">预缴可抵</div></div>
+      </div>
+    </div>
+    <div class="content nb no-tab">
+      <div class="sec-lbl">缴费明细</div>
+      <div class="card">
+        <div style="padding:12px 16px 4px">
+          <div class="tab-sel" style="margin-bottom:0">
+            <div class="ts-item on">全额缴清</div>
+            <div class="ts-item">部分缴费</div>
+          </div>
+        </div>
+        <div style="padding:12px 16px 14px;display:flex;flex-direction:column;gap:6px">
+          <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">学费 <span class="tag-sm" style="background:var(--er-bg);color:var(--er)">必缴</span><span class="tag-sm" style="background:var(--N50);color:var(--N500);margin-left:4px">优先1</span></span><span class="bi-price">10,000</span></div>
+          <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">教材费 <span class="tag-sm" style="background:var(--er-bg);color:var(--er)">必缴</span><span class="tag-sm" style="background:var(--N50);color:var(--N500);margin-left:4px">优先2</span></span><span class="bi-price">800</span></div>
+          <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">住宿费</span><span class="bi-price">1,500</span></div>
+          <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">军训服装费</span><span class="bi-price">500</span></div>
+          <div class="bill-item" style="background:var(--er-bg);border:1px solid var(--er-bd)">
+            <div class="bi-check on" style="background:var(--er);border-color:var(--er)"><i class="ti ti-check"></i></div>
+            <span class="bi-name" style="color:var(--er)">宿舍补差（4人间）<span class="tag-sm" style="background:var(--er-bg);color:var(--er);border:1px solid var(--er-bd)">补差</span></span>
+            <span class="bi-price" style="color:var(--er)">+300</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div style="padding:12px 16px;display:flex;justify-content:space-between">
+          <span class="fs13 fc-N700 fw6">本次合计</span>
+          <span style="font-size:18px;font-weight:700;color:var(--wa)">¥ 13,100</span>
+        </div>
+      </div>
+      <div class="info-bar ok">
+        <i class="ti ti-coins" style="color:var(--ok);font-size:16px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--ok)">预缴余额 <strong>¥500</strong> 将自动抵扣，实际支付 <strong>¥12,600</strong></div>
+      </div>
+      <button class="btn-pri" style="height:52px;border-radius:14px;font-size:16px" onclick="go('s-pay')">
+        <i class="ti ti-lock" style="font-size:18px"></i>确认支付 ¥12,600.00
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S04 在线缴费 ════ -->
+<div class="screen" id="s-pay">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar pri">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">在线缴费</span>
+  </div>
+  <div style="background:var(--pri);padding:4px 18px 24px">
+    <div class="fs12" style="color:rgba(255,255,255,.7)">华东科技大学 · 2025-2026学年</div>
+  </div>
+  <div class="float-card" style="margin-top:-20px;text-align:center">
+    <div style="padding:8px 0 14px">
+      <div class="fs12 fc-N500" style="margin-bottom:6px">本次应缴总金额</div>
+      <div style="font-size:36px;font-weight:700;color:var(--wa)">¥ 13,100<span style="font-size:18px">.00</span></div>
+      <div class="fs11 fc-N400" style="margin-top:4px">主账单 ¥12,800 + 补差 ¥300</div>
+    </div>
+    <div style="border-top:1px solid var(--N200);padding-top:12px">
+      <div class="bill-items" style="margin-bottom:0">
+        <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">学费 <span class="tag-sm" style="background:var(--N50);color:var(--N500)">优先1</span></span><span class="bi-price">10,000</span></div>
+        <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">教材费 <span class="tag-sm" style="background:var(--N50);color:var(--N500)">优先2</span></span><span class="bi-price">800</span></div>
+        <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">住宿费</span><span class="bi-price">1,500</span></div>
+        <div class="bill-item"><div class="bi-check on"><i class="ti ti-check"></i></div><span class="bi-name">军训服装费</span><span class="bi-price">500</span></div>
+        <div class="bill-item" style="background:var(--er-bg)"><div class="bi-check on" style="background:var(--er);border-color:var(--er)"><i class="ti ti-check"></i></div><span class="bi-name" style="color:var(--er)">宿舍补差</span><span class="bi-price" style="color:var(--er)">+300</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="sec-lbl">选择支付方式</div>
+      <div class="card">
+        <div class="pay-methods">
+          <div class="pay-method on"><i class="ti ti-brand-wechat pm-icon" style="color:#07C160"></i><span class="pm-name">微信支付</span><div class="pm-radio on"></div></div>
+          <div class="pay-method"><i class="ti ti-brand-alipay pm-icon" style="color:#1677FF"></i><span class="pm-name">支付宝</span><div class="pm-radio"></div></div>
+          <div class="pay-method"><i class="ti ti-credit-card pm-icon" style="color:var(--in)"></i><span class="pm-name">银联支付</span><div class="pm-radio"></div></div>
+          <div class="pay-method"><i class="ti ti-building-bank pm-icon" style="color:var(--N500)"></i><span class="pm-name">线下缴费</span><div class="pm-radio"></div></div>
+        </div>
+      </div>
+      <div class="info-bar ok">
+        <i class="ti ti-coins" style="color:var(--ok);font-size:16px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--ok)">预缴余额 <strong>¥500</strong> 自动抵扣，实际支付 <strong>¥12,600</strong></div>
+      </div>
+      <div class="info-bar wa">
+        <i class="ti ti-clock" style="color:var(--wa);font-size:16px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--wa)">支付订单有效期 <strong>30分钟</strong>，超时自动关闭可重新发起</div>
+      </div>
+      <div class="gap-col">
+        <button class="btn-pri" style="height:52px;border-radius:14px;font-size:16px" onclick="go('s-pay-success')">
+          <i class="ti ti-lock" style="font-size:18px"></i>确认支付 ¥12,600.00
+        </button>
+        <div class="info-hint">预缴抵扣¥500 · 点击即同意《缴费须知》</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S05 支付成功 ════ -->
+<div class="screen" id="s-pay-success">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="go('s-home')"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">支付结果</span>
+  </div>
+  <div class="scroll" style="flex:1">
+    <div class="success-screen">
+      <div class="success-ic"><i class="ti ti-circle-check"></i></div>
+      <div class="success-title">缴费成功！</div>
+      <div class="success-sub">¥12,600.00 已通过微信支付完成缴纳<br>电子票据已生成，可前往"我的票据"查看</div>
+    </div>
+    <div style="padding:0 16px 24px;display:flex;flex-direction:column;gap:10px">
+      <div class="receipt">
+        <div class="rrow"><span class="rkey">交易单号</span><span class="rval">PAY20260901001234</span></div>
+        <div class="rrow"><span class="rkey">支付方式</span><span class="rval">微信支付</span></div>
+        <div class="rrow"><span class="rkey">支付时间</span><span class="rval">2026-09-01 10:25</span></div>
+        <div class="rrow"><span class="rkey">预缴抵扣</span><span class="rval" style="color:var(--ok)">- ¥500</span></div>
+        <div class="rrow" style="border-bottom:none"><span class="rkey fw6" style="color:var(--N700)">实付金额</span><span class="rval" style="font-size:16px;color:var(--pri)">¥ 12,600</span></div>
+      </div>
+      <div class="info-bar in">
+        <i class="ti ti-home" style="color:var(--in);font-size:16px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--in)">住宿费已缴清，可前往首页进行在线选宿</div>
+      </div>
+      <button class="btn-pri" onclick="go('s-home')"><i class="ti ti-home"></i>返回首页</button>
+      <button class="btn-sec" onclick="go('s-receipt')"><i class="ti ti-receipt"></i>查看票据</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S06 选宿 Tab — 排队 ════ -->
+<div class="screen" id="s-dorm-select">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="scroll">
+    <div style="background:var(--wh);padding:14px 16px 12px;border-bottom:1px solid var(--N200);display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:18px;font-weight:700;color:var(--N900)">在线选宿</span>
+      <span class="badge in"><i class="ti ti-clock" style="font-size:10px"></i>进行中</span>
+    </div>
+    <div class="content nb">
+      <div class="card ok-c">
+        <div style="padding:20px 16px;text-align:center">
+          <div class="fs12 fc-N500" style="margin-bottom:8px">您的排队序号</div>
+          <div style="font-size:64px;font-weight:700;color:var(--pri);line-height:1">128</div>
+          <div class="fs13 fc-N500" style="margin-top:8px">当前正在办理：<strong style="color:var(--N900)">第 85 号</strong></div>
+          <div class="fs11 fc-N400" style="margin-top:4px">还需等待约 43 人，预计约 20 分钟</div>
+        </div>
+        <div style="padding:0 16px 14px">
+          <div class="info-bar in" style="border-radius:8px;margin:0">
+            <i class="ti ti-info-circle" style="color:var(--in);font-size:14px;flex-shrink:0"></i>
+            <div class="ib-text" style="color:var(--in);font-size:11px">排队按缴费时间排序，您于09-01 10:24缴费，排序靠前</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-tt">批次信息</span></div>
+        <div class="row-list">
+          <div class="rli"><span class="rli-lbl">批次名称</span><span class="rli-val">2026届新生选宿</span></div>
+          <div class="rli"><span class="rli-lbl">开放时间</span><span class="rli-val">09-01 至 09-07</span></div>
+          <div class="rli"><span class="rli-lbl">确认时限</span><span class="rli-val">轮到后 10 分钟</span></div>
+          <div class="rli"><span class="rli-lbl">超时处理</span><span class="rli-val">可直选剩余床位</span></div>
+          <div class="rli"><span class="rli-lbl">可选范围</span><span class="rli-val">3–5 号楼（计算机学院）</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-tt">提前浏览</span><span class="badge in">仅查看</span></div>
+        <div style="padding:0 16px 14px">
+          <div class="info-bar wa" style="border-radius:8px;margin-bottom:12px">
+            <i class="ti ti-clock" style="color:var(--wa);font-size:14px;flex-shrink:0"></i>
+            <div class="ib-text" style="color:var(--wa);font-size:11px">排队期间可提前浏览，轮到后方可确认选择</div>
+          </div>
+          <button class="btn-sec" onclick="go('s-dorm-browse')"><i class="ti ti-eye"></i>浏览可用床位</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-tt">智能提示</span></div>
+        <div style="padding:0 16px 14px;display:flex;flex-direction:column;gap:6px">
+          <div class="info-bar ok" style="border-radius:8px;padding:10px 12px">
+            <i class="ti ti-check" style="color:var(--ok);font-size:14px;flex-shrink:0"></i>
+            <div class="ib-text" style="color:var(--ok);font-size:11px">4号楼 4人间 剩余床位充足（32 床空余）</div>
+          </div>
+          <div class="info-bar wa" style="border-radius:8px;padding:10px 12px">
+            <i class="ti ti-alert-triangle" style="color:var(--wa);font-size:14px;flex-shrink:0"></i>
+            <div class="ib-text" style="color:var(--wa);font-size:11px">3号楼 6人间 选择人数较少，该楼栋可能无法满员开放</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <div class="tab-item" onclick="go('s-home')"><div class="tab-ic-bg"><i class="ti ti-home tab-ic"></i></div><span class="tab-lbl">首页</span></div>
+    <div class="tab-item" onclick="go('s-bills')"><div class="tab-ic-bg"><i class="ti ti-file-text tab-ic"></i></div><span class="tab-lbl">账单</span></div>
+    <div class="tab-item on"><div class="tab-ic-bg"><i class="ti ti-building tab-ic"></i></div><span class="tab-lbl">选宿</span></div>
+    <div class="tab-item" onclick="go('s-profile')"><div class="tab-ic-bg"><i class="ti ti-user tab-ic"></i></div><span class="tab-lbl">我的</span></div>
+  </div>
+</div>
+
+<!-- ════ S07 浏览床位 ════ -->
+<div class="screen" id="s-dorm-browse">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">浏览床位</span>
+    <span class="nb-right" style="color:var(--N400);cursor:default">排队中</span>
+  </div>
+  <div class="room-filter">
+    <div class="rf-btn on">4号楼</div>
+    <div class="rf-btn">3号楼</div>
+    <div class="rf-btn">5号楼</div>
+    <div class="rf-btn">全部</div>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="info-bar wa">
+        <i class="ti ti-clock" style="color:var(--wa);font-size:16px;flex-shrink:0"></i>
+        <div class="ib-text" style="color:var(--wa)">排队期间仅可浏览，<strong>轮到您时方可选择确认</strong>。轮到后此页面可直接选床。</div>
+      </div>
+      <div class="sec-lbl">4号楼 · 可用房间</div>
+      <div class="room-list">
+        <div class="room-item" onclick="go('s-dorm-confirm')">
+          <div class="ri-top"><span class="ri-name">4号楼 401室</span><span class="ri-price">¥1,500/学年</span></div>
+          <div class="ri-tags">
+            <span class="ri-tag type">4人间</span>
+            <span class="ri-tag avail">剩余 3 床</span>
+          </div>
+        </div>
+        <div class="room-item" onclick="go('s-dorm-confirm')">
+          <div class="ri-top"><span class="ri-name">4号楼 402室</span><span class="ri-price">¥1,500/学年</span></div>
+          <div class="ri-tags">
+            <span class="ri-tag type">4人间</span>
+            <span class="ri-tag avail">剩余 2 床</span>
+          </div>
+        </div>
+        <div class="room-item">
+          <div class="ri-top"><span class="ri-name">4号楼 403室</span><span class="ri-price">¥1,500/学年</span></div>
+          <div class="ri-tags">
+            <span class="ri-tag type">4人间</span>
+            <span class="ri-tag full">已满</span>
+          </div>
+        </div>
+        <div class="room-item" onclick="go('s-dorm-confirm')">
+          <div class="ri-top"><span class="ri-name">4号楼 501室</span><span class="ri-price">¥1,500/学年</span></div>
+          <div class="ri-tags">
+            <span class="ri-tag type">4人间</span>
+            <span class="ri-tag avail">剩余 4 床</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S08 选床位 (已轮到) ════ -->
+<div class="screen" id="s-dorm-confirm">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">选择床位</span>
+  </div>
+  <div class="countdown-bar">
+    <i class="ti ti-clock" style="color:var(--wa);font-size:20px;flex-shrink:0"></i>
+    <div style="flex:1">
+      <div class="fs12 fw6" style="color:var(--wa)">请在限时内完成选床</div>
+      <div class="fs11 fc-N500">超时将进入剩余床位自由选择</div>
+    </div>
+    <div class="countdown-num">09:12</div>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="card">
+        <div class="card-hd"><span class="card-tt">4号楼 401室 · 4人间</span><span class="badge in">¥1,500/年</span></div>
+        <div style="padding:0 16px 14px">
+          <div class="bed-grid">
+            <div class="bed-item on"><div class="bed-num">1床</div><div class="bed-status avail">已选</div></div>
+            <div class="bed-item taken"><div class="bed-num">2床</div><div class="bed-status">已占用</div></div>
+            <div class="bed-item"><div class="bed-num">3床</div><div class="bed-status avail">可选</div></div>
+            <div class="bed-item taken"><div class="bed-num">4床</div><div class="bed-status">已占用</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card ok-c">
+        <div style="padding:14px 16px">
+          <div class="fs13 fw6" style="color:var(--N700);margin-bottom:8px">已选：4号楼 401室 1床</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <span class="badge in">4人间</span>
+            <span class="badge ok">¥1,500/学年</span>
+          </div>
+          <div class="info-bar in" style="border-radius:8px;margin-bottom:12px">
+            <i class="ti ti-info-circle" style="color:var(--in);font-size:14px;flex-shrink:0"></i>
+            <div class="ib-text" style="color:var(--in);font-size:11px">确认后住宿费将写入账单，若与当前住宿费有差额将生成补差订单</div>
+          </div>
+          <button class="btn-pri" onclick="go('s-dorm-result')"><i class="ti ti-check"></i>确认选宿</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S09 选宿成功 ════ -->
+<div class="screen" id="s-dorm-result">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="go('s-home')"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">选宿结果</span>
+  </div>
+  <div class="scroll" style="flex:1">
+    <div class="success-screen">
+      <div class="success-ic" style="background:var(--in-bg);color:var(--in)"><i class="ti ti-building"></i></div>
+      <div class="success-title">选宿成功！</div>
+      <div class="success-sub">4号楼 401室 1床<br>住宿费 ¥1,500 已写入本学年账单</div>
+    </div>
+    <div style="padding:0 16px 24px;display:flex;flex-direction:column;gap:10px">
+      <div class="receipt">
+        <div class="rrow"><span class="rkey">宿舍楼栋</span><span class="rval">4号楼</span></div>
+        <div class="rrow"><span class="rkey">房间</span><span class="rval">401室（4人间）</span></div>
+        <div class="rrow"><span class="rkey">床位</span><span class="rval">1床</span></div>
+        <div class="rrow" style="border-bottom:none"><span class="rkey">住宿费</span><span class="rval" style="color:var(--pri)">¥1,500/学年</span></div>
+      </div>
+      <button class="btn-pri" onclick="go('s-dorm')"><i class="ti ti-building"></i>查看我的宿舍</button>
+      <button class="btn-sec" onclick="go('s-home')"><i class="ti ti-home"></i>返回首页</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S10 超时自选剩余床位 ════ -->
+<div class="screen" id="s-dorm-timeout">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">选择剩余床位</span>
+  </div>
+  <div style="background:var(--wa-bg);border-bottom:1px solid var(--wa-bd);padding:12px 16px">
+    <div class="info-bar wa" style="border-radius:8px;padding:10px 12px;border:none;background:transparent">
+      <i class="ti ti-alert-triangle" style="color:var(--wa);font-size:18px;flex-shrink:0"></i>
+      <div class="ib-text" style="color:var(--wa)">您的选宿确认时限已超时，排队资格已取消。<strong>请直接从剩余床位中选择，无需重新排队。</strong></div>
+    </div>
+  </div>
+  <div class="room-filter">
+    <div class="rf-btn on">全部剩余</div>
+    <div class="rf-btn">4人间</div>
+    <div class="rf-btn">6人间</div>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="sec-lbl">剩余可选床位（受规则引擎约束）</div>
+      <div class="room-list">
+        <div class="room-item" onclick="go('s-dorm-confirm')">
+          <div class="ri-top"><span class="ri-name">4号楼 502室</span><span class="ri-price">¥1,500/学年</span></div>
+          <div class="ri-tags"><span class="ri-tag type">4人间</span><span class="ri-tag avail">剩余 4 床</span></div>
+        </div>
+        <div class="room-item" onclick="go('s-dorm-confirm')">
+          <div class="ri-top"><span class="ri-name">5号楼 201室</span><span class="ri-price">¥1,500/学年</span></div>
+          <div class="ri-tags"><span class="ri-tag type">4人间</span><span class="ri-tag avail">剩余 2 床</span></div>
+        </div>
+        <div class="room-item" onclick="go('s-dorm-confirm')">
+          <div class="ri-top"><span class="ri-name">3号楼 305室</span><span class="ri-price">¥1,200/学年</span></div>
+          <div class="ri-tags"><span class="ri-tag type">6人间</span><span class="ri-tag avail">剩余 3 床</span><span class="ri-tag warn">人数较少</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S11 我的宿舍 ════ -->
+<div class="screen" id="s-dorm">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">我的宿舍</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="card ok-c">
+        <div class="dorm-card-header">
+          <div class="dorm-ic"><i class="ti ti-building"></i></div>
+          <div class="dorm-meta">
+            <div class="dorm-name">3号楼 512室 · 2床</div>
+            <div class="dorm-sub">当前分配宿舍 · 调整后：4人间</div>
+          </div>
+          <span class="badge ok">已分配</span>
+        </div>
+        <div class="dorm-grid">
+          <div class="dg-item"><div class="dg-lbl">楼栋</div><div class="dg-val">3号楼</div></div>
+          <div class="dg-item"><div class="dg-lbl">房间</div><div class="dg-val">512室</div></div>
+          <div class="dg-item"><div class="dg-lbl">床位</div><div class="dg-val">2床</div></div>
+          <div class="dg-item"><div class="dg-lbl">房型</div><div class="dg-val">4人间</div></div>
+          <div class="dg-item"><div class="dg-lbl">住宿费</div><div class="dg-val" style="color:var(--pri)">¥1,500/年</div></div>
+          <div class="dg-item"><div class="dg-lbl">性别</div><div class="dg-val">男生楼</div></div>
+        </div>
+        <div class="card-body">
+          <button class="btn-sec" onclick="go('s-dorm-apply')"><i class="ti ti-switch-2"></i>申请换房</button>
+        </div>
+      </div>
+      <div class="sec-lbl">调整历史</div>
+      <div class="card">
+        <div class="diff-item">
+          <div class="diff-top">
+            <span class="diff-tt">初次分配</span>
+            <span class="badge ok">已结清</span>
+          </div>
+          <div class="diff-meta"><span>2026-08-28</span><span>自动分配</span></div>
+          <div class="diff-amounts">
+            <div class="da-item"><div class="da-lbl">分配宿舍</div><div class="da-val">3栋512室 · 6人间</div></div>
+            <div class="da-item"><div class="da-lbl">住宿费</div><div class="da-val">¥1,200</div></div>
+          </div>
+        </div>
+        <div class="diff-item">
+          <div class="diff-top">
+            <span class="diff-tt">房型调整：6人间→4人间</span>
+            <span class="badge wa">待补缴</span>
+          </div>
+          <div class="diff-meta"><span>2026-09-01</span><span>管理员调换</span><span>截止：06-22</span></div>
+          <div class="diff-amounts">
+            <div class="da-item"><div class="da-lbl">差额</div><div class="da-val er">+¥300</div></div>
+            <div class="da-item"><div class="da-lbl">截止日期</div><div class="da-val" style="color:var(--er)">2026-06-22</div></div>
+          </div>
+          <div style="margin-top:10px">
+            <button class="btn-pill sm" onclick="go('s-diff')">查看补差订单</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S12 申请换房 ════ -->
+<div class="screen" id="s-dorm-apply">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">申请换房</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="info-bar in">
+        <i class="ti ti-info-circle" style="color:var(--in);font-size:16px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--in)">换房申请需经宿舍负责人审批，审批通过后您可重新选择新床位</div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-tt">当前宿舍</span></div>
+        <div class="card-body">
+          <div class="receipt" style="margin:0 0 0 0">
+            <div class="rrow"><span class="rkey">宿舍</span><span class="rval">3号楼 512室 2床</span></div>
+            <div class="rrow" style="border-bottom:none"><span class="rkey">房型</span><span class="rval">4人间 · ¥1,500/年</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-tt">申请信息</span></div>
+        <div class="form-group">
+          <div>
+            <div class="form-lbl">换房原因 *</div>
+            <select class="form-sel">
+              <option>请选择原因</option>
+              <option>学业需要（与同学同室）</option>
+              <option>健康原因</option>
+              <option>生活习惯不适应</option>
+              <option>其他原因</option>
+            </select>
+          </div>
+          <div>
+            <div class="form-lbl">详细说明</div>
+            <textarea class="form-ta" placeholder="请详细描述换房原因（选填）"></textarea>
+          </div>
+          <div>
+            <div class="form-lbl">期望房型</div>
+            <select class="form-sel">
+              <option>无特殊要求</option>
+              <option>4人间</option>
+              <option>6人间</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="info-bar wa">
+        <i class="ti ti-alert-triangle" style="color:var(--wa);font-size:14px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--wa);font-size:11px">若新宿舍房型与当前不同，将生成补差订单；审批拒绝则保持原宿舍不变</div>
+      </div>
+      <button class="btn-pri" onclick="go('s-dorm-apply-done')"><i class="ti ti-send"></i>提交申请</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S13 换房申请成功 ════ -->
+<div class="screen" id="s-dorm-apply-done">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="go('s-home')"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">申请结果</span>
+  </div>
+  <div class="scroll" style="flex:1">
+    <div class="success-screen">
+      <div class="success-ic" style="background:var(--in-bg);color:var(--in)"><i class="ti ti-send"></i></div>
+      <div class="success-title">申请已提交</div>
+      <div class="success-sub">换房申请已提交，宿舍负责人将在 1-2 个工作日内审批<br>审批结果将通过消息通知您</div>
+    </div>
+    <div style="padding:0 16px 24px;display:flex;flex-direction:column;gap:10px">
+      <button class="btn-pri" onclick="go('s-home')"><i class="ti ti-home"></i>返回首页</button>
+      <button class="btn-sec" onclick="go('s-msg')"><i class="ti ti-bell"></i>查看消息通知</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S14 补差订单 ════ -->
+<div class="screen" id="s-diff">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">补差订单</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="info-bar er">
+        <i class="ti ti-calendar-x" style="color:var(--er);font-size:16px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--er)">补差款 <strong>¥300</strong> 将于 <strong>2026-06-22</strong> 截止，距今仅剩 <strong>2天</strong>，请尽快补缴！</div>
+      </div>
+      <div class="card urgent">
+        <div class="card-hd"><span class="card-tt">补差订单 DIFF20260901001</span><span class="badge wa"><i class="ti ti-alert-triangle" style="font-size:10px"></i>待补缴</span></div>
+        <div class="card-body">
+          <div class="diff-amounts" style="margin-bottom:14px">
+            <div class="da-item"><div class="da-lbl">变更前</div><div class="da-val">6人间 ¥1,200</div></div>
+            <div class="da-item"><div class="da-lbl">变更后</div><div class="da-val">4人间 ¥1,500</div></div>
+            <div class="da-item"><div class="da-lbl">差额</div><div class="da-val er">+¥300</div></div>
+          </div>
+          <div class="receipt" style="margin:0 0 14px">
+            <div class="rrow"><span class="rkey">变更类型</span><span class="rval">房型调整（补缴）</span></div>
+            <div class="rrow"><span class="rkey">生成时间</span><span class="rval">2026-09-01</span></div>
+            <div class="rrow"><span class="rkey">补缴截止</span><span class="rval" style="color:var(--er)">2026-06-22</span></div>
+            <div class="rrow" style="border-bottom:none"><span class="rkey">关联宿舍</span><span class="rval">3栋512室 → 4人间</span></div>
+          </div>
+          <button class="btn-pri" onclick="go('s-pay')"><i class="ti ti-credit-card"></i>立即补缴 ¥300</button>
+        </div>
+      </div>
+      <div class="sec-lbl">历史补差记录</div>
+      <div class="card">
+        <div class="diff-item">
+          <div class="diff-top"><span class="diff-tt">DIFF20260820001</span><span class="badge ok">已结清</span></div>
+          <div class="diff-meta"><span>2026-08-20</span><span>应退差额</span></div>
+          <div class="diff-amounts">
+            <div class="da-item"><div class="da-lbl">差额</div><div class="da-val ok">-¥200（已退款）</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S15 缴费记录 ════ -->
+<div class="screen" id="s-records">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">缴费记录</span>
+  </div>
+  <div class="scroll">
+    <div style="padding:8px 14px 4px;background:var(--wh);border-bottom:1px solid var(--N200)">
+      <div class="tab-sel" style="margin-bottom:0">
+        <div class="ts-item on">全部</div>
+        <div class="ts-item">在线缴费</div>
+        <div class="ts-item">线下缴费</div>
+        <div class="ts-item">预缴抵扣</div>
+      </div>
+    </div>
+    <div class="content nb no-tab">
+      <div class="card">
+        <div class="hist-item" onclick="go('s-receipt')">
+          <div class="hi-left"><div class="hi-tt">学费 · 教材费 · 住宿费</div><div class="hi-sub">PAY20260901001 · 微信支付 · 09-01 10:25</div></div>
+          <div class="hi-right"><div class="hi-amt">¥12,600</div><span class="badge ok">成功</span></div>
+        </div>
+        <div class="hist-item">
+          <div class="hi-left"><div class="hi-tt">预缴余额抵扣</div><div class="hi-sub">ADJ20260901001 · 自动抵扣 · 09-01 10:25</div></div>
+          <div class="hi-right"><div class="hi-amt plus">¥500</div><span class="badge in">抵扣</span></div>
+        </div>
+        <div class="hist-item">
+          <div class="hi-left"><div class="hi-tt">军训服装费退费</div><div class="hi-sub">REF20260820001 · 原路退回 · 08-20 14:30</div></div>
+          <div class="hi-right"><div class="hi-amt minus">-¥500</div><span class="badge ok">已退款</span></div>
+        </div>
+        <div class="hist-item" onclick="go('s-receipt')">
+          <div class="hi-left"><div class="hi-tt">学费（2024-2025学年）</div><div class="hi-sub">PAY20250901001 · 支付宝 · 2025-09-01</div></div>
+          <div class="hi-right"><div class="hi-amt">¥11,500</div><span class="badge ok">成功</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S16 退费申请 ════ -->
+<div class="screen" id="s-refund">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">退费申请</span>
+    <span class="nb-right" onclick="go('s-refund-records')">退费记录</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="info-bar in">
+        <i class="ti ti-info-circle" style="color:var(--in);font-size:16px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--in)">退费仅支持<strong>当日</strong>支付成功的订单；过了当日按钮置灰，如有特殊情况请联系财务处</div>
+      </div>
+      <div class="sec-lbl">可申请退费的订单</div>
+      <div class="card">
+        <!-- 当日可退 -->
+        <div class="hist-item">
+          <div class="hi-left">
+            <div class="hi-tt">军训服装费</div>
+            <div class="hi-sub">PAY20260901002 · 今日 09:15</div>
+            <div style="margin-top:4px;font-size:11px;color:var(--ok)">本次最高可退 ¥500</div>
+          </div>
+          <div class="hi-right">
+            <div class="hi-amt">¥500</div>
+            <button class="btn-pill sm" onclick="go('s-refund-form')">申请退费</button>
+          </div>
+        </div>
+        <!-- 非当日置灰 -->
+        <div class="hist-item">
+          <div class="hi-left">
+            <div class="hi-tt">体检费（昨日缴纳）</div>
+            <div class="hi-sub">PAY20260831001 · 昨天 14:30</div>
+            <div style="margin-top:4px;font-size:11px;color:var(--N400)">仅支持当日申请退费</div>
+          </div>
+          <div class="hi-right">
+            <div class="hi-amt" style="color:var(--N400)">¥300</div>
+            <button class="btn-pill sm" disabled style="background:var(--N200);color:var(--N400);cursor:not-allowed">申请退费</button>
+          </div>
+        </div>
+      </div>
+      <div class="sec-lbl">联系财务处</div>
+      <div class="card">
+        <div class="rli" style="cursor:default">
+          <div class="rli-left"><i class="ti ti-phone" style="color:var(--pri);font-size:18px"></i><span class="rli-lbl">财务处电话</span></div>
+          <span class="rli-val">021-88888888</span>
+        </div>
+        <div class="rli" style="cursor:default">
+          <div class="rli-left"><i class="ti ti-clock" style="color:var(--N500);font-size:18px"></i><span class="rli-lbl">办公时间</span></div>
+          <span class="rli-val">工作日 9:00-17:00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S17 退费申请表单 ════ -->
+<div class="screen" id="s-refund-form">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">填写退费申请</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="card">
+        <div class="card-hd"><span class="card-tt">退费订单信息</span></div>
+        <div class="card-body">
+          <div class="receipt" style="margin:0 0 0 0">
+            <div class="rrow"><span class="rkey">缴费项目</span><span class="rval">军训服装费</span></div>
+            <div class="rrow"><span class="rkey">支付时间</span><span class="rval">2026-09-01 09:15</span></div>
+            <div class="rrow"><span class="rkey">支付金额</span><span class="rval">¥500</span></div>
+            <div class="rrow" style="border-bottom:none"><span class="rkey fw6">本次最高可退</span><span class="rval" style="color:var(--ok);font-size:15px;font-weight:700">¥500.00</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-tt">申请信息</span></div>
+        <div class="form-group">
+          <div>
+            <div class="form-lbl">退费原因 *</div>
+            <select class="form-sel">
+              <option>请选择原因</option>
+              <option>重复缴费</option>
+              <option>缴费金额有误</option>
+              <option>课程/活动取消</option>
+              <option>其他原因</option>
+            </select>
+          </div>
+          <div>
+            <div class="form-lbl">详细说明</div>
+            <textarea class="form-ta" placeholder="请说明退费原因（选填）"></textarea>
+          </div>
+          <div>
+            <div class="form-lbl">退款金额</div>
+            <input class="form-inp" type="text" value="500.00" placeholder="请输入退款金额">
+            <div style="font-size:11px;color:var(--N400);margin-top:4px">不超过最高可退金额 ¥500.00</div>
+          </div>
+        </div>
+      </div>
+      <div class="info-bar wa">
+        <i class="ti ti-clock" style="color:var(--wa);font-size:14px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--wa);font-size:11px">退款原路返回，预计 1-3 个工作日到账；提交后请在「退费记录」中查看进度</div>
+      </div>
+      <button class="btn-pri" onclick="go('s-refund-submitted')"><i class="ti ti-send"></i>提交退费申请</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S18 退费已提交 ════ -->
+<div class="screen" id="s-refund-submitted">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="go('s-home')"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">申请结果</span>
+  </div>
+  <div class="scroll" style="flex:1">
+    <div class="success-screen">
+      <div class="success-ic" style="background:var(--in-bg);color:var(--in)"><i class="ti ti-receipt-refund"></i></div>
+      <div class="success-title">退款申请已提交</div>
+      <div class="success-sub">退款申请已提交，审核中<br>预计 1-3 个工作日处理，请关注消息通知</div>
+    </div>
+    <div style="padding:0 16px 24px;display:flex;flex-direction:column;gap:10px">
+      <div class="receipt">
+        <div class="rrow"><span class="rkey">申请单号</span><span class="rval">REF20260901001</span></div>
+        <div class="rrow"><span class="rkey">退费项目</span><span class="rval">军训服装费</span></div>
+        <div class="rrow"><span class="rkey">申请金额</span><span class="rval">¥500</span></div>
+        <div class="rrow" style="border-bottom:none"><span class="rkey">当前状态</span><span class="rval" style="color:var(--in)">待财务审核</span></div>
+      </div>
+      <button class="btn-pri" onclick="go('s-refund-records')"><i class="ti ti-list-check"></i>查看退费记录</button>
+      <button class="btn-sec" onclick="go('s-home')"><i class="ti ti-home"></i>返回首页</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S19 退费记录 ════ -->
+<div class="screen" id="s-refund-records">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">退费记录</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <!-- 待审核 -->
+      <div class="card wa-c">
+        <div class="card-hd"><span class="card-tt">军训服装费退费</span><span class="badge wa">待财务审核</span></div>
+        <div class="card-body">
+          <div class="receipt" style="margin:0 0 12px">
+            <div class="rrow"><span class="rkey">申请单号</span><span class="rval">REF20260901001</span></div>
+            <div class="rrow"><span class="rkey">申请时间</span><span class="rval">2026-09-01 10:30</span></div>
+            <div class="rrow" style="border-bottom:none"><span class="rkey">退款金额</span><span class="rval" style="color:var(--wa);font-size:15px">¥500</span></div>
+          </div>
+          <div class="info-bar wa" style="border-radius:8px">
+            <i class="ti ti-info-circle" style="color:var(--wa);font-size:14px;flex-shrink:0"></i>
+            <div class="ib-text" style="color:var(--wa);font-size:11px">退款申请已提交，审核中。财务处将在 1-3 个工作日内处理。</div>
+          </div>
+        </div>
+      </div>
+      <!-- 成功 -->
+      <div class="card ok-c">
+        <div class="card-hd"><span class="card-tt">体检费退费</span><span class="badge ok">退款成功</span></div>
+        <div class="card-body">
+          <div class="receipt" style="margin:0 0 12px">
+            <div class="rrow"><span class="rkey">申请单号</span><span class="rval">REF20260820001</span></div>
+            <div class="rrow"><span class="rkey">退款时间</span><span class="rval">2026-08-22 14:00</span></div>
+            <div class="rrow" style="border-bottom:none"><span class="rkey">退款金额</span><span class="rval" style="color:var(--ok);font-size:15px">¥300</span></div>
+          </div>
+          <div class="info-bar ok" style="border-radius:8px">
+            <i class="ti ti-check" style="color:var(--ok);font-size:14px;flex-shrink:0"></i>
+            <div class="ib-text" style="color:var(--ok);font-size:11px">退款成功，已原路返回至微信支付账户</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S20 我的票据 ════ -->
+<div class="screen" id="s-receipt">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">我的票据</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="card ok-c">
+        <div class="card-hd">
+          <div>
+            <div class="card-tt">2025-2026学年缴费凭证</div>
+            <div class="fs11 fc-N500" style="margin-top:2px">ELT-2026-00123456</div>
+          </div>
+          <span class="badge ok"><i class="ti ti-file-check" style="font-size:10px"></i>有效</span>
+        </div>
+        <div class="receipt">
+          <div class="rrow"><span class="rkey">缴费项目</span><span class="rval">学费+教材费+住宿费</span></div>
+          <div class="rrow"><span class="rkey">支付方式</span><span class="rval">微信支付</span></div>
+          <div class="rrow"><span class="rkey">支付时间</span><span class="rval">2026-09-01 10:25</span></div>
+          <div class="rrow" style="border-bottom:none"><span class="rkey fw6" style="color:var(--N700)">合计金额</span><span class="rval" style="font-size:16px;color:var(--pri)">¥ 12,600.00</span></div>
+        </div>
+        <div class="card-body" style="padding-top:0">
+          <div class="btn-row">
+            <button class="btn-pri" style="flex:2"><i class="ti ti-download"></i>下载 PDF</button>
+            <button class="btn-sec" style="flex:1" onclick="openModal('modal-reprint')"><i class="ti ti-printer"></i>补打</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-tt">宿舍补差缴费凭证</div>
+            <div class="fs11 fc-N500" style="margin-top:2px">ELT-2026-00123457</div>
+          </div>
+          <span class="badge ok"><i class="ti ti-file-check" style="font-size:10px"></i>有效</span>
+        </div>
+        <div class="receipt">
+          <div class="rrow"><span class="rkey">缴费项目</span><span class="rval">宿舍补差（4人间）</span></div>
+          <div class="rrow"><span class="rkey">支付时间</span><span class="rval">2026-06-20 10:45</span></div>
+          <div class="rrow" style="border-bottom:none"><span class="rkey fw6" style="color:var(--N700)">合计金额</span><span class="rval" style="font-size:16px;color:var(--pri)">¥ 300.00</span></div>
+        </div>
+        <div class="card-body" style="padding-top:0">
+          <button class="btn-sec"><i class="ti ti-download"></i>下载 PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 补打 Modal -->
+  <div class="modal-overlay" id="modal-reprint" onclick="closeModal('modal-reprint')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">申请补打票据</div>
+      <div class="info-bar wa" style="margin-bottom:14px">
+        <i class="ti ti-info-circle" style="color:var(--wa);font-size:14px;flex-shrink:0"></i>
+        <div class="ib-text" style="color:var(--wa);font-size:11px">每张票据最多补打 3 次，需身份核验。剩余补打次数：3次</div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div class="form-lbl" style="margin-bottom:8px">身份验证</div>
+        <input class="form-inp" type="text" placeholder="请输入身份证后 6 位">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sec" style="flex:1" onclick="closeModal('modal-reprint')">取消</button>
+        <button class="btn-pri" style="flex:2" onclick="closeModal('modal-reprint')"><i class="ti ti-printer"></i>确认补打</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S21 预缴余额 ════ -->
+<div class="screen" id="s-precharge">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">预缴余额</span>
+  </div>
+  <div class="scroll">
+    <div style="background:var(--pri);padding:20px 18px 40px;text-align:center">
+      <div class="fs12" style="color:rgba(255,255,255,.7);margin-bottom:6px">当前可用预缴余额</div>
+      <div style="font-size:48px;font-weight:700;color:#fff;line-height:1">¥ 500</div>
+      <div class="fs11" style="color:rgba(255,255,255,.65);margin-top:8px">有效期至 2029-09-01 · 到期前30天提醒</div>
+    </div>
+    <div class="float-card" style="margin-top:-20px">
+      <div class="info-bar ok" style="border-radius:8px">
+        <i class="ti ti-info-circle" style="color:var(--ok);font-size:14px;flex-shrink:0"></i>
+        <div class="ib-text" style="color:var(--ok);font-size:11px">预缴余额将在缴费时自动抵扣，用完后支付剩余金额</div>
+      </div>
+    </div>
+    <div class="content nb no-tab">
+      <div class="sec-lbl">预缴记录</div>
+      <div class="card">
+        <div class="hist-item">
+          <div class="hi-left"><div class="hi-tt">迎新预缴入账</div><div class="hi-sub">PRE20260820001 · 银行转账 · 2026-08-20</div></div>
+          <div class="hi-right"><div class="hi-amt plus">+¥1,000</div><span class="badge ok">有效</span></div>
+        </div>
+        <div class="hist-item">
+          <div class="hi-left"><div class="hi-tt">自动抵扣（2025学年缴费）</div><div class="hi-sub">ADJ20250901001 · 2025-09-01</div></div>
+          <div class="hi-right"><div class="hi-amt minus">-¥500</div><span class="badge in">已抵扣</span></div>
+        </div>
+      </div>
+      <div class="sec-lbl">已抵扣记录</div>
+      <div class="card">
+        <div class="hist-item">
+          <div class="hi-left"><div class="hi-tt">2025-2026学年账单抵扣</div><div class="hi-sub">2026-09-01 · 账单 BILL2025-001</div></div>
+          <div class="hi-right"><div class="hi-amt minus">-¥500</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S22 助学金 ════ -->
+<div class="screen" id="s-aid">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">助学金</span>
+    <span class="nb-right" onclick="go('s-aid-records')">申请记录</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="info-bar pu">
+        <i class="ti ti-heart-handshake" style="color:var(--pu);font-size:16px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--pu)">助学金申请独立于缴费流程，审批通过后可选择账单抵扣或银行转账发放</div>
+      </div>
+      <div class="sec-lbl">可申请助学金类型</div>
+      <div class="card">
+        <div class="aid-item" onclick="go('s-aid-apply')">
+          <div class="aid-ic" style="background:var(--pu-bg);color:var(--pu)"><i class="ti ti-star"></i></div>
+          <div class="aid-body">
+            <div class="aid-tt">国家助学金</div>
+            <div class="aid-sub">面向困难学生 · 最高4000元/年</div>
+          </div>
+          <div class="aid-right"><span class="badge pu">可申请</span><i class="ti ti-chevron-right rli-chevron"></i></div>
+        </div>
+        <div class="aid-item" onclick="go('s-aid-apply')">
+          <div class="aid-ic" style="background:var(--ok-bg);color:var(--ok)"><i class="ti ti-school"></i></div>
+          <div class="aid-body">
+            <div class="aid-tt">学校助学金</div>
+            <div class="aid-sub">学校自设 · 最高2000元/年</div>
+          </div>
+          <div class="aid-right"><span class="badge pu">可申请</span><i class="ti ti-chevron-right rli-chevron"></i></div>
+        </div>
+        <div class="aid-item" onclick="go('s-aid-apply')">
+          <div class="aid-ic" style="background:var(--wa-bg);color:var(--wa)"><i class="ti ti-heart"></i></div>
+          <div class="aid-body">
+            <div class="aid-tt">临时困难补助</div>
+            <div class="aid-sub">一次性补助 · 针对突发困难</div>
+          </div>
+          <div class="aid-right"><span class="badge pu">可申请</span><i class="ti ti-chevron-right rli-chevron"></i></div>
+        </div>
+      </div>
+      <div class="sec-lbl">我的申请</div>
+      <div class="card">
+        <div class="aid-item" onclick="go('s-aid-records')">
+          <div class="aid-ic" style="background:var(--in-bg);color:var(--in)"><i class="ti ti-list-check"></i></div>
+          <div class="aid-body">
+            <div class="aid-tt">查看申请记录及状态</div>
+            <div class="aid-sub">共 1 条申请 · 有1条审核中</div>
+          </div>
+          <i class="ti ti-chevron-right rli-chevron"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S23 助学金申请表单 ════ -->
+<div class="screen" id="s-aid-apply">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">申请助学金</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="card">
+        <div class="card-hd"><span class="card-tt">申请信息</span></div>
+        <div class="form-group">
+          <div>
+            <div class="form-lbl">助学金类型 *</div>
+            <select class="form-sel">
+              <option>国家助学金</option>
+              <option>学校助学金</option>
+              <option>临时困难补助</option>
+            </select>
+          </div>
+          <div>
+            <div class="form-lbl">申请学年 *</div>
+            <select class="form-sel">
+              <option>2025-2026</option>
+              <option>2024-2025</option>
+            </select>
+          </div>
+          <div>
+            <div class="form-lbl">申请金额 (元) *</div>
+            <input class="form-inp" type="number" placeholder="请输入申请金额">
+          </div>
+          <div>
+            <div class="form-lbl">家庭情况说明 *</div>
+            <textarea class="form-ta" placeholder="请描述家庭经济情况..."></textarea>
+          </div>
+          <div>
+            <div class="form-lbl">发放方式 *</div>
+            <select class="form-sel">
+              <option>账单抵扣</option>
+              <option>银行转账</option>
+            </select>
+          </div>
+          <div>
+            <div class="form-lbl">上传证明材料</div>
+            <div class="upload-area">
+              <div class="upload-ic"><i class="ti ti-cloud-upload"></i></div>
+              <div class="upload-txt">点击上传证明材料（收入证明、户口本等）<br>支持 JPG、PDF，单文件不超过 10MB</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="info-bar wa">
+        <i class="ti ti-alert-triangle" style="color:var(--wa);font-size:14px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--wa);font-size:11px">同一学年同一类型助学金只能申请一次；审批通过后不可修改申请金额</div>
+      </div>
+      <button class="btn-pri" onclick="go('s-aid-records')"><i class="ti ti-send"></i>提交申请</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S24 助学金记录 ════ -->
+<div class="screen" id="s-aid-records">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">助学金记录</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="card">
+        <div class="aid-item">
+          <div class="aid-ic" style="background:var(--in-bg);color:var(--in)"><i class="ti ti-star"></i></div>
+          <div class="aid-body">
+            <div class="aid-tt">国家助学金 · 2025-2026学年</div>
+            <div class="aid-sub">申请单号：AID20260901001 · 09-01</div>
+            <div style="font-size:11px;color:var(--in);margin-top:2px">辅导员已初审，待学院复审</div>
+          </div>
+          <div class="aid-right">
+            <div class="aid-amt">¥4,000</div>
+            <span class="badge in">审核中</span>
+          </div>
+        </div>
+        <div class="aid-item">
+          <div class="aid-ic" style="background:var(--ok-bg);color:var(--ok)"><i class="ti ti-star"></i></div>
+          <div class="aid-body">
+            <div class="aid-tt">国家助学金 · 2024-2025学年</div>
+            <div class="aid-sub">AID20250901001 · 已发放（账单抵扣）</div>
+          </div>
+          <div class="aid-right">
+            <div class="aid-amt">¥3,800</div>
+            <span class="badge ok">已发放</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S25 助学贷款 ════ -->
+<div class="screen" id="s-loan">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">助学贷款</span>
+    <span class="nb-right" onclick="go('s-loan-records')">申请记录</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="info-bar in">
+        <i class="ti ti-info-circle" style="color:var(--in);font-size:16px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--in)">助学贷款申请需填写贷款信息（银行、金额、回执验证码等），审批通过后自动冲抵学费账单</div>
+      </div>
+      <div class="card">
+        <div class="aid-item" onclick="go('s-loan-apply')">
+          <div class="aid-ic" style="background:var(--in-bg);color:var(--in)"><i class="ti ti-building-bank"></i></div>
+          <div class="aid-body">
+            <div class="aid-tt">申请助学贷款</div>
+            <div class="aid-sub">填写贷款信息，提交审批</div>
+          </div>
+          <i class="ti ti-chevron-right rli-chevron"></i>
+        </div>
+        <div class="aid-item" onclick="go('s-loan-records')">
+          <div class="aid-ic" style="background:var(--ok-bg);color:var(--ok)"><i class="ti ti-list-check"></i></div>
+          <div class="aid-body">
+            <div class="aid-tt">申请记录与冲抵情况</div>
+            <div class="aid-sub">查看审批状态及账单冲抵记录</div>
+          </div>
+          <i class="ti ti-chevron-right rli-chevron"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S26 助学贷款申请 ════ -->
+<div class="screen" id="s-loan-apply">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">申请助学贷款</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="card">
+        <div class="card-hd"><span class="card-tt">申请信息</span></div>
+        <div class="form-group">
+          <div>
+            <div class="form-lbl">申请原因 *</div>
+            <textarea class="form-ta" placeholder="请说明申请助学贷款的原因及家庭情况..."></textarea>
+          </div>
+          <div>
+            <div class="form-lbl">家庭情况说明</div>
+            <textarea class="form-ta" placeholder="选填，可补充说明家庭经济状况"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-tt">贷款信息</span></div>
+        <div class="form-group">
+          <div>
+            <div class="form-lbl">贷款银行 *</div>
+            <select class="form-sel">
+              <option>请选择贷款银行</option>
+              <option>中国银行</option>
+              <option>农业银行</option>
+              <option>建设银行</option>
+              <option>工商银行</option>
+            </select>
+          </div>
+          <div>
+            <div class="form-lbl">贷款金额 (元) *</div>
+            <input class="form-inp" type="number" placeholder="请输入贷款金额">
+          </div>
+          <div>
+            <div class="form-lbl">贷款日期 *</div>
+            <input class="form-inp" type="date">
+          </div>
+          <div>
+            <div class="form-lbl">回执验证码 *</div>
+            <input class="form-inp" type="text" placeholder="银行放款后提供的验证码">
+          </div>
+          <div>
+            <div class="form-lbl">贷款合同号</div>
+            <input class="form-inp" type="text" placeholder="选填">
+          </div>
+        </div>
+      </div>
+      <div class="info-bar wa">
+        <i class="ti ti-alert-triangle" style="color:var(--wa);font-size:14px;flex-shrink:0;margin-top:1px"></i>
+        <div class="ib-text" style="color:var(--wa);font-size:11px">同一学年只能有一条有效申请；待审核状态可修改或撤销</div>
+      </div>
+      <button class="btn-pri" onclick="go('s-loan-records')"><i class="ti ti-send"></i>提交申请</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S27 助学贷款记录 ════ -->
+<div class="screen" id="s-loan-records">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">助学贷款记录</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="card">
+        <div class="aid-item">
+          <div class="aid-ic" style="background:var(--wa-bg);color:var(--wa)"><i class="ti ti-building-bank"></i></div>
+          <div class="aid-body">
+            <div class="aid-tt">2025-2026学年 · 中国银行</div>
+            <div class="aid-sub">LOAN20260901001 · 09-01</div>
+            <div style="font-size:11px;color:var(--wa);margin-top:2px">待学工处审批</div>
+          </div>
+          <div class="aid-right">
+            <div class="aid-amt">¥8,000</div>
+            <span class="badge wa">审核中</span>
+          </div>
+        </div>
+        <div class="aid-item">
+          <div class="aid-ic" style="background:var(--ok-bg);color:var(--ok)"><i class="ti ti-building-bank"></i></div>
+          <div class="aid-body">
+            <div class="aid-tt">2024-2025学年 · 工商银行</div>
+            <div class="aid-sub">LOAN20250901001 · 已冲抵账单</div>
+          </div>
+          <div class="aid-right">
+            <div class="aid-amt">¥8,000</div>
+            <span class="badge ok">已冲抵</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S28 催缴通知记录 ════ -->
+<div class="screen" id="s-urge">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">催缴通知记录</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="card">
+        <div class="nitem">
+          <i class="ti ti-speakerphone" style="color:var(--er);font-size:20px;flex-shrink:0;margin-top:1px"></i>
+          <div class="nbody">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div class="ntt" style="color:var(--er)">学费催缴提醒</div><div class="ntime">今天 8:00</div></div>
+            <div class="ndesc">您的2025-2026学年学费（¥10,000）尚未缴纳，距截止日期 09-05 还有 4 天，请尽快完成缴费。<span style="color:var(--pri);font-weight:600;cursor:pointer" onclick="go('s-pay')"> 去缴费 ›</span></div>
+          </div>
+        </div>
+        <div class="nitem">
+          <i class="ti ti-speakerphone" style="color:var(--wa);font-size:20px;flex-shrink:0;margin-top:1px"></i>
+          <div class="nbody">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div class="ntt">缴费提醒</div><div class="ntime">2天前</div></div>
+            <div class="ndesc">您有 ¥12,800 待缴，请于09月05日前完成缴费，逾期可能影响选宿与报到。</div>
+          </div>
+        </div>
+        <div class="nitem">
+          <i class="ti ti-speakerphone" style="color:var(--N400);font-size:20px;flex-shrink:0;margin-top:1px"></i>
+          <div class="nbody">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div class="ntt" style="color:var(--N400)">迎新缴费通知</div><div class="ntime">08-15</div></div>
+            <div class="ndesc" style="color:var(--N400)">2026届新生，您的迎新缴费账单已生成，请登录系统完成缴费。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S29 消息中心 ════ -->
+<div class="screen" id="s-msg">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">消息中心</span>
+    <span class="nb-right">全部已读</span>
+  </div>
+  <div style="padding:8px 14px;background:var(--wh);border-bottom:1px solid var(--N200)">
+    <div class="tab-sel" style="margin-bottom:0">
+      <div class="ts-item on">全部</div>
+      <div class="ts-item">缴费</div>
+      <div class="ts-item">补差</div>
+      <div class="ts-item">审批</div>
+    </div>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="card">
+        <div class="nitem" onclick="go('s-diff')">
+          <i class="ti ti-calendar-x" style="color:var(--er);font-size:20px;flex-shrink:0;margin-top:1px"></i>
+          <div class="nbody">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div class="ntt" style="color:var(--er)">补差截止预警</div><div class="ntime">刚刚</div></div>
+            <div class="ndesc">宿舍补差（¥300）将于 <strong>2026-06-22</strong> 截止，距今仅剩 2 天。<span style="color:var(--pri);font-weight:600"> 去处理 ›</span></div>
+          </div>
+        </div>
+        <div class="nitem" onclick="go('s-refund-records')">
+          <i class="ti ti-receipt-refund" style="color:var(--in);font-size:20px;flex-shrink:0;margin-top:1px"></i>
+          <div class="nbody">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div class="ntt">退费申请已受理</div><div class="ntime">10分钟前</div></div>
+            <div class="ndesc">军训服装费退费申请（¥500）已提交，待财务审核，预计1个工作日处理。</div>
+          </div>
+        </div>
+        <div class="nitem" onclick="go('s-dorm-timeout')">
+          <i class="ti ti-switch-2" style="color:var(--ok);font-size:20px;flex-shrink:0;margin-top:1px"></i>
+          <div class="nbody">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div class="ntt">换房申请已通过</div><div class="ntime">2小时前</div></div>
+            <div class="ndesc">换房申请已审批通过，请进入「选宿」从剩余床位中选择新床位。<span style="color:var(--pri);font-weight:600"> 去选宿 ›</span></div>
+          </div>
+        </div>
+        <div class="nitem" onclick="go('s-diff')">
+          <i class="ti ti-building" style="color:var(--wa);font-size:20px;flex-shrink:0;margin-top:1px"></i>
+          <div class="nbody">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div class="ntt">宿舍补差订单生成</div><div class="ntime">2小时前</div></div>
+            <div class="ndesc">宿舍已调整（6人间→4人间），差额补缴 ¥300，截止 2026-06-22。</div>
+          </div>
+        </div>
+        <div class="nitem" onclick="go('s-receipt')">
+          <i class="ti ti-circle-check" style="color:var(--ok);font-size:20px;flex-shrink:0;margin-top:1px"></i>
+          <div class="nbody">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div class="ntt">缴费成功</div><div class="ntime">昨天 14:22</div></div>
+            <div class="ndesc" style="color:var(--N400)">2025-2026学年学费 ¥10,000 缴纳成功，电子票据已生成。</div>
+          </div>
+        </div>
+        <div class="nitem" onclick="go('s-aid-records')">
+          <i class="ti ti-star" style="color:var(--pu);font-size:20px;flex-shrink:0;margin-top:1px"></i>
+          <div class="nbody">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div class="ntt">助学金申请进入审批</div><div class="ntime">09-02</div></div>
+            <div class="ndesc" style="color:var(--N400)">国家助学金申请已由辅导员初审，进入学院复审流程。</div>
+          </div>
+        </div>
+        <div class="nitem">
+          <i class="ti ti-coins" style="color:var(--N400);font-size:20px;flex-shrink:0;margin-top:1px"></i>
+          <div class="nbody">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div class="ntt" style="color:var(--N400)">预缴余额抵扣通知</div><div class="ntime">09-01</div></div>
+            <div class="ndesc" style="color:var(--N400)">预缴余额 ¥500 已自动抵扣本次账单。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ S30 我的 (个人中心) ════ -->
+<div class="screen" id="s-profile">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="scroll">
+    <div style="background:var(--pri);padding:16px 18px 40px">
+      <div class="profile-header" style="padding:0;border:none">
+        <div class="profile-av">张</div>
+        <div>
+          <div class="profile-name" style="color:#fff">张同学</div>
+          <div class="profile-sub" style="color:rgba(255,255,255,.7)">计算机科学 2026届 · 20260001</div>
+          <div class="profile-sub" style="color:rgba(255,255,255,.65);margin-top:2px">华东科技大学</div>
+        </div>
+      </div>
+    </div>
+    <div class="float-card" style="margin-top:-24px">
+      <div class="stats-row">
+        <div class="stat-item" style="cursor:pointer" onclick="go('s-bills')"><div class="stat-num wa">12,800</div><div class="stat-lbl">待缴(元)</div></div>
+        <div class="stat-item" style="cursor:pointer" onclick="go('s-records')"><div class="stat-num ok">2</div><div class="stat-lbl">缴费记录</div></div>
+        <div class="stat-item" style="cursor:pointer" onclick="go('s-receipt')"><div class="stat-num N">2</div><div class="stat-lbl">我的票据</div></div>
+      </div>
+    </div>
+    <div class="content nb">
+      <div class="card">
+        <div class="menu-group">
+          <div class="menu-item" onclick="go('s-bill-detail')">
+            <div class="menu-ic" style="background:var(--pri-t)"><i class="ti ti-file-invoice" style="color:var(--pri)"></i></div>
+            <span class="menu-lbl">账单详情</span>
+            <span class="menu-badge">1</span>
+            <i class="ti ti-chevron-right rli-chevron"></i>
+          </div>
+          <div class="menu-item" onclick="go('s-records')">
+            <div class="menu-ic" style="background:var(--ok-bg)"><i class="ti ti-list-check" style="color:var(--ok)"></i></div>
+            <span class="menu-lbl">缴费记录</span>
+            <i class="ti ti-chevron-right rli-chevron"></i>
+          </div>
+          <div class="menu-item" onclick="go('s-refund')">
+            <div class="menu-ic" style="background:var(--wa-bg)"><i class="ti ti-arrow-back-up" style="color:var(--wa)"></i></div>
+            <span class="menu-lbl">退费申请</span>
+            <i class="ti ti-chevron-right rli-chevron"></i>
+          </div>
+          <div class="menu-item" onclick="go('s-receipt')">
+            <div class="menu-ic" style="background:var(--ok-bg)"><i class="ti ti-receipt" style="color:var(--ok)"></i></div>
+            <span class="menu-lbl">我的票据</span>
+            <i class="ti ti-chevron-right rli-chevron"></i>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="menu-group">
+          <div class="menu-item" onclick="go('s-dorm')">
+            <div class="menu-ic" style="background:var(--in-bg)"><i class="ti ti-building" style="color:var(--in)"></i></div>
+            <span class="menu-lbl">我的宿舍</span>
+            <i class="ti ti-chevron-right rli-chevron"></i>
+          </div>
+          <div class="menu-item" onclick="go('s-diff')">
+            <div class="menu-ic" style="background:var(--er-bg)"><i class="ti ti-switch-2" style="color:var(--er)"></i></div>
+            <span class="menu-lbl">补差订单</span>
+            <span class="menu-badge">1</span>
+            <i class="ti ti-chevron-right rli-chevron"></i>
+          </div>
+          <div class="menu-item" onclick="go('s-precharge')">
+            <div class="menu-ic" style="background:var(--er-bg)"><i class="ti ti-coin" style="color:var(--er)"></i></div>
+            <span class="menu-lbl">预缴余额</span>
+            <span class="menu-val">¥500</span>
+            <i class="ti ti-chevron-right rli-chevron"></i>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="menu-group">
+          <div class="menu-item" onclick="go('s-aid')">
+            <div class="menu-ic" style="background:var(--pu-bg)"><i class="ti ti-heart-handshake" style="color:var(--pu)"></i></div>
+            <span class="menu-lbl">助学金申请</span>
+            <i class="ti ti-chevron-right rli-chevron"></i>
+          </div>
+          <div class="menu-item" onclick="go('s-loan')">
+            <div class="menu-ic" style="background:var(--in-bg)"><i class="ti ti-school" style="color:var(--in)"></i></div>
+            <span class="menu-lbl">助学贷款</span>
+            <i class="ti ti-chevron-right rli-chevron"></i>
+          </div>
+          <div class="menu-item" onclick="go('s-urge')">
+            <div class="menu-ic" style="background:var(--N50)"><i class="ti ti-speakerphone" style="color:var(--N500)"></i></div>
+            <span class="menu-lbl">催缴通知记录</span>
+            <span class="menu-badge">3</span>
+            <i class="ti ti-chevron-right rli-chevron"></i>
+          </div>
+          <div class="menu-item" onclick="go('s-msg')">
+            <div class="menu-ic" style="background:var(--pri-t)"><i class="ti ti-bell" style="color:var(--pri)"></i></div>
+            <span class="menu-lbl">消息中心</span>
+            <span class="menu-badge">4</span>
+            <i class="ti ti-chevron-right rli-chevron"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <div class="tab-item" onclick="go('s-home')"><div class="tab-ic-bg"><i class="ti ti-home tab-ic"></i></div><span class="tab-lbl">首页</span></div>
+    <div class="tab-item" onclick="go('s-bills')"><div class="tab-ic-bg"><i class="ti ti-file-text tab-ic"></i></div><span class="tab-lbl">账单</span></div>
+    <div class="tab-item" onclick="go('s-dorm-select')"><div class="tab-ic-bg"><i class="ti ti-building tab-ic"></i></div><span class="tab-lbl">选宿</span></div>
+    <div class="tab-item on"><div class="tab-ic-bg"><i class="ti ti-user tab-ic"></i></div><span class="tab-lbl">我的</span></div>
+  </div>
+</div>
+
+<!-- ════ S31 报到步骤详情 ════ -->
+<div class="screen" id="s-steps">
+  <div class="sbar"><span class="sbar-t">9:41</span><div class="sbar-r"><i class="ti ti-wifi"></i><i class="ti ti-battery-2"></i></div></div>
+  <div class="navbar">
+    <div class="nb-back" onclick="back()"><i class="ti ti-arrow-left"></i></div>
+    <span class="nb-title">报到步骤</span>
+  </div>
+  <div class="scroll">
+    <div class="content nb no-tab">
+      <div class="card">
+        <div class="step-item"><div class="step-ic done"><i class="ti ti-id-badge"></i></div><div class="step-body"><div class="step-tt">身份绑定</div><div class="step-sub">已完成 · 09月01日 · 学号+身份证绑定</div></div><span class="badge ok">完成</span></div>
+        <div class="step-item"><div class="step-ic done"><i class="ti ti-home"></i></div><div class="step-body"><div class="step-tt">宿舍分配</div><div class="step-sub">3栋512室 · 已调换至4人间</div></div><button class="btn-pill sm ok" onclick="go('s-dorm')">查看</button></div>
+        <div class="step-item"><div class="step-ic act"><i class="ti ti-credit-card"></i></div><div class="step-body"><div class="step-tt">迎新缴费</div><div class="step-sub">待缴 12,800元 + 补差 300元</div></div><button class="btn-pill sm" onclick="go('s-pay')">去缴费</button></div>
+        <div class="step-item"><div class="step-ic pend"><i class="ti ti-clipboard-check"></i></div><div class="step-body"><div class="step-tt">资料审核</div><div class="step-sub">需先完成缴费后解锁</div></div><span class="badge gy">未开始</span></div>
+        <div class="step-item"><div class="step-ic pend"><i class="ti ti-building"></i></div><div class="step-body"><div class="step-tt">宿舍入住</div><div class="step-sub">入住时需提交相关材料</div></div><span class="badge gy">未开始</span></div>
+        <div class="step-item"><div class="step-ic pend"><i class="ti ti-star"></i></div><div class="step-body"><div class="step-tt">助学金/贷款申请（选填）</div><div class="step-sub">有需要的同学可在此步骤申请</div></div><button class="btn-pill sm" style="background:var(--pu)" onclick="go('s-aid')">去申请</button></div>
+        <div class="step-item"><div class="step-ic pend"><i class="ti ti-flag"></i></div><div class="step-body"><div class="step-tt">现场报到</div><div class="step-sub">09月08日 · 东门广场 · 凭缴费凭证报到</div></div><span class="badge gy">未开始</span></div>
+        <div class="step-item"><div class="step-ic pend"><i class="ti ti-book"></i></div><div class="step-body"><div class="step-tt">领取教材</div><div class="step-sub">报到后前往图书馆领取</div></div><span class="badge gy">未开始</span></div>
+        <div class="step-item"><div class="step-ic pend"><i class="ti ti-shield-check"></i></div><div class="step-body"><div class="step-tt">军训准备</div><div class="step-sub">领取军训服装，缴纳服装费</div></div><span class="badge gy">未开始</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end #app -->
+
+<script>
+// ── Navigation State ──
+let history = ['s-home'];
+let current = 's-home';
+
+function go(screenId) {
+  const prev = document.getElementById(current);
+  const next = document.getElementById(screenId);
+  if (!next || screenId === current) return;
+
+  prev.classList.remove('active');
+  prev.classList.add('prev');
+
+  next.classList.add('active');
+  next.classList.remove('prev');
+
+  history.push(screenId);
+  current = screenId;
+
+  // Remove prev class after transition
+  setTimeout(() => {
+    prev.classList.remove('prev');
+  }, 350);
+
+  // Scroll to top
+  const scroll = next.querySelector('.scroll');
+  if (scroll) scroll.scrollTop = 0;
+}
+
+function back() {
+  if (history.length <= 1) return;
+  history.pop();
+  const prevId = history[history.length - 1];
+
+  const curr = document.getElementById(current);
+  const prev = document.getElementById(prevId);
+
+  curr.classList.remove('active');
+  prev.classList.add('active');
+  prev.classList.remove('prev');
+
+  // Slide current out to right
+  curr.style.transform = 'translateX(100%)';
+  setTimeout(() => {
+    curr.style.transform = '';
+  }, 350);
+
+  current = prevId;
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+// Countdown timer simulation
+let countdown = 9 * 60 + 12;
+function tickCountdown() {
+  const el = document.querySelector('.countdown-num');
+  if (!el) return;
+  if (countdown <= 0) { el.textContent = '00:00'; el.style.color = 'var(--er)'; return; }
+  const m = Math.floor(countdown / 60);
+  const s = countdown % 60;
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if (countdown <= 120) el.style.color = 'var(--er)';
+  countdown--;
+}
+setInterval(tickCountdown, 1000);
+</script>
+
+</body>
+</html>

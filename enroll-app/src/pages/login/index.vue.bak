@@ -1,0 +1,705 @@
+<template>
+	<view class="login-container">
+		<view class="login-box" v-if="!isWechat">
+			<view class="logo-box">
+				<image class="logo" src="https://static.smallsaas.cn/house/2022/svg/Logo/housingLogo.svg?color=8419e6" mode="aspectFit"></image>
+				<text class="app-name">回迁便民服务</text>
+			</view>
+
+			<!-- H5清再登录缓存对话框 -->
+			<!-- #ifdef H5 -->
+			<view v-if="showDialog" class="force-login-dialog">
+				<view class="dialog-content">
+					<view class="dialog-title">清再登录缓存</view>
+					<view class="dialog-message">
+						检测到清再登录请求，将清除所有缓存并重新登录
+					</view>
+					<view class="dialog-buttons">
+						<button class="dialog-btn cancel-btn" @click="cancelForceLogin">取消</button>
+						<button class="dialog-btn confirm-btn" @click="confirmForceLogin">确认</button>
+					</view>
+				</view>
+			</view>
+			<!-- #endif -->
+
+			<!-- 微信小程序登录 -->
+			<!-- #ifndef H5 -->
+			<view class="wechat-login-section">
+				<view class="section-title">微信小程序登录</view>
+				<button class="login-btn" open-type="getUserInfo" @getuserinfo="onGetUserInfo">
+					<text>微信授权登录</text>
+				</button>
+			</view>
+			<!-- #endif -->
+		</view>
+	</view>
+</template>
+
+<script>
+import _ from 'lodash'
+import { globalConfig, debugConfig } from '@/config.js'
+import commonStore from '@/store/common.js'
+import { isMPWeixin } from '@/utils/platform.js'
+import { resolveRole, getRoleHomePage, applyTheme } from '@/utils/role.js'
+
+export default {
+	name: 'loginPage',
+	data() {
+		return {
+			loading: false,
+			apiUrl: globalConfig.endpoint + '/api/oauth/wxapp/login',
+			showDialog: false,
+			isWechat: isMPWeixin()
+		}
+	},
+	created() {
+		// 不在这里检查登录，移到onLoad中
+	},
+	onLoad(options) {
+		// #ifndef H5
+		uni.hideHomeButton()
+		// #endif
+
+		// 从URL或启动参数获取forceLogin参数
+		let forceLogin = false
+		// #ifdef H5
+		const urlParams = new URLSearchParams(window.location.search)
+		forceLogin = urlParams.get('forceLogin') === 'true'
+		// #endif
+		// #ifndef H5
+		forceLogin = options && options.force === 'true'
+		// #endif
+
+		// 如果有forceLogin参数，弹出强制登录对话框（H5）或清除缓存（小程序）
+		if (forceLogin) {
+			// #ifdef H5
+			this.showForceLoginDialog()
+			return
+			// #endif
+			// #ifndef H5
+			this.clearAllCache()
+			return
+			// #endif
+		}
+
+		// H5环境：调试模式下清除缓存，方便测试新用户流程
+		// 小程序环境：不清除缓存，保持用户登录状态
+		// #ifdef H5
+		if (debugConfig.simulateNewUser) {
+			const cacheKeys = ['userInfo', 'profile', 'auth', 'loginData', 'communityData']
+			cacheKeys.forEach(key => {
+				try {
+					uni.removeStorageSync(key)
+				} catch (e) {
+					console.warn(`清除缓存失败: ${key}`, e)
+				}
+			})
+
+			try {
+				commonStore.commit('cleanState')
+			} catch (e) {
+				console.warn('重置 Vuex store 失败', e)
+			}
+
+			uni.clearStorageSync()
+
+			try {
+				if (typeof localStorage !== 'undefined') {
+					localStorage.clear()
+				}
+				if (typeof sessionStorage !== 'undefined') {
+					sessionStorage.clear()
+				}
+			} catch (e) {
+				console.warn('清除浏览器存储失败', e)
+			}
+		}
+		// #endif
+
+		// 检查是否已登录
+		this.checkLogin()
+	},
+	methods: {
+		// 清除所有缓存
+		clearAllCache() {
+			try {
+				// 清除uni-app缓存
+				uni.clearStorageSync()
+
+				// 清除浏览器缓存
+				if (typeof localStorage !== 'undefined') {
+					localStorage.clear()
+				}
+				if (typeof sessionStorage !== 'undefined') {
+					sessionStorage.clear()
+				}
+
+				uni.showToast({
+					title: '缓存已清除，请重新登录',
+					icon: 'success',
+					duration: 2000
+				})
+			} catch (e) {
+				console.error('[清除缓存失败]', e)
+			}
+		},
+
+		// 显示强制登录对话框
+		showForceLoginDialog() {
+			this.showDialog = true
+		},
+
+		// 取消强制登录
+		cancelForceLogin() {
+			this.showDialog = false
+			// 跳转到首页
+			uni.switchTab({
+				url: '/pages/home/index'
+			})
+		},
+
+		// 确认强制登录
+		confirmForceLogin() {
+			this.showDialog = false
+
+			try {
+				// 清除所有缓存
+				uni.clearStorageSync()
+				if (typeof localStorage !== 'undefined') {
+					localStorage.clear()
+				}
+				if (typeof sessionStorage !== 'undefined') {
+					sessionStorage.clear()
+				}
+
+				// 自动触发登录流程
+				this.autoLogin()
+
+			} catch (e) {
+				console.error('清除缓存失败:', e)
+			}
+		},
+
+		// 自动登录流程
+		autoLogin() {
+			// H5环境下使用mockLogin
+			// #ifdef H5
+			this.mockLogin()
+			// #endif
+
+			// 微信小程序环境下获取code并登录
+			// #ifndef H5
+			uni.showLoading({ title: '登录中...', mask: true })
+			uni.login({
+				success: (res) => {
+					const code = _.get(res, 'code')
+					this.login(code)
+				},
+				fail: () => {
+					uni.hideLoading()
+					uni.showToast({
+						title: '登录失败',
+						icon: 'none'
+					})
+				}
+			})
+			// #endif
+		},
+		
+			// 检查是否已登录
+		checkLogin() {
+			const userInfoCache = this.$cache("userInfo")
+			if (userInfoCache && userInfoCache.userId) {
+				// H5环境：调试模式下强制清除社区信息，模拟新用户
+				// 小程序环境：使用后端返回的真实用户信息
+				// #ifdef H5
+				if (debugConfig.simulateNewUser) {
+					userInfoCache.orgId = null
+					userInfoCache.hasOrgId = false
+					userInfoCache.orgName = null
+					userInfoCache.communityId = null
+					userInfoCache.communityName = null
+					// 更新缓存
+					this.$cache("userInfo", userInfoCache)
+					// 更新 Vuex store
+					commonStore.commit('cleanState')
+					// 更新 communityData 存储
+					uni.setStorageSync('communityData', {
+						communityId: null,
+						orgId: null
+					})
+				}
+				// #endif
+
+				this.goToHome(userInfoCache)
+			} else {
+				// 用户未登录，触发登录流程
+				this.autoLogin()
+			}
+		},
+
+		// 获取用户信息并自动登录
+		getUser() {
+			const userInfoCache = this.$cache("userInfo")
+			if (userInfoCache != null && userInfoCache != undefined && userInfoCache != "" && _.get(userInfoCache, 'requestUserInfo') === false) {
+				// H5环境：调试模式下强制清除社区信息，模拟新用户
+				// 小程序环境：使用后端返回的真实用户信息
+				// #ifdef H5
+				if (debugConfig.simulateNewUser) {
+					userInfoCache.orgId = null
+					userInfoCache.hasOrgId = false
+					userInfoCache.orgName = null
+					userInfoCache.communityId = null
+					userInfoCache.communityName = null
+					// 更新缓存
+					this.$cache("userInfo", userInfoCache)
+					// 更新 Vuex store
+					commonStore.commit('cleanState')
+					// 更新 communityData 存储
+					uni.setStorageSync('communityData', {
+						communityId: null,
+						orgId: null
+					})
+				}
+				// #endif
+
+				this.goToHome(userInfoCache)
+			} else {
+				uni.showLoading({ title: '加载中...', mask: true })
+				// H5环境下直接调用登录方法
+				// #ifdef H5
+				this.performLogin()
+				// #endif
+
+				// 微信小程序环境下获取code
+				// #ifndef H5
+				uni.login({
+					success: (res) => {
+						const code = _.get(res, 'code')
+						this.login(code)
+					},
+					fail: () => {
+						uni.hideLoading()
+					}
+				})
+				// #endif
+			}
+		},
+
+		// H5模拟登录 - 生成模拟code并调用真实API
+		mockLogin() {
+			if (this.loading) return
+
+			this.loading = true
+			uni.showLoading({ title: '登录中...', mask: true })
+
+			// 清除可能存在的旧测试数据
+			uni.removeStorageSync('userInfo')
+			this.$cache('userInfo', {})
+
+			// 生成格式化的模拟code
+			const mockCode = this.generateMockCode()
+
+			// 调用真实的登录API
+			this.login(mockCode)
+		},
+
+		// 生成H5测试用的模拟code
+		generateMockCode() {
+			const timestamp = Date.now()
+			const random = Math.random().toString(36).substring(2, 8)
+			// 格式: h5mock_{timestamp}_{random}
+			// 后端可以通过h5mock_前缀识别这是H5测试请求
+			return `h5mock_${timestamp}_${random}`
+		},
+
+		// 微信小程序获取用户信息
+		onGetUserInfo(e) {
+			if (e.detail.errMsg === 'getUserInfo:ok') {
+				uni.showLoading({ title: '登录中...', mask: true })
+				uni.login({
+					success: (res) => {
+						const code = _.get(res, 'code')
+						this.login(code)
+					},
+					fail: () => {
+						uni.hideLoading()
+						uni.showToast({
+							title: '登录失败',
+							icon: 'none'
+						})
+					}
+				})
+			} else {
+				uni.showToast({
+					title: '需要授权才能使用',
+					icon: 'none'
+				})
+			}
+		},
+
+		// 统一的登录方法 - 调用真实的业务API
+		login(auth) {
+			const inviteData = uni.getStorageSync('inviteData') || {}
+
+			// 构建请求数据
+			let data = {
+				auth: auth,  // 微信code或H5模拟code
+				type: 16,    // 用户类型
+				app: 1,      // 应用标识
+				...(_.get(inviteData, 'inviteCode') && !_.get(inviteData, 'isInvited')) || inviteData.isChangeCommunity
+					? _.pick(inviteData, ['inviteCode', 'communityId', 'orgId'])
+					: {},
+				...inviteData.isChangeCommunity ? { isChangeCommunity: true } : {}
+			}
+
+			// 确定请求URL
+			let requestUrl = '/api/oauth/wxapp/login'
+			if ((_.get(inviteData, 'inviteCode') && !_.get(inviteData, 'isInvited')) || inviteData.isChangeCommunity) {
+				requestUrl = '/api/u/login'
+			}
+
+			const fullUrl = `${globalConfig.endpoint}${requestUrl}`
+
+			// 调用真实的业务API
+			uni.request({
+				url: fullUrl,
+				header: {
+					'content-type': 'application/json',
+				},
+				data: data,
+				method: "POST",
+				success: (res) => {
+					if (_.get(res, 'data.code') === 200) {
+						const userInfo = _.cloneDeep(_.get(res, 'data.data')) || {}
+						this.saveUserInfo(userInfo)
+					} else {
+						uni.hideLoading()
+						this.loading = false
+						const errorMsg = _.get(res, 'data.message') || '登录失败，请重试'
+						console.error('[登录失败]', errorMsg, res)
+						uni.showToast({
+							title: errorMsg,
+							icon: 'none',
+							duration: 3000
+						})
+					}
+				},
+				fail: (err) => {
+					console.error('[登录请求失败]', err)
+					uni.hideLoading()
+					this.loading = false
+					uni.showToast({
+						title: '网络错误，请检查网络连接',
+						icon: 'none',
+						duration: 3000
+					})
+				}
+			})
+		},
+
+		// 保存用户信息
+		saveUserInfo(userInfo) {
+			// H5环境：调试模式下清除社区信息，模拟新用户流程
+			// 小程序环境：使用后端返回的真实用户信息（包括orgId和communityId）
+			// #ifdef H5
+			if (debugConfig.simulateNewUser) {
+				userInfo = _.cloneDeep(userInfo)
+				userInfo.orgId = null
+				userInfo.hasOrgId = false
+				userInfo.orgName = null
+				userInfo.communityId = null
+				userInfo.communityName = null
+			}
+			// #endif
+
+			const query = {
+				"nickName": userInfo.name || userInfo.nickName,
+				"avatar": userInfo.avatar,
+				"userId": userInfo.userId,
+				"type": userInfo.type,
+				"typeList": userInfo.userTypeList || userInfo.typeList,
+				"hasType": userInfo.hasType,
+				"orgId": userInfo.orgId,
+				"hasOrgId": userInfo.hasOrgId,
+				"orgName": userInfo.tenantName || userInfo.orgName,
+				"communityId": userInfo.communityId,
+				"communityName": userInfo.communityName,
+				"communityCode": userInfo.communityCode,
+				"phone": userInfo.phone,
+				"isSupplier": userInfo.isSupplier,
+				"inviteCode": userInfo.inviteCode,
+				"invitorId": userInfo.invitorId,
+				"realName": userInfo.realName,
+				"email": userInfo.email,
+				"openId": userInfo.openId,
+				"requestUserInfo": userInfo.requestUserInfo || false,
+				"verified": userInfo.verified,
+			}
+
+			// 保存token
+			uni.setStorageSync(globalConfig.tokenStorageKey, userInfo.accessToken)
+
+			// 保存用户信息
+			this.$cache("userInfo", query, 3600 * 24 * 2)
+
+			// 保存社区数据
+			uni.setStorageSync('communityData', _.pick(query, ['communityId', 'orgId']))
+
+			// 解析角色并存入 Vuex
+			const role = resolveRole(query)
+			applyTheme(role)
+			commonStore.commit('setUserInfo', query)
+			commonStore.commit('updateState', {
+				communityData: _.pick(query, ['communityId', 'orgId'])
+			})
+
+			uni.hideLoading()
+			this.loading = false
+
+			// 跳转对应角色首页或社区选择页面
+			this.goToHome(query)
+		},
+
+		// 跳转首页或社区选择页面
+		goToHome(userInfo) {
+			const role = resolveRole(userInfo)
+			let path = getRoleHomePage(role)
+
+			// 学生端：检查是否需要选择社区/小区
+			if (role === 'student') {
+				if (!userInfo.orgId) {
+					path = '/pages/sub/choicePage/communityType'
+				} else if (!userInfo.communityId) {
+					path = '/pages/sub/choicePage/communityChildrenType'
+				}
+			}
+
+			// 检查是否有重定向页面
+			const redirectPage = uni.getStorageSync('loginRedirectPage')
+			if (redirectPage) {
+				path = redirectPage
+				uni.removeStorageSync('loginRedirectPage')
+			}
+
+			// 如果是tabbar页面，使用switchTab
+			if (path.includes('/pages/home/index') || path.includes('/pages/my/index')) {
+				uni.switchTab({
+					url: path,
+					fail: (err) => {
+						console.error('[跳转失败]', err)
+						// switchTab失败则redirectTo
+						uni.redirectTo({ url: path })
+					}
+				})
+			} else {
+				uni.redirectTo({
+					url: path,
+					fail: (err) => {
+						console.error('[跳转失败]', err)
+					}
+				})
+			}
+		}
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.login-container {
+	min-height: 100vh;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 40rpx;
+}
+
+.login-box {
+	width: 100%;
+	max-width: 600rpx;
+	background-color: #ffffff;
+	border-radius: 40rpx;
+	padding: 80rpx 60rpx;
+	box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.2);
+}
+
+.logo-box {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 80rpx;
+
+	.logo {
+		width: 160rpx;
+		height: 160rpx;
+		margin-bottom: 30rpx;
+	}
+
+	.app-name {
+		font-size: 48rpx;
+		font-weight: bold;
+		color: #333333;
+	}
+}
+
+.h5-login-section,
+.wechat-login-section {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.section-title {
+	font-size: 36rpx;
+	font-weight: bold;
+	color: #333333;
+	margin-bottom: 30rpx;
+}
+
+.tip-text {
+	font-size: 28rpx;
+	color: #666666;
+	text-align: center;
+	line-height: 1.8;
+	margin-bottom: 60rpx;
+	padding: 0 20rpx;
+
+	.api-url {
+		display: block;
+		font-size: 24rpx;
+		color: #999999;
+		margin-top: 20rpx;
+		word-break: break-all;
+	}
+}
+
+.login-btn {
+	width: 100%;
+	height: 90rpx;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: #ffffff;
+	font-size: 32rpx;
+	font-weight: bold;
+	border-radius: 45rpx;
+	border: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 10rpx 30rpx rgba(102, 126, 234, 0.4);
+	transition: all 0.3s;
+
+	&:active {
+		opacity: 0.8;
+		transform: scale(0.98);
+	}
+}
+
+.clear-btn, .debug-btn {
+	width: 100%;
+	height: 80rpx;
+	background: #ffffff;
+	color: #667eea;
+	font-size: 28rpx;
+	font-weight: bold;
+	border-radius: 40rpx;
+	border: 2rpx solid #667eea;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-top: 30rpx;
+	transition: all 0.3s;
+
+	&:active {
+		opacity: 0.8;
+		transform: scale(0.98);
+		background: #f5f5f5;
+	}
+}
+
+.debug-btn {
+	color: #ff6b6b;
+	border-color: #ff6b6b;
+
+	&:active {
+		background: #fff5f5;
+	}
+}
+
+// 强制登录对话框样式
+.force-login-dialog {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+
+	.dialog-content {
+		background-color: #ffffff;
+		border-radius: 20rpx;
+		padding: 60rpx 40rpx;
+		margin: 0 80rpx;
+		width: 100%;
+		max-width: 600rpx;
+		box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.3);
+
+		.dialog-title {
+			font-size: 36rpx;
+			font-weight: bold;
+			color: #333333;
+			text-align: center;
+			margin-bottom: 40rpx;
+		}
+
+		.dialog-message {
+			font-size: 28rpx;
+			color: #666666;
+			text-align: center;
+			line-height: 1.6;
+			margin-bottom: 60rpx;
+		}
+
+		.dialog-buttons {
+			display: flex;
+			gap: 30rpx;
+
+			.dialog-btn {
+				flex: 1;
+				height: 80rpx;
+				border-radius: 40rpx;
+				font-size: 28rpx;
+				font-weight: bold;
+				border: none;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				transition: all 0.3s;
+
+				&.cancel-btn {
+					background-color: #f5f5f5;
+					color: #666666;
+
+					&:active {
+						background-color: #e0e0e0;
+					}
+				}
+
+				&.confirm-btn {
+					background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+					color: #ffffff;
+
+					&:active {
+						opacity: 0.8;
+						transform: scale(0.98);
+					}
+				}
+			}
+		}
+	}
+}
+</style>

@@ -2,7 +2,7 @@
   <view class="empty">
     <text class="empty-icon">{{ icon }}</text>
     <text class="empty-text">{{ text }}</text>
-    <view class="empty-action" v-if="$slots.action">
+    <view class="empty-action" :class="{ 'empty-action--hidden': !hasActionSlot }">
       <slot name="action" />
     </view>
   </view>
@@ -14,6 +14,11 @@ export default {
   props: {
     icon: { type: String, default: '📋' },
     text: { type: String, default: '暂无数据' }
+  },
+  computed: {
+    hasActionSlot() {
+      return !!this.$slots.action
+    }
   }
 }
 </script>
@@ -38,5 +43,8 @@ export default {
 }
 .empty-action {
   margin-top: 32rpx;
+}
+.empty-action--hidden {
+  display: none;
 }
 </style>

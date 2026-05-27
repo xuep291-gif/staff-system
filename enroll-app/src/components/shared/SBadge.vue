@@ -1,7 +1,7 @@
 <template>
-  <text class="sbadge" :class="[colorClass, variantClass]" :style="customStyle">
+  <view class="sbadge" :class="[colorClass, variantClass]" :style="customStyle">
     <slot />
-  </text>
+  </view>
 </template>
 
 <script>

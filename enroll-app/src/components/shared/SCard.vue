@@ -1,6 +1,6 @@
 <template>
   <view class="scard" :class="[variantClass]" :style="{ padding: padding + 'px' }">
-    <view class="scard-header" v-if="$slots.header || title">
+    <view class="scard-header" :class="{ 'scard-header--hidden': !hasHeader }">
       <slot name="header">
         <text class="scard-title">{{ title }}</text>
       </slot>
@@ -25,6 +25,9 @@ export default {
   },
   emits: ['action'],
   computed: {
+    hasHeader() {
+      return !!(this.$slots.header || this.title)
+    },
     variantClass() {
       if (!this.variant) return ''
       return 'scard-' + this.variant
@@ -55,6 +58,9 @@ export default {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24rpx;
+}
+.scard-header--hidden {
+  display: none;
 }
 .scard-title {
   font-size: var(--fs-15);

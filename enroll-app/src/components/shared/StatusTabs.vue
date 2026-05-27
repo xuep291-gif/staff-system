@@ -1,5 +1,5 @@
 <template>
-  <view class="status-tabs-wrapper" :style="underlineVars">
+  <view class="status-tabs-wrapper">
     <view class="status-tabs">
       <view
         v-for="tab in tabs"
@@ -12,7 +12,7 @@
         <text class="status-tab-count">{{ tab.count }}</text>
       </view>
     </view>
-    <view class="status-tabs-underline" />
+    <view class="status-tabs-underline" :style="underlineStyle" />
   </view>
 </template>
 
@@ -37,12 +37,12 @@ export default {
       const idx = this.tabs.findIndex(t => t.key === this.activeKey)
       return idx >= 0 ? idx : 0
     },
-    underlineVars() {
+    underlineStyle() {
       const cols = Math.max(this.tabs.length, 1)
-      const pct = (100 / cols)
+      const pct = 100 / cols
       return {
-        '--ul-left': `${(this.activeIndex * pct).toFixed(2)}%`,
-        '--ul-width': `${pct.toFixed(2)}%`
+        width: `${pct}%`,
+        transform: `translateX(${this.activeIndex * 100}%)`
       }
     }
   },
@@ -108,11 +108,10 @@ export default {
 .status-tabs-underline {
   position: absolute;
   bottom: 0;
-  left: var(--ul-left);
-  width: var(--ul-width);
+  left: 0;
   height: 6rpx;
   background: var(--brand);
   border-radius: 3rpx;
-  transition: left .25s cubic-bezier(.4, 0, .2, 1);
+  transition: transform .25s cubic-bezier(.4, 0, .2, 1);
 }
 </style>

@@ -2,7 +2,7 @@
   <view class="sheet-overlay" :class="{ 'sheet-overlay-on': modelValue }" @click="onOverlayClick">
     <view class="sheet-panel" :class="{ 'sheet-open': modelValue }" @click.stop>
       <view class="sheet-handle" />
-      <view class="sheet-header" v-if="$slots.header || title">
+      <view class="sheet-header" :class="{ 'sheet-header--hidden': !hasHeaderSlot }">
         <slot name="header">
           <text class="sheet-title">{{ title }}</text>
         </slot>
@@ -10,7 +10,7 @@
       <scroll-view scroll-y class="sheet-body">
         <slot />
       </scroll-view>
-      <view class="sheet-footer" v-if="$slots.footer">
+      <view class="sheet-footer" :class="{ 'sheet-footer--hidden': !hasFooterSlot }">
         <slot name="footer" />
       </view>
     </view>
@@ -26,6 +26,14 @@ export default {
     closable: { type: Boolean, default: true }
   },
   emits: ['update:modelValue', 'close'],
+  computed: {
+    hasHeaderSlot() {
+      return !!(this.$slots.header || this.title)
+    },
+    hasFooterSlot() {
+      return !!this.$slots.footer
+    }
+  },
   methods: {
     onOverlayClick() {
       if (this.closable) {
@@ -84,6 +92,9 @@ export default {
   padding: 28rpx 32rpx 24rpx;
   border-bottom: 1px solid var(--N50);
 }
+.sheet-header--hidden {
+  display: none;
+}
 .sheet-title {
   font-size: var(--fs-16);
   font-weight: 600;
@@ -101,5 +112,8 @@ export default {
 .sheet-footer {
   padding: 24rpx 32rpx;
   border-top: 1px solid var(--N50);
+}
+.sheet-footer--hidden {
+  display: none;
 }
 </style>

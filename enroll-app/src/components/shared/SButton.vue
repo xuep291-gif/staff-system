@@ -1,13 +1,11 @@
 <template>
-  <button
+  <view
     class="sbtn"
-    :class="[variantClass, sizeClass, { 'sbtn-block': block }]"
-    :disabled="disabled"
-    :loading="loading"
-    @click="$emit('click')"
+    :class="[variantClass, sizeClass, { 'sbtn-block': block, 'sbtn-disabled': disabled }]"
+    @click="onClick"
   >
     <slot />
-  </button>
+  </view>
 </template>
 
 <script>
@@ -21,6 +19,12 @@ export default {
     loading: { type: Boolean, default: false }
   },
   emits: ['click'],
+  methods: {
+    onClick() {
+      if (this.disabled || this.loading) return
+      this.$emit('click')
+    }
+  },
   computed: {
     variantClass() {
       return 'sbtn-' + this.variant
@@ -115,7 +119,8 @@ export default {
 }
 
 /* 禁用态 */
-.sbtn:disabled {
+.sbtn-disabled {
   opacity: 0.5;
+  pointer-events: none;
 }
 </style>

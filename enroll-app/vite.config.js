@@ -47,7 +47,10 @@ export default defineConfig({
         template: {
           compilerOptions: {
             // 将 uni- 和 van- 前缀的标签视为自定义元素
-            isCustomElement: (tag) => tag.startsWith('van-')
+            isCustomElement: (tag) => tag.startsWith('van-'),
+            // 禁用静态节点提升，避免 uni-app H5 编译器生成的冻结 VNode
+            // 在 Vue 3.4 runtime updateSlots 时触发 "Cannot assign to read only property '_'" 错误
+            hoistStatic: false
           }
         }
       }

@@ -5,7 +5,9 @@
     </view>
     <view class="nb-center">
       <text class="nb-title" v-if="title">{{ title }}</text>
-      <slot v-else name="title" />
+      <view v-show="!title" class="nb-title-slot">
+        <slot name="title" />
+      </view>
     </view>
     <view class="nb-right">
       <slot name="right" />
@@ -100,7 +102,7 @@ export default {
   align-items: center;
   justify-content: center;
 }
-.nb-title {
+.nb-title, .nb-title-slot {
   font-size: var(--navbar-title-size);
   font-weight: 600;
   overflow: hidden;

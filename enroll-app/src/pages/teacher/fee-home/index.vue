@@ -1,7 +1,7 @@
 <template>
   <view class="page">
     <SNavBar title="缴费管理" :showBack="true" />
-    <scroll-view scroll-y class="sbody">
+    <scroll-view v-if="pageVisible" scroll-y class="sbody">
       <view class="year-row">
         <text class="year-label">当前学年</text>
         <picker :range="schoolYears" :value="schoolYearIndex" @change="onYearChange">
@@ -126,6 +126,7 @@ export default {
       showSheet: false,
       urgeMode: 'selected',
       sending: false,
+      pageVisible: true,
       allStudents: [],
       activeYear: '2025-2026学年',
       schoolYears: ['2025-2026学年', '2024-2025学年']
@@ -147,7 +148,9 @@ export default {
     },
     filteredStudents() {
       const statuses = PAYMENT_KEY_STATUS_MAP[this.activePaymentStatus] || PAYMENT_KEY_STATUS_MAP.unpaid
-      return this.allStudents.filter(s => statuses.includes(s.payStatus))
+      const result = this.allStudents.filter(s => statuses.includes(s.payStatus))
+      console.log('[fee-home] filteredStudents: activePaymentStatus=', this.activePaymentStatus, 'statuses=', statuses, 'input=', this.allStudents.length, 'output=', result.length)
+      return result
     },
     selectAllLabel() {
       const selectable = this.filteredStudents.filter(this.isUrgeEligible)
@@ -175,6 +178,7 @@ export default {
   },
   methods: {
     onPaymentTabChange(key) {
+      console.log('[fee-home] onPaymentTabChange key=', key)
       setActiveKey('feeHome', key)
     },
     onYearChange(event) {
@@ -226,6 +230,7 @@ export default {
       } finally { this.sending = false }
     },
     goDetail(stu) {
+      console.log('[fee-home] goDetail navigateTo student-detail')
       rememberStaffBackTarget('/pages/teacher/fee-home/index')
       uni.navigateTo({ url: `/pages/teacher/student-detail/index?id=${stu.studentId}&sid=${stu.studentNo}` })
     },
@@ -235,14 +240,23 @@ export default {
       this.selectedIds = targets.map(s => s.studentNo)
       this.openSheet('all')
     },
-    refresh() { this.allStudents = getFeeList() },
+    refresh() {
+      this.allStudents = getFeeList()
+      console.log('[fee-home] refresh done, allStudents count:', this.allStudents.length, 'activePaymentStatus:', this.activePaymentStatus)
+    },
     formatMoney(value) { return Number(value || 0).toLocaleString() }
   },
   onShow() {
+    console.log('[fee-home] onShow fired')
+    this.pageVisible = true
     try { this.activeYear = uni.getStorageSync('teacher_fee_school_year') || this.activeYear } catch (e) { /* optional */ }
     this.refresh()
     this.showSheet = false
     this.sending = false
+  },
+  onHide() {
+    console.log('[fee-home] onHide fired')
+    this.pageVisible = false
   }
 }
 </script>

@@ -13,8 +13,8 @@
         <text class="status-tab-label">{{ tab.label }}</text>
         <text class="status-tab-count">{{ tab.count }}</text>
       </view>
-      <view class="status-tabs-underline" :style="underlineStyle" />
     </view>
+    <view class="status-tabs-underline" :style="underlineStyle" />
   </view>
 </template>
 
@@ -69,13 +69,13 @@ export default {
 .status-tabs-wrapper {
   background: var(--white);
   flex-shrink: 0;
+  position: relative;
 }
 
 .status-tabs {
   display: grid;
   width: 100%;
   background: var(--white);
-  position: relative;
 }
 
 .status-tab {

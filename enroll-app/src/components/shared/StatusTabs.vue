@@ -47,10 +47,10 @@ export default {
     },
     underlineStyle() {
       const cols = Math.max(this.tabs.length, 1)
-      const colPct = (100 / cols).toFixed(4)
+      const pct = (100 / cols).toFixed(4)
       return {
-        width: `${colPct}%`,
-        transform: `translateX(${this.activeIndex * 100}%)`
+        width: `${pct}%`,
+        left: `${(this.activeIndex * parseFloat(pct)).toFixed(4)}%`
       }
     }
   },
@@ -122,6 +122,6 @@ export default {
   height: 6rpx;
   background: var(--brand);
   border-radius: 3rpx;
-  transition: transform .25s cubic-bezier(.4, 0, .2, 1);
+  transition: left .25s cubic-bezier(.4, 0, .2, 1);
 }
 </style>

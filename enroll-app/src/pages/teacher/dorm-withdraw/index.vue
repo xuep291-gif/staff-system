@@ -1,7 +1,7 @@
 <template>
   <view class="page">
     <SNavBar title="退宿审核" :showBack="true" />
-    <STabs v-model="activeTab" :tabs="tabs" storage-key="teacher-dorm-withdraw" @change="selectTab" />
+    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
     <scroll-view scroll-y class="body">
       <view
         class="review-card"
@@ -28,24 +28,30 @@
 
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
-import STabs from '@/components/shared/STabs.vue'
+import StatusTabs from '@/components/shared/StatusTabs.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import { buildDormReviewTabs, filterDormReviewByTab, getDormReviewList, getLastBusinessChange } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
+const DORM_KEY_MAP = ['pending', 'approved', 'rejected']
+
 export default {
   name: 'TeacherDormWithdraw',
-  components: { SNavBar, STabs, SBadge, SEmpty },
+  components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
-    return { activeTab: 0, list: [], lastSyncedChange: '' }
+    return { activeTab: 'pending', list: [], lastSyncedChange: '' }
   },
   computed: {
     tabs() {
-      return buildDormReviewTabs(this.list)
+      return buildDormReviewTabs(this.list).map((tab, i) => ({
+        ...tab,
+        key: DORM_KEY_MAP[i] || `tab-${i}`
+      }))
     },
     filteredList() {
-      return filterDormReviewByTab(this.list, this.activeTab)
+      const idx = DORM_KEY_MAP.indexOf(this.activeTab)
+      return filterDormReviewByTab(this.list, idx >= 0 ? idx : 0)
     }
   },
   onLoad() {
@@ -61,8 +67,8 @@ export default {
     this.refresh(true)
   },
   methods: {
-    selectTab(idx) {
-      this.activeTab = Number(idx)
+    onTabChange(key) {
+      console.log('退宿审核切换:', key)
     },
     refresh(syncChangedTab = false) {
       this.list = getDormReviewList('dormWithdraws')
@@ -75,7 +81,7 @@ export default {
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
       const index = item.status === 'approved' ? 1 : item.status === 'rejected' ? 2 : 0
-      this.activeTab = index
+      this.activeTab = DORM_KEY_MAP[index] || 'pending'
     },
     goReview(item) {
       rememberStaffBackTarget('/pages/teacher/dorm-withdraw/index')

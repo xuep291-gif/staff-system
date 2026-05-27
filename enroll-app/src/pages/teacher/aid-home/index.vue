@@ -6,7 +6,7 @@
       </template>
     </SNavBar>
 
-    <STabs v-model="activeTab" :tabs="tabs" storage-key="teacher-aid-review" @change="selectTab" />
+    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
 
     <scroll-view scroll-y class="body">
       <SCard :padding="0" v-if="filteredList.length">
@@ -43,7 +43,7 @@
 
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
-import STabs from '@/components/shared/STabs.vue'
+import StatusTabs from '@/components/shared/StatusTabs.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SListItem from '@/components/shared/SListItem.vue'
 import SBadge from '@/components/shared/SBadge.vue'
@@ -51,22 +51,28 @@ import SEmpty from '@/components/shared/SEmpty.vue'
 import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
+const REVIEW_KEY_MAP = ['pending', 'processing', 'completed']
+
 export default {
   name: 'TeacherAidHome',
-  components: { SNavBar, STabs, SCard, SListItem, SBadge, SEmpty },
+  components: { SNavBar, StatusTabs, SCard, SListItem, SBadge, SEmpty },
   data() {
     return {
-      activeTab: 0,
+      activeTab: 'pending',
       list: [],
       lastSyncedChange: ''
     }
   },
   computed: {
     tabs() {
-      return buildReviewTabs(this.list, 'teacher')
+      return buildReviewTabs(this.list, 'teacher').map((tab, i) => ({
+        ...tab,
+        key: REVIEW_KEY_MAP[i] || `tab-${i}`
+      }))
     },
     filteredList() {
-      return filterReviewByTab(this.list, 'teacher', this.activeTab)
+      const idx = REVIEW_KEY_MAP.indexOf(this.activeTab)
+      return filterReviewByTab(this.list, 'teacher', idx >= 0 ? idx : 0)
     }
   },
   onLoad() {
@@ -82,8 +88,8 @@ export default {
     this.refresh(true)
   },
   methods: {
-    selectTab(index) {
-      this.activeTab = Number(index) || 0
+    onTabChange(key) {
+      console.log('助学金审核切换:', key)
     },
     refresh(syncChangedTab = false) {
       this.list = getReviewList('aids')
@@ -95,7 +101,8 @@ export default {
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
-      this.activeTab = getReviewTabIndex(item, 'teacher')
+      const idx = getReviewTabIndex(item, 'teacher')
+      this.activeTab = REVIEW_KEY_MAP[idx] || 'pending'
     },
     goReview(item) {
       rememberStaffBackTarget('/pages/teacher/aid-home/index')

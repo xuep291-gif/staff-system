@@ -278,6 +278,7 @@ export default {
     },
 
     onTabChange(key) {
+      this.currentTab = key
       console.log('线下收款切换:', key)
     },
 

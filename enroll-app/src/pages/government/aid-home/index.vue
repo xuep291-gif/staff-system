@@ -82,6 +82,7 @@ export default {
   },
   methods: {
     onTabChange(key) {
+      this.activeTab = key
       console.log('政务助学金切换:', key)
     },
     refresh(syncChangedTab = false) {

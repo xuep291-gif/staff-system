@@ -6,7 +6,7 @@
       </template>
     </SNavBar>
 
-    <STabs v-model="activeTab" :tabs="tabs" storage-key="teacher-doc-review" @change="selectTab" />
+    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
 
     <view class="tab-content">
       <view
@@ -27,10 +27,10 @@
             <text class="card-arrow">›</text>
           </view>
         </view>
-        <view class="doc-tags" v-if="activeTab === 0">
+        <view class="doc-tags" v-if="activeTab === 'pending'">
           <SBadge v-for="(tag, ti) in item.tags" :key="ti" color="wa" customStyle="margin-right: 12rpx; margin-bottom: 8rpx;">{{ tag }}</SBadge>
         </view>
-        <view class="reason" v-if="activeTab === 2 && item.reason">
+        <view class="reason" v-if="activeTab === 'rejected' && item.reason">
           <text class="reason-text">{{ item.reason }}</text>
         </view>
       </view>
@@ -43,24 +43,40 @@
 
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
-import STabs from '@/components/shared/STabs.vue'
+import StatusTabs from '@/components/shared/StatusTabs.vue'
 import SBadge from '@/components/shared/SBadge.vue'
-import { buildMaterialTabs, filterMaterialByTab, getLastBusinessChange, getMaterialTabIndex, getReviewList } from '@/utils/businessState.js'
+import { getLastBusinessChange, getMaterialTabIndex, getReviewList } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
+
+const DOC_KEY_STATUS_MAP = {
+  pending: ['pending'],
+  passed: ['first_pass', 'department_review', 'final_pass'],
+  rejected: ['rejected']
+}
+
+const DOC_TAB_KEYS = ['pending', 'passed', 'rejected']
 
 export default {
   name: 'TeacherDocHome',
-  components: { SNavBar, STabs, SBadge },
+  components: { SNavBar, StatusTabs, SBadge },
   data() {
-    return { activeTab: 0, list: [], lastSyncedChange: '' }
+    return { activeTab: 'pending', list: [], lastSyncedChange: '' }
   },
   computed: {
     tabs() {
-      return buildMaterialTabs(this.list)
+      return [
+        { key: 'pending', label: '待审核', count: this.list.filter(i => DOC_KEY_STATUS_MAP.pending.includes(i.status)).length },
+        { key: 'passed', label: '已通过', count: this.list.filter(i => DOC_KEY_STATUS_MAP.passed.includes(i.status)).length },
+        { key: 'rejected', label: '已退回', count: this.list.filter(i => DOC_KEY_STATUS_MAP.rejected.includes(i.status)).length }
+      ]
     },
-    filteredList() { return filterMaterialByTab(this.list, this.activeTab) },
+    filteredList() {
+      const statuses = DOC_KEY_STATUS_MAP[this.activeTab] || DOC_KEY_STATUS_MAP.pending
+      return this.list.filter(i => statuses.includes(i.status))
+    },
     emptyText() {
-      return ['暂无待审核资料', '暂无已通过记录', '暂无已退回记录'][this.activeTab] || '暂无资料'
+      const map = { pending: '暂无待审核资料', passed: '暂无已通过记录', rejected: '暂无已退回记录' }
+      return map[this.activeTab] || '暂无资料'
     }
   },
   onLoad() {
@@ -76,8 +92,9 @@ export default {
     this.refresh(true)
   },
   methods: {
-    selectTab(index) {
-      this.activeTab = Number(index) || 0
+    onTabChange(key) {
+      this.activeTab = key
+      console.log('资料审核切换:', key)
     },
     refresh(syncChangedTab = false) {
       this.list = getReviewList('documents')
@@ -89,7 +106,8 @@ export default {
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
-      this.activeTab = getMaterialTabIndex(item)
+      const idx = getMaterialTabIndex(item)
+      this.activeTab = DOC_TAB_KEYS[idx] || 'pending'
     },
     goReview(item) {
       rememberStaffBackTarget('/pages/teacher/doc-home/index')

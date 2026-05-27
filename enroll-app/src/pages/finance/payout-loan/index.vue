@@ -64,6 +64,7 @@ export default {
   },
   methods: {
     onTabChange(key) {
+      this.activeTab = key
       console.log('财务助学贷款切换:', key)
     },
     refresh(syncChangedTab = false) {

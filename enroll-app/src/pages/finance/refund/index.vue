@@ -134,6 +134,7 @@ export default {
   },
   methods: {
     onTabChange(key) {
+      this.activeTab = key
       console.log('退费审核切换:', key)
     },
     refresh(syncChangedTab = false) {

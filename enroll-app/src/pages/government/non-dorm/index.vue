@@ -1,7 +1,7 @@
 <template>
   <view class="page">
     <SNavBar title="校外住宿审核" :showBack="true" />
-    <STabs v-model="activeTab" :tabs="tabs" storage-key="government-non-dorm" @change="selectTab" />
+    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
     <scroll-view scroll-y class="body">
       <view class="sc">
         <view class="card" v-for="item in filteredList" :key="item.uid" @click="goReview(item)">
@@ -25,31 +25,37 @@
 
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
-import STabs from '@/components/shared/STabs.vue'
+import StatusTabs from '@/components/shared/StatusTabs.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import { buildDormReviewTabs, filterDormReviewByTab, getDormReviewList, getLastBusinessChange } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
-function getTabIndex(item) {
+const DORM_KEY_MAP = ['pending', 'approved', 'rejected']
+
+function getTabKey(item) {
   const status = item.status || item.filterKey
-  if (status === 'approved') return 1
-  if (status === 'rejected') return 2
-  return 0
+  if (status === 'approved') return 'approved'
+  if (status === 'rejected') return 'rejected'
+  return 'pending'
 }
 
 export default {
   name: 'GovernmentNonDorm',
-  components: { SNavBar, STabs, SBadge, SEmpty },
+  components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
-    return { activeTab: 0, list: [], lastSyncedChange: '' }
+    return { activeTab: 'pending', list: [], lastSyncedChange: '' }
   },
   computed: {
     tabs() {
-      return buildDormReviewTabs(this.list)
+      return buildDormReviewTabs(this.list).map((tab, i) => ({
+        ...tab,
+        key: DORM_KEY_MAP[i] || `tab-${i}`
+      }))
     },
     filteredList() {
-      return filterDormReviewByTab(this.list, this.activeTab)
+      const idx = DORM_KEY_MAP.indexOf(this.activeTab)
+      return filterDormReviewByTab(this.list, idx >= 0 ? idx : 0)
     }
   },
   onLoad() {
@@ -65,8 +71,8 @@ export default {
     this.refresh(true)
   },
   methods: {
-    selectTab(index) {
-      this.activeTab = Number(index) || 0
+    onTabChange(key) {
+      console.log('校外住宿切换:', key)
     },
     refresh(syncChangedTab = false) {
       this.list = getDormReviewList('nonDorm')
@@ -78,7 +84,7 @@ export default {
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
-      this.activeTab = getTabIndex(item)
+      this.activeTab = getTabKey(item)
     },
     goReview(item) {
       rememberStaffBackTarget('/pages/government/non-dorm/index')

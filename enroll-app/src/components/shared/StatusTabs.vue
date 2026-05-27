@@ -1,6 +1,6 @@
 <template>
   <view class="status-tabs-wrapper">
-    <view class="status-tabs">
+    <view class="status-tabs" :style="gridStyle">
       <view
         v-for="tab in tabs"
         :key="tab.key"
@@ -39,12 +39,17 @@ export default {
       const idx = this.tabs.findIndex(t => t.key === this.modelValue)
       return idx >= 0 ? idx : 0
     },
-    underlineWidth() {
-      return `${100 / Math.max(this.tabs.length, 1)}%`
+    gridStyle() {
+      const cols = Math.max(this.tabs.length, 1)
+      return {
+        gridTemplateColumns: `repeat(${cols}, 1fr)`
+      }
     },
     underlineStyle() {
+      const cols = Math.max(this.tabs.length, 1)
+      const colPct = (100 / cols).toFixed(4)
       return {
-        width: this.underlineWidth,
+        width: `${colPct}%`,
         transform: `translateX(${this.activeIndex * 100}%)`
       }
     }
@@ -68,7 +73,6 @@ export default {
 
 .status-tabs {
   display: grid;
-  grid-template-columns: repeat(v-bind('tabs.length'), 1fr);
   width: 100%;
   background: var(--white);
   position: relative;

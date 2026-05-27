@@ -27,7 +27,7 @@
       </SCard>
 
       <!-- §6.19 下划线式 Tab -->
-      <STabs v-model="activeTab" :tabs="tabs" storage-key="teacher-fee-management" @change="selectTab" />
+      <StatusTabs :tabs="paymentTabs" @change="onPaymentTabChange" />
 
       <!-- 学生列表卡片 -->
       <SCard :padding="0">
@@ -97,7 +97,7 @@
 
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
-import STabs from '@/components/shared/STabs.vue'
+import StatusTabs from '@/components/shared/StatusTabs.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SButton from '@/components/shared/SButton.vue'
@@ -111,10 +111,17 @@ import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 export default {
   name: 'TeacherFeeHome',
-  components: { SNavBar, STabs, SCard, SBadge, SButton, SProgressBar, SEmpty, SCheckbox, SBottomSheet },
+  components: { SNavBar, StatusTabs, SCard, SBadge, SButton, SProgressBar, SEmpty, SCheckbox, SBottomSheet },
   data() {
     return {
       activeTab: 0,
+      activePaymentStatus: 'unpaid',
+      paymentTabs: [
+        { key: 'unpaid', label: '未缴费', count: 0 },
+        { key: 'partial', label: '部分未缴费', count: 0 },
+        { key: 'paid', label: '已缴费', count: 0 },
+        { key: 'green', label: '绿色通道', count: 0 }
+      ],
       selectedIds: [],
       showSheet: false,
       urgeMode: 'selected',
@@ -154,6 +161,9 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   methods: {
+    onPaymentTabChange(key) {
+      this.activePaymentStatus = key
+    },
     selectTab(index) {
       this.activeTab = Number(index)
       this.selectedIds = []

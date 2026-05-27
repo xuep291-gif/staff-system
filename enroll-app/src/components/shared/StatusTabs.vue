@@ -89,7 +89,6 @@ export default {
 }
 
 .status-tab.active {
-  color: var(--brand);
   font-weight: 600;
 }
 

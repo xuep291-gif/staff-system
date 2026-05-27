@@ -5,7 +5,7 @@
         v-for="tab in tabs"
         :key="tab.key"
         class="status-tab"
-        :class="{ active: tab.key === activeKey }"
+        :class="{ active: tab.key === modelValue }"
         hover-class="status-tab-pressed"
         :hover-stay-time="80"
         @tap="onSelect(tab.key)"
@@ -21,8 +21,9 @@
 <script>
 export default {
   name: 'StatusTabs',
-  emits: ['change'],
+  emits: ['update:modelValue', 'change'],
   props: {
+    modelValue: { type: String, default: 'unpaid' },
     tabs: {
       type: Array,
       default: () => [
@@ -33,14 +34,9 @@ export default {
       ]
     }
   },
-  data() {
-    return {
-      activeKey: 'unpaid'
-    }
-  },
   computed: {
     activeIndex() {
-      const idx = this.tabs.findIndex(t => t.key === this.activeKey)
+      const idx = this.tabs.findIndex(t => t.key === this.modelValue)
       return idx >= 0 ? idx : 0
     },
     underlineStyle() {
@@ -50,7 +46,8 @@ export default {
   methods: {
     onSelect(key) {
       if (!this.tabs.some(t => t.key === key)) return
-      this.activeKey = key
+      console.log('切换缴费状态:', key)
+      this.$emit('update:modelValue', key)
       this.$emit('change', key)
     }
   }

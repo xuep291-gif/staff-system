@@ -15,7 +15,7 @@
           <SProgressBar :percent="payRate" color="brand" headLabel="班级缴费进度" :headPercent="true" />
         </view>
         <view class="summary-grid">
-          <view class="summary-item" v-for="(tab, index) in tabs" :key="tab.label" @click="selectTab(index)">
+          <view class="summary-item" v-for="tab in paymentTabs" :key="tab.key" @click="onPaymentTabChange(tab.key)">
             <text class="summary-num">{{ tab.count }}</text>
             <text class="summary-label">{{ tab.label }}</text>
           </view>
@@ -27,7 +27,7 @@
       </SCard>
 
       <!-- §6.19 下划线式 Tab -->
-      <StatusTabs :tabs="paymentTabs" @change="onPaymentTabChange" />
+      <StatusTabs v-model="activePaymentStatus" :tabs="paymentTabs" @change="onPaymentTabChange" />
 
       <!-- 学生列表卡片 -->
       <SCard :padding="0">
@@ -105,23 +105,23 @@ import SProgressBar from '@/components/shared/SProgressBar.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import SCheckbox from '@/components/shared/SCheckbox.vue'
 import SBottomSheet from '@/components/shared/SBottomSheet.vue'
-import { buildPaymentTabs, filterPaymentByTab, getFeeList, getPaymentSummary, urgeStudents } from '@/utils/businessState.js'
+import { getFeeList, getPaymentSummary, urgeStudents } from '@/utils/businessState.js'
 import { reminderApi } from '@/common/api/reminder.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
+
+const PAYMENT_KEY_STATUS_MAP = {
+  unpaid: ['unpaid', 'overdue'],
+  partial: ['partial'],
+  paid: ['paid'],
+  green: ['channel', 'green_channel']
+}
 
 export default {
   name: 'TeacherFeeHome',
   components: { SNavBar, StatusTabs, SCard, SBadge, SButton, SProgressBar, SEmpty, SCheckbox, SBottomSheet },
   data() {
     return {
-      activeTab: 0,
       activePaymentStatus: 'unpaid',
-      paymentTabs: [
-        { key: 'unpaid', label: '未缴费', count: 0 },
-        { key: 'partial', label: '部分未缴费', count: 0 },
-        { key: 'paid', label: '已缴费', count: 0 },
-        { key: 'green', label: '绿色通道', count: 0 }
-      ],
       selectedIds: [],
       showSheet: false,
       urgeMode: 'selected',
@@ -132,10 +132,20 @@ export default {
     }
   },
   computed: {
-    tabs() { return buildPaymentTabs(this.allStudents) },
+    paymentTabs() {
+      return [
+        { key: 'unpaid', label: '未缴费', count: this.allStudents.filter(s => PAYMENT_KEY_STATUS_MAP.unpaid.includes(s.payStatus)).length },
+        { key: 'partial', label: '部分未缴费', count: this.allStudents.filter(s => PAYMENT_KEY_STATUS_MAP.partial.includes(s.payStatus)).length },
+        { key: 'paid', label: '已缴费', count: this.allStudents.filter(s => PAYMENT_KEY_STATUS_MAP.paid.includes(s.payStatus)).length },
+        { key: 'green', label: '绿色通道', count: this.allStudents.filter(s => PAYMENT_KEY_STATUS_MAP.green.includes(s.payStatus)).length }
+      ]
+    },
     stats() { return getPaymentSummary(this.allStudents) },
     payRate() { return this.stats.payRate },
-    filteredStudents() { return filterPaymentByTab(this.allStudents, this.activeTab) },
+    filteredStudents() {
+      const statuses = PAYMENT_KEY_STATUS_MAP[this.activePaymentStatus] || PAYMENT_KEY_STATUS_MAP.unpaid
+      return this.allStudents.filter(s => statuses.includes(s.payStatus))
+    },
     selectAllLabel() {
       const selectable = this.filteredStudents.filter(this.isUrgeEligible)
       if (selectable.length === 0) return '无可选'
@@ -149,7 +159,7 @@ export default {
     formattedOutstanding() { return this.formatMoney(this.stats.outstandingAmount) }
   },
   watch: {
-    activeTab() { this.selectedIds = [] }
+    activePaymentStatus() { this.selectedIds = [] }
   },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
@@ -162,12 +172,7 @@ export default {
   },
   methods: {
     onPaymentTabChange(key) {
-      this.activePaymentStatus = key
-    },
-    selectTab(index) {
-      this.activeTab = Number(index)
-      this.selectedIds = []
-      this.showSheet = false
+      console.log('当前选中状态:', key)
     },
     onYearChange(event) {
       this.activeYear = this.schoolYears[Number(event.detail.value)] || this.schoolYears[0]

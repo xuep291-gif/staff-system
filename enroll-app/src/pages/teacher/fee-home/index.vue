@@ -27,7 +27,7 @@
       </SCard>
 
       <!-- §6.19 下划线式 Tab -->
-      <StatusTabs v-model="activePaymentStatus" :tabs="paymentTabs" @change="onPaymentTabChange" />
+      <StatusTabs tabGroup="feeHome" :tabs="paymentTabs" />
 
       <!-- 学生列表卡片 -->
       <SCard :padding="0">
@@ -108,6 +108,7 @@ import SBottomSheet from '@/components/shared/SBottomSheet.vue'
 import { getFeeList, getPaymentSummary, urgeStudents } from '@/utils/businessState.js'
 import { reminderApi } from '@/common/api/reminder.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
+import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 
 const PAYMENT_KEY_STATUS_MAP = {
   unpaid: ['unpaid', 'overdue'],
@@ -121,7 +122,6 @@ export default {
   components: { SNavBar, StatusTabs, SCard, SBadge, SButton, SProgressBar, SEmpty, SCheckbox, SBottomSheet },
   data() {
     return {
-      activePaymentStatus: 'unpaid',
       selectedIds: [],
       showSheet: false,
       urgeMode: 'selected',
@@ -142,6 +142,9 @@ export default {
     },
     stats() { return getPaymentSummary(this.allStudents) },
     payRate() { return this.stats.payRate },
+    activePaymentStatus() {
+      return getActiveKey('feeHome', 'unpaid')
+    },
     filteredStudents() {
       const statuses = PAYMENT_KEY_STATUS_MAP[this.activePaymentStatus] || PAYMENT_KEY_STATUS_MAP.unpaid
       return this.allStudents.filter(s => statuses.includes(s.payStatus))
@@ -172,7 +175,7 @@ export default {
   },
   methods: {
     onPaymentTabChange(key) {
-      this.activePaymentStatus = key
+      setActiveKey('feeHome', key)
     },
     onYearChange(event) {
       this.activeYear = this.schoolYears[Number(event.detail.value)] || this.schoolYears[0]

@@ -2,7 +2,7 @@
   <view class="page">
     <SNavBar title="线下收款确认" :showBack="true" />
 
-    <StatusTabs v-model="currentTab" :tabs="tabs" @change="onTabChange" />
+    <StatusTabs tabGroup="financeCollect" :tabs="tabs" />
 
     <!-- Tab 待确认 -->
     <view class="list-section" v-if="currentTab === 'pending'">
@@ -187,6 +187,7 @@
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
+import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import { confirmOfflineCollection, voidOfflineCollection, getOfflineCollectionList, getStudentBill, generateReceiptNumber } from '@/utils/businessState.js'
@@ -197,7 +198,7 @@ export default {
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
     return {
-      currentTab: 'pending',
+
       showSheet: false,
       currentItem: null,
       list: [],
@@ -213,6 +214,7 @@ export default {
     }
   },
   computed: {
+    currentTab() { return getActiveKey('financeCollect', 'pending') },
     canVoid() {
       return hasPermission('finance:void') || hasPermission('finance:admin')
     },
@@ -278,7 +280,7 @@ export default {
     },
 
     onTabChange(key) {
-      this.currentTab = key
+      setActiveKey('financeCollect', key)
       console.log('线下收款切换:', key)
     },
 
@@ -386,7 +388,7 @@ export default {
         this.refresh()
         uni.showToast({ title: '线下收款已确认', icon: 'success' })
         this.$nextTick(() => {
-          this.currentTab = 'confirmed'
+          setActiveKey('financeCollect', 'confirmed')
         })
       } catch (e) {
         uni.showToast({ title: '确认失败，请重试', icon: 'none' })
@@ -396,7 +398,7 @@ export default {
     },
 
     onViewMore() {
-      this.currentTab = 'pending'
+      setActiveKey('financeCollect', 'pending')
     },
 
     onVoidClick(item) {

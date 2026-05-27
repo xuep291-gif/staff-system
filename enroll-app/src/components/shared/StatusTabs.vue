@@ -5,10 +5,8 @@
         v-for="tab in tabs"
         :key="tab.key"
         class="status-tab"
-        :class="{ active: tab.key === modelValue }"
-        hover-class="status-tab-pressed"
-        :hover-stay-time="80"
-        @tap="onSelect(tab.key)"
+        :class="{ active: tab.key === activeKey }"
+        @tap.stop="onSelect(tab.key)"
       >
         <text class="status-tab-label">{{ tab.label }}</text>
         <text class="status-tab-count">{{ tab.count }}</text>
@@ -19,24 +17,24 @@
 </template>
 
 <script>
+import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
+
 export default {
   name: 'StatusTabs',
   emits: ['update:modelValue', 'change'],
   props: {
-    modelValue: { type: String, default: 'unpaid' },
-    tabs: {
-      type: Array,
-      default: () => [
-        { key: 'unpaid', label: '未缴费', count: 8 },
-        { key: 'partial', label: '部分未缴费', count: 1 },
-        { key: 'paid', label: '已缴费', count: 2 },
-        { key: 'green', label: '绿色通道', count: 1 }
-      ]
-    }
+    modelValue: { type: String, default: '' },
+    tabs: { type: Array, default: () => [] },
+    tabGroup: { type: String, default: '' }
   },
   computed: {
+    activeKey() {
+      const ns = this.tabGroup || 'default'
+      const fallback = this.modelValue || this.tabs[0]?.key || ''
+      return getActiveKey(ns, fallback)
+    },
     activeIndex() {
-      const idx = this.tabs.findIndex(t => t.key === this.modelValue)
+      const idx = this.tabs.findIndex(t => t.key === this.activeKey)
       return idx >= 0 ? idx : 0
     },
     underlineVars() {
@@ -51,6 +49,8 @@ export default {
   methods: {
     onSelect(key) {
       if (!this.tabs.some(t => t.key === key)) return
+      const ns = this.tabGroup || 'default'
+      setActiveKey(ns, key)
       this.$emit('update:modelValue', key)
       this.$emit('change', key)
     }
@@ -91,10 +91,6 @@ export default {
 .status-tab.active {
   color: var(--brand);
   font-weight: 600;
-}
-
-.status-tab-pressed {
-  background: var(--N50);
 }
 
 .status-tab-label {

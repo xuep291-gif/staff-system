@@ -6,7 +6,7 @@
       </template>
     </SNavBar>
 
-    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
+    <StatusTabs tabGroup="teacherDocHome" :tabs="tabs" />
 
     <view class="tab-content">
       <view
@@ -44,6 +44,7 @@
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
+import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import { getLastBusinessChange, getMaterialTabIndex, getReviewList } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
@@ -60,9 +61,10 @@ export default {
   name: 'TeacherDocHome',
   components: { SNavBar, StatusTabs, SBadge },
   data() {
-    return { activeTab: 'pending', list: [], lastSyncedChange: '' }
+    return { list: [], lastSyncedChange: '' }
   },
   computed: {
+    activeTab() { return getActiveKey('teacherDocHome', 'pending') },
     tabs() {
       return [
         { key: 'pending', label: '待审核', count: this.list.filter(i => DOC_KEY_STATUS_MAP.pending.includes(i.status)).length },
@@ -93,7 +95,7 @@ export default {
   },
   methods: {
     onTabChange(key) {
-      this.activeTab = key
+      setActiveKey('teacherDocHome', key)
       console.log('资料审核切换:', key)
     },
     refresh(syncChangedTab = false) {
@@ -107,7 +109,7 @@ export default {
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
       const idx = getMaterialTabIndex(item)
-      this.activeTab = DOC_TAB_KEYS[idx] || 'pending'
+      setActiveKey('teacherDocHome', DOC_TAB_KEYS[idx] || 'pending')
     },
     goReview(item) {
       rememberStaffBackTarget('/pages/teacher/doc-home/index')

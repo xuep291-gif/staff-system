@@ -6,7 +6,7 @@
       </template>
     </SNavBar>
 
-    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
+    <StatusTabs tabGroup="teacherAidHome" :tabs="tabs" />
 
     <scroll-view scroll-y class="body">
       <SCard :padding="0" v-if="filteredList.length">
@@ -44,6 +44,7 @@
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
+import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SCard from '@/components/shared/SCard.vue'
 import SListItem from '@/components/shared/SListItem.vue'
 import SBadge from '@/components/shared/SBadge.vue'
@@ -58,12 +59,13 @@ export default {
   components: { SNavBar, StatusTabs, SCard, SListItem, SBadge, SEmpty },
   data() {
     return {
-      activeTab: 'pending',
+
       list: [],
       lastSyncedChange: ''
     }
   },
   computed: {
+    activeTab() { return getActiveKey('teacherAidHome', 'pending') },
     tabs() {
       return buildReviewTabs(this.list, 'teacher').map((tab, i) => ({
         ...tab,
@@ -89,7 +91,7 @@ export default {
   },
   methods: {
     onTabChange(key) {
-      this.activeTab = key
+      setActiveKey('teacherAidHome', key)
       console.log('助学金审核切换:', key)
     },
     refresh(syncChangedTab = false) {
@@ -103,7 +105,7 @@ export default {
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
       const idx = getReviewTabIndex(item, 'teacher')
-      this.activeTab = REVIEW_KEY_MAP[idx] || 'pending'
+      setActiveKey('teacherAidHome', REVIEW_KEY_MAP[idx] || 'pending')
     },
     goReview(item) {
       rememberStaffBackTarget('/pages/teacher/aid-home/index')

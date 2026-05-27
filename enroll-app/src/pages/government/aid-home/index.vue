@@ -4,7 +4,7 @@
       <template #right><text class="nav-right">政务复审</text></template>
     </SNavBar>
 
-    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
+    <StatusTabs tabGroup="govAidHome" :tabs="tabs" />
     <scroll-view scroll-y class="body">
       <SCard :padding="0" v-if="filteredList.length">
         <SListItem
@@ -41,6 +41,7 @@
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
+import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SCard from '@/components/shared/SCard.vue'
 import SListItem from '@/components/shared/SListItem.vue'
 import SBadge from '@/components/shared/SBadge.vue'
@@ -54,9 +55,10 @@ export default {
   name: 'GovernmentAidHome',
   components: { SNavBar, StatusTabs, SCard, SListItem, SBadge, SEmpty },
   data() {
-    return { activeTab: 'pending', list: [], lastSyncedChange: '' }
+    return { list: [], lastSyncedChange: '' }
   },
   computed: {
+    activeTab() { return getActiveKey('govAidHome', 'pending') },
     tabs() {
       return buildReviewTabs(this.list, 'government').map((tab, i) => ({
         ...tab,
@@ -82,7 +84,7 @@ export default {
   },
   methods: {
     onTabChange(key) {
-      this.activeTab = key
+      setActiveKey('govAidHome', key)
       console.log('政务助学金切换:', key)
     },
     refresh(syncChangedTab = false) {
@@ -96,7 +98,7 @@ export default {
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
       const idx = getReviewTabIndex(item, 'government')
-      this.activeTab = REVIEW_KEY_MAP[idx] || 'pending'
+      setActiveKey('govAidHome', REVIEW_KEY_MAP[idx] || 'pending')
     },
     goReview(item) {
       rememberStaffBackTarget('/pages/government/aid-home/index')

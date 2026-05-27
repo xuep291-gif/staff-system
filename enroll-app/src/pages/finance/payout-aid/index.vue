@@ -1,7 +1,7 @@
 <template>
   <view class="page">
     <SNavBar title="助学金审核" :showBack="true" />
-    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
+    <StatusTabs tabGroup="financePayoutAid" :tabs="tabs" />
     <scroll-view scroll-y class="body">
       <view v-if="filteredList.length" class="list">
         <SListItem v-for="item in filteredList" :key="item.uid" clickable @click="goDetail(item.uid)">
@@ -24,6 +24,7 @@
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
+import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SListItem from '@/components/shared/SListItem.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
@@ -36,9 +37,10 @@ export default {
   name: 'FinancePayoutAid',
   components: { SNavBar, StatusTabs, SListItem, SBadge, SEmpty },
   data() {
-    return { activeTab: 'pending', list: [], lastSyncedChange: '' }
+    return { list: [], lastSyncedChange: '' }
   },
   computed: {
+    activeTab() { return getActiveKey('financePayoutAid', 'pending') },
     tabs() {
       return buildReviewTabs(this.list, 'finance').map((tab, i) => ({
         ...tab,
@@ -64,7 +66,7 @@ export default {
   },
   methods: {
     onTabChange(key) {
-      this.activeTab = key
+      setActiveKey('financePayoutAid', key)
       console.log('财务助学金切换:', key)
     },
     refresh(syncChangedTab = false) {
@@ -78,7 +80,7 @@ export default {
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
       const idx = getReviewTabIndex(item, 'finance')
-      this.activeTab = REVIEW_KEY_MAP[idx] || 'pending'
+      setActiveKey('financePayoutAid', REVIEW_KEY_MAP[idx] || 'pending')
     },
     goDetail(uid) {
       rememberStaffBackTarget('/pages/finance/payout-aid/index')

@@ -1,7 +1,7 @@
 <template>
   <view class="page">
     <SNavBar title="校外住宿审核" :showBack="true" />
-    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
+    <StatusTabs tabGroup="govNonDorm" :tabs="tabs" />
     <scroll-view scroll-y class="body">
       <view class="sc">
         <view class="card" v-for="item in filteredList" :key="item.uid" @click="goReview(item)">
@@ -26,6 +26,7 @@
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
+import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import { buildDormReviewTabs, filterDormReviewByTab, getDormReviewList, getLastBusinessChange } from '@/utils/businessState.js'
@@ -44,9 +45,10 @@ export default {
   name: 'GovernmentNonDorm',
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
-    return { activeTab: 'pending', list: [], lastSyncedChange: '' }
+    return { list: [], lastSyncedChange: '' }
   },
   computed: {
+    activeTab() { return getActiveKey('govNonDorm', 'pending') },
     tabs() {
       return buildDormReviewTabs(this.list).map((tab, i) => ({
         ...tab,
@@ -72,7 +74,7 @@ export default {
   },
   methods: {
     onTabChange(key) {
-      this.activeTab = key
+      setActiveKey('govNonDorm', key)
       console.log('校外住宿切换:', key)
     },
     refresh(syncChangedTab = false) {
@@ -85,7 +87,7 @@ export default {
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
-      this.activeTab = getTabKey(item)
+      setActiveKey('govNonDorm', getTabKey(item))
     },
     goReview(item) {
       rememberStaffBackTarget('/pages/government/non-dorm/index')

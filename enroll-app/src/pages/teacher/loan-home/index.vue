@@ -1,7 +1,7 @@
 <template>
   <view class="page">
     <SNavBar title="助学贷款" :showBack="true" />
-    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
+    <StatusTabs tabGroup="teacherLoanHome" :tabs="tabs" />
     <scroll-view scroll-y class="body">
       <view class="sc">
         <view class="card" v-for="item in filteredList" :key="item.uid" @click="goDetail(item)">
@@ -26,6 +26,7 @@
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
+import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
@@ -38,12 +39,13 @@ export default {
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
     return {
-      activeTab: 'pending',
+
       list: [],
       lastSyncedChange: ''
     }
   },
   computed: {
+    activeTab() { return getActiveKey('teacherLoanHome', 'pending') },
     tabs() {
       return buildReviewTabs(this.list, 'teacher').map((tab, i) => ({
         ...tab,
@@ -69,7 +71,7 @@ export default {
   },
   methods: {
     onTabChange(key) {
-      this.activeTab = key
+      setActiveKey('teacherLoanHome', key)
       console.log('助学贷款切换:', key)
     },
     refresh(syncChangedTab = false) {
@@ -89,7 +91,7 @@ export default {
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
       const idx = getReviewTabIndex(item, 'teacher')
-      this.activeTab = REVIEW_KEY_MAP[idx] || 'pending'
+      setActiveKey('teacherLoanHome', REVIEW_KEY_MAP[idx] || 'pending')
     },
     goDetail(item) {
       rememberStaffBackTarget('/pages/teacher/loan-home/index')

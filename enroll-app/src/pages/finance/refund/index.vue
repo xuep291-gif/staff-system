@@ -1,7 +1,7 @@
 <template>
   <view class="page">
     <SNavBar title="退费审核" :showBack="true" />
-    <StatusTabs v-model="activeTab" :tabs="tabs" @change="onTabChange" />
+    <StatusTabs tabGroup="financeRefund" :tabs="tabs" />
     <scroll-view scroll-y class="body">
       <view v-if="filteredList.length" class="list">
         <view class="item" v-for="item in filteredList" :key="item.uid" @click="openSheet(item)">
@@ -76,6 +76,7 @@
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
+import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SButton from '@/components/shared/SButton.vue'
 import SBottomSheet from '@/components/shared/SBottomSheet.vue'
@@ -92,7 +93,7 @@ export default {
   data() {
     return {
       REFUND_STATUS,
-      activeTab: 'pending',
+
       list: [],
       showSheet: false,
       showPreview: false,
@@ -103,6 +104,7 @@ export default {
     }
   },
   computed: {
+    activeTab() { return getActiveKey('financeRefund', 'pending') },
     tabs() {
       return buildRefundTabs(this.list).map((tab, i) => ({
         ...tab,
@@ -134,7 +136,7 @@ export default {
   },
   methods: {
     onTabChange(key) {
-      this.activeTab = key
+      setActiveKey('financeRefund', key)
       console.log('退费审核切换:', key)
     },
     refresh(syncChangedTab = false) {
@@ -148,7 +150,7 @@ export default {
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
       const idx = getRefundTabIndex(item)
-      this.activeTab = REFUND_KEY_MAP[idx] || 'pending'
+      setActiveKey('financeRefund', REFUND_KEY_MAP[idx] || 'pending')
     },
     openSheet(item) {
       this.currentItem = item

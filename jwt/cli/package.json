@@ -1,0 +1,41 @@
+{
+  "name": "@jwt-core/cli",
+  "version": "21.0.0",
+  "description": "JWT Core CLI - X-APPID-KEY generation and appid management tools",
+  "main": "lib/appid-key.js",
+  "bin": {
+    "appid-key": "./bin/appid-key",
+    "appid-cli": "./bin/appid-cli"
+  },
+  "scripts": {
+    "test": "node lib/appid-key.js test-app",
+    "lint": "echo \"No linting configured\"",
+    "prepack": "chmod +x bin/appid-key && chmod +x bin/appid-cli"
+  },
+  "keywords": [
+    "jwt",
+    "appid",
+    "authentication",
+    "cli",
+    "x-appid-key"
+  ],
+  "author": "jwt-core",
+  "license": "MIT",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jwt-core/jwt-core-cli"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^11.0.0",
+    "js-yaml": "^4.1.0"
+  }
+}

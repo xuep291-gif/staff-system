@@ -1,0 +1,8 @@
+{
+  "name": "run-yaml-import-scripts",
+  "private": true,
+  "description": "YAML import audit helpers for run-yaml-import skill",
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}

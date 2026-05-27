@@ -1,0 +1,38 @@
+{
+  "app-a": {
+    "appid": "app-a",
+    "secret": "app-a-secret-key-12345",
+    "validity_days": 365,
+    "routes": ["app-a", "tenant-a"]
+  },
+  "app-b": {
+    "appid": "app-b",
+    "secret": "app-b-secret-key-67890",
+    "validity_days": 365,
+    "routes": ["app-b", "tenant-b"]
+  },
+  "school-001": {
+    "appid": "school-001",
+    "secret": "school-001-secret-key-abcde",
+    "validity_days": 90,
+    "routes": ["school-001"]
+  },
+  "school-002": {
+    "appid": "school-002",
+    "secret": "school-002-secret-key-fghij",
+    "validity_days": 180,
+    "routes": ["school-002"]
+  },
+  "root": {
+    "appid": "root",
+    "secret": "root-secret-key",
+    "validity_days": 0,
+    "routes": ["root", "admin"]
+  },
+  "none": {
+    "appid": "none",
+    "secret": "none-secret-key",
+    "validity_days": 0,
+    "routes": ["none", "public"]
+  }
+}

@@ -1,0 +1,13 @@
+jwt:
+  encoded-key: L7A/6zARSkK1j7Vd5SDD9pSSqZlqF7mAhiOgRbgv9Smce6tf4cJnvKOjtKPxNNnWQj+2lQEScm3XIUjhW+YVZg==
+  appid-key:
+    api-enabled: false
+    configs:
+      root:
+        secret: pXWwwOhDewo+m66lJOwASv/4rEWHGdcx2QcktiVut3o=
+      none:
+        secret: g/MGOEhMAYIKrY4hTOg1lMtyrDU4+CSPIrd5s2czZe8=
+      test:
+        secret: r24i34
+        enabled: true
+        validity-days: 90

@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+/**
+ * appid-cli - Appid configuration and key management CLI
+ *
+ * Main executable for appid-cli command.
+ * All logic is in lib/appid-cli.js
+ */
+
+const cli = require('../lib/appid-cli.js');
+
+// Run the CLI
+cli.main();

@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+/**
+ * appid-key - CLI entry point
+ *
+ * This is the main executable for the appid-key command.
+ * All logic is in lib/appid-key.js
+ */
+
+const path = require('path');
+
+// Import the main module
+const cli = require('../lib/appid-key.js');
+
+// Run the CLI
+cli.main();

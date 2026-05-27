@@ -1,0 +1,176 @@
+name: eav-skill
+version: 1.0.0
+description: |
+  EAV (Entity-Attribute-Value) Rust CLI - Remote CLI wrapper for EAV operations.
+
+  ## Quick Start
+  1. Configure EAV_PROXY_URL in .env file
+  2. Use this skill to interact with EAV system via remote proxy
+
+  ## Configuration Priority
+  Environment variables are loaded from .env files in this order (high to low priority):
+  - ./.env (current working directory - HIGHEST priority)
+  - scripts/.env (script directory)
+  - ./.env (parent directory of scripts)
+
+  ## Available Commands
+  - query: Execute SQL queries
+  - cfg: Configuration management (entities, attributes, etc.)
+  - row: Row data management
+  - import: Import SQL file to EAV entities
+  - export: Export entity schema to SQL
+  - org: Organization management
+
+author: EAV-Rust Team
+
+# AI 行为指令
+instructions: |
+  ## IMPORTANT: Use eav-remote-cli.js for all EAV operations
+
+  This skill uses eav-remote-cli.js as the main interface. Always use it via Bash tool:
+
+  ```bash
+  node scripts/eav-remote-cli.js <command> [subcommand] [args...] [--options...]
+  ```
+
+  ## Configuration
+
+  The skill requires EAV_PROXY_URL to be set in a .env file.
+  Create a .env file in your working directory with:
+
+  ```
+  EAV_PROXY_URL=http://localhost:3333
+  ```
+
+  ## Common Commands
+
+  ### List Entities
+  ```bash
+  node scripts/eav-remote-cli.js cfg entity list
+  ```
+
+  ### List entity data (preferred)
+  ```bash
+  node scripts/eav-remote-cli.js cfg entity data list college_student --page 1 --page-size 5 --format json
+  ```
+
+  ### List rows (`row` — use when mutating CRUD or legacy scripts need `row list`)
+  ```bash
+  node scripts/eav-remote-cli.js row list college_student --page 1 --page-size 10
+  ```
+
+  ### Query Tables
+  ```bash
+  node scripts/eav-remote-cli.js query --domain system --query list-tables
+  ```
+
+  ### Import YAML Schema
+  ```bash
+  node scripts/eav-remote-cli.js cfg import yaml --file entity.yaml
+  ```
+
+  ## Documentation
+
+  ### Skill Documentation
+  Use --skill flag to display skill documentation:
+  ```bash
+  node scripts/eav-remote-cli.js --skill
+  ```
+
+  ### YAML Configuration Specification
+  Use --spec flag to display YAML configuration specification:
+  ```bash
+  node scripts/eav-remote-cli.js --spec
+  ```
+
+# 配置要求
+configuration:
+  type: object
+  description: "EAV CLI configuration (loaded from .env files with priority: cwd > scripts > parent)"
+  properties:
+    EAV_PROXY_URL:
+      type: string
+      description: "EAV proxy server URL (e.g., http://localhost:3333)"
+  required: [EAV_PROXY_URL]
+
+# 函数列表
+functions:
+  - name: cfg_entity_list
+    description: "List all entities. Usage: node scripts/eav-remote-cli.js cfg entity list"
+    parameters:
+      type: object
+      properties: {}
+    returns:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+
+  - name: cfg_entity_data_list
+    description: "List instance rows for an entity (preferred for read/query). Usage: node scripts/eav-remote-cli.js cfg entity data list ENTITY [--page 1 --page-size 5 --format json]"
+    parameters:
+      type: object
+      properties:
+        entity:
+          type: string
+          description: "Entity name or ID"
+        page:
+          type: integer
+          description: "Page number (default: 1)"
+        page_size:
+          type: integer
+          description: "Page size (CLI default 20; agents use 5 unless user overrides)"
+        format:
+          type: string
+          description: "json, pretty, table (optional)"
+      required: [entity]
+
+  - name: row_list
+    description: "List rows via row subcommand (fallback when cfg entity data list is unsuitable). Usage: node scripts/eav-remote-cli.js row list ENTITY_NAME"
+    parameters:
+      type: object
+      properties:
+        entity:
+          type: string
+          description: "Entity name"
+        page:
+          type: integer
+          description: "Page number (default: 1)"
+        page_size:
+          type: integer
+          description: "Page size (default: 10)"
+      required: [entity]
+    returns:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+
+  - name: query_execute
+    description: "Execute a query. Usage: node scripts/eav-remote-cli.js query --domain DOMAIN --query QUERY"
+    parameters:
+      type: object
+      properties:
+        domain:
+          type: string
+          description: "Query domain (e.g., system, app)"
+        query:
+          type: string
+          description: "Query name or SQL"
+        params:
+          type: array
+          items:
+            type: string
+          description: "Query parameters"
+      required: [domain, query]
+    returns:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object

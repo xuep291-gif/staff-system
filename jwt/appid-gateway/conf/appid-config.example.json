@@ -1,0 +1,36 @@
+{
+  "_comment": "Appid Gateway 配置模板 - 复制此文件为 appid-config.json 并修改",
+  "_docs": "https://github.com/your-repo/appid-gateway/blob/main/CONFIG_GUIDE.md",
+
+  "root": {
+    "_comment": "管理员/超级用户 appid，返回 null（无数据过滤），仅用于开发环境",
+    "appid": "root",
+    "secret": "CHANGE-THIS-ROOT-SECRET-IN-PRODUCTION",
+    "validity_days": 0,
+    "routes": ["root", "admin"]
+  },
+
+  "none": {
+    "_comment": "公共访问 appid，返回 null（无数据过滤），用于公开 API",
+    "appid": "none",
+    "secret": "CHANGE-THIS-NONE-SECRET-IN-PRODUCTION",
+    "validity_days": 0,
+    "routes": ["none", "public"]
+  },
+
+  "app-a": {
+    "_comment": "示例应用 A - 请修改密钥和配置",
+    "appid": "app-a",
+    "secret": "app-a-secret-key-CHANGE-ME",
+    "validity_days": 365,
+    "routes": ["app-a"]
+  },
+
+  "app-b": {
+    "_comment": "示例应用 B - 请修改密钥和配置",
+    "appid": "app-b",
+    "secret": "app-b-secret-key-CHANGE-ME",
+    "validity_days": 365,
+    "routes": ["app-b"]
+  }
+}

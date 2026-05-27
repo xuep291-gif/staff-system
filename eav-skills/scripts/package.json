@@ -1,0 +1,23 @@
+{
+  "name": "eav-skill",
+  "version": "1.0.0",
+  "description": "EAV (Entity-Attribute-Value) Rust CLI - Remote CLI wrapper for Claude Code",
+  "main": "eav-remote-cli.js",
+  "scripts": {
+    "install": "node install.js",
+    "uninstall": "node uninstall.js",
+    "test": "node eav-remote-cli.js --help"
+  },
+  "keywords": [
+    "eav",
+    "entity-attribute-value",
+    "rust",
+    "cli",
+    "claude-code"
+  ],
+  "author": "EAV-Rust Team",
+  "license": "MIT",
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}

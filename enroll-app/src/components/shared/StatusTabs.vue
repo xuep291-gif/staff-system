@@ -39,8 +39,14 @@ export default {
       const idx = this.tabs.findIndex(t => t.key === this.modelValue)
       return idx >= 0 ? idx : 0
     },
+    underlineWidth() {
+      return `${100 / Math.max(this.tabs.length, 1)}%`
+    },
     underlineStyle() {
-      return { transform: `translateX(${this.activeIndex * 100}%)` }
+      return {
+        width: this.underlineWidth,
+        transform: `translateX(${this.activeIndex * 100}%)`
+      }
     }
   },
   methods: {
@@ -62,7 +68,7 @@ export default {
 
 .status-tabs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(v-bind('tabs.length'), 1fr);
   width: 100%;
   background: var(--white);
   position: relative;
@@ -109,7 +115,6 @@ export default {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 25%;
   height: 6rpx;
   background: var(--brand);
   border-radius: 3rpx;

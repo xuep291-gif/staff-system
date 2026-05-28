@@ -228,8 +228,10 @@ export default {
       return this.selectedIds
     },
     confirmUrge() {
+      console.log('[fee-home] confirmUrge called')
       if (this.sending) return
       const targets = this.getUrgeTargets()
+      console.log('[fee-home] targets:', targets)
       if (targets.length === 0) {
         uni.showToast({ title: '没有需要催缴的学生', icon: 'none' })
         return
@@ -239,14 +241,16 @@ export default {
       reminderApi.batchSendReminder({ studentIds: targets, channels: ['site', 'sms'], scope: this.urgeMode })
         .catch(e => console.log('[fee-home] API 未就绪，本地已记录催缴:', e))
       this.allStudents = getFeeList()
+      this.showSheet = false
       this.selectedIds = []
-      this.urgeDoneCount = targets.length
-      this.urgeDone = true
       this.sending = false
-      setTimeout(() => {
-        this.showSheet = false
-        setTimeout(() => { this.urgeDone = false }, 300)
-      }, 1200)
+      uni.hideLoading()
+      uni.showModal({
+        title: '催缴成功',
+        content: `已向 ${targets.length} 名学生发送缴费提醒通知`,
+        showCancel: false,
+        confirmText: '知道了'
+      })
     },
     goDetail(stu) {
       console.log('[fee-home] goDetail navigateTo student-detail')

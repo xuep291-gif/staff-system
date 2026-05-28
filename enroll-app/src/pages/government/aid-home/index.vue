@@ -1,39 +1,25 @@
 <template>
   <view class="page">
-    <SNavBar title="助学金复审" showBack>
-      <template #right><text class="nav-right">政务复审</text></template>
-    </SNavBar>
-
-    <StatusTabs tabGroup="govAidHome" :tabs="tabs" />
+    <SNavBar title="助学金复审" :showBack="true" fallbackUrl="/pages/government/home/index" />
+    <StatusTabs tabGroup="govAidHome" :tabs="tabs" @change="onTabClick" />
     <scroll-view scroll-y class="body">
-      <SCard :padding="0" v-if="filteredList.length">
-        <SListItem
-          v-for="item in filteredList"
-          :key="item.uid"
-          :avatar="item.avatar"
-          :avatarBg="'var(--ac-t)'"
-          showArrow
-          @click="goReview(item)"
-        >
-          <view class="item-body">
-            <view class="item-row">
-              <text class="item-name">{{ item.name }}</text>
-              <text class="item-sid">{{ item.sid }}</text>
-            </view>
-            <view class="item-row">
-              <text class="item-label">申请档位</text>
-              <text class="item-amount">¥{{ item.amount }}</text>
-              <text class="item-sep">|</text>
-              <text class="item-type">{{ item.type }}</text>
-            </view>
-            <view class="item-row">
+      <view class="sc">
+        <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="goReview(item)">
+          <view class="card-bd">
+            <view class="li">
+              <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>
+              <view class="li-info">
+                <text class="li-name">{{ item.name }}</text>
+                <text class="li-meta">{{ item.id }} · {{ item.college }}</text>
+                <text class="li-amount">¥{{ item.amount }} · {{ item.type }}</text>
+              </view>
               <SBadge :color="item.listBadgeColor">{{ item.listStatusLabel }}</SBadge>
-              <text class="item-date">{{ item.date }}</text>
+              <text class="li-arrow">›</text>
             </view>
           </view>
-        </SListItem>
-      </SCard>
-      <SEmpty v-else text="暂无助学金记录" />
+        </view>
+        <SEmpty v-if="filteredList.length === 0" text="暂无补助记录" />
+      </view>
     </scroll-view>
   </view>
 </template>
@@ -42,23 +28,20 @@
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
-import SCard from '@/components/shared/SCard.vue'
-import SListItem from '@/components/shared/SListItem.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex } from '@/utils/businessState.js'
+import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const REVIEW_KEY_MAP = ['pending', 'processing', 'completed']
 
 export default {
   name: 'GovernmentAidHome',
-  components: { SNavBar, StatusTabs, SCard, SListItem, SBadge, SEmpty },
+  components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
-    return { list: [], lastSyncedChange: '' }
+    return { activeTab: 'pending', filterVersion: 0, list: [], lastSyncedChange: '' }
   },
   computed: {
-    activeTab() { return getActiveKey('govAidHome', 'pending') },
     tabs() {
       return buildReviewTabs(this.list, 'government').map((tab, i) => ({
         ...tab,
@@ -70,6 +53,9 @@ export default {
       return filterReviewByTab(this.list, 'government', idx >= 0 ? idx : 0)
     }
   },
+  watch: {
+    activeTab() { this.filterVersion++ }
+  },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
       if (collection === 'aids') this.refresh(true)
@@ -80,15 +66,24 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   async onShow() {
+    this.filterVersion++
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
+    this.activeTab = getActiveKey('govAidHome', 'pending')
   },
   methods: {
-    onTabChange(key) {
+    onTabClick(key) {
+      this.activeTab = key
       setActiveKey('govAidHome', key)
-      console.log('政务助学金切换:', key)
     },
     refresh(syncChangedTab = false) {
-      this.list = getReviewList('aids')
+      const rows = getReviewList('aids')
+      this.list = rows.map(item => ({
+        ...item,
+        badgeColor: reviewStatusMeta[item.status]?.color || item.badgeColor,
+        bg: `var(--${reviewStatusMeta[item.status]?.color || 'wa'}-bg)`,
+        iconColor: `var(--${reviewStatusMeta[item.status]?.color || 'wa'})`
+      }))
       if (syncChangedTab) this.syncActiveTabFromLastChange()
     },
     syncActiveTabFromLastChange() {
@@ -110,17 +105,18 @@ export default {
 
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
-.body { height: 0; flex: 1; padding: 28rpx; box-sizing: border-box; }
-.nav-right { font-size: 22rpx; color: var(--brand); font-weight: 600; }
-.item-body { flex: 1; min-width: 0; }
-.item-body > * + * { margin-top: 8rpx; }
-.item-row { display: flex; align-items: center; flex-wrap: wrap; }
-.item-row > * + * { margin-left: 12rpx; }
-.item-name { font-size: 28rpx; font-weight: 600; color: var(--N900); }
-.item-sid,
-.item-label,
-.item-type,
-.item-date { font-size: 22rpx; color: var(--N500); }
-.item-amount { font-size: 24rpx; font-weight: 600; color: var(--N900); }
-.item-sep { font-size: 22rpx; color: var(--N200); }
+.body { height: 0; flex: 1; }
+
+.sc { padding: 20rpx 28rpx 28rpx; display: flex; flex-direction: column; }
+.sc > * + * { margin-top: 20rpx; }
+.card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); overflow: hidden; }
+.card-bd { padding: var(--card-body-padding); }
+.li { display: flex; align-items: center; }
+.li > * + * { margin-left: 20rpx; }
+.li-ico { width: 80rpx; height: 80rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 600; flex-shrink: 0; }
+.li-info { flex: 1; min-width: 0; }
+.li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
+.li-meta { font-size: var(--fs-11); color: var(--N500); display: block; margin-top: 4rpx; }
+.li-amount { font-size: var(--fs-11); color: var(--brand); display: block; margin-top: 4rpx; font-weight: 500; }
+.li-arrow { font-size: 28rpx; color: var(--N400); flex-shrink: 0; }
 </style>

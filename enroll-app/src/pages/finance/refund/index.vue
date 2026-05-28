@@ -3,21 +3,23 @@
     <SNavBar title="退费审核" :showBack="true" fallbackUrl="/pages/finance/home/index" />
     <StatusTabs tabGroup="financeRefund" :tabs="tabs" :modelValue="activeTab" @change="onTabClick" />
     <scroll-view scroll-y class="body">
-      <view v-if="filteredList.length" class="list">
-        <view class="item" v-for="item in filteredList" :key="item.uid" @click="openSheet(item)">
-          <view class="avatar">{{ item.name.charAt(0) }}</view>
-          <view class="main">
-            <view class="top">
-              <text class="name">{{ item.name }}</text>
+      <view class="sc">
+        <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="openSheet(item)">
+          <view class="card-bd">
+            <view class="li">
+              <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>
+              <view class="li-info">
+                <text class="li-name">{{ item.name }}</text>
+                <text class="li-meta">{{ item.sid }} · {{ item.className }} · {{ item.type }}</text>
+                <text class="li-desc">{{ item.reason }}</text>
+              </view>
               <SBadge :color="item.listBadgeColor">{{ item.listStatusLabel }}</SBadge>
+              <text class="li-arrow">›</text>
             </view>
-            <text class="meta">{{ item.sid }} · {{ item.className }} · {{ item.type }}</text>
-            <text class="reason">{{ item.reason }}</text>
-            <text class="amount">¥{{ item.amount }}</text>
           </view>
         </view>
+        <SEmpty v-if="filteredList.length === 0" text="暂无退费申请" />
       </view>
-      <SEmpty v-else text="当前状态暂无退费申请" />
     </scroll-view>
 
     <SBottomSheet v-model="showSheet" title="退费审核">
@@ -82,7 +84,7 @@ import SButton from '@/components/shared/SButton.vue'
 import SBottomSheet from '@/components/shared/SBottomSheet.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildRefundTabs, filterRefundByTab, getLastBusinessChange, getRefundItem, getRefundList, getRefundTabIndex, updateRefund, REFUND_STATUS } from '@/utils/businessState.js'
+import { buildRefundTabs, filterRefundByTab, getLastBusinessChange, getRefundItem, getRefundList, getRefundTabIndex, refundStatusMeta, updateRefund, REFUND_STATUS } from '@/utils/businessState.js'
 import { refundApi } from '@/common/api/refund.js'
 
 const REFUND_KEY_MAP = ['pending', 'approved', 'completed']
@@ -95,6 +97,7 @@ export default {
       REFUND_STATUS,
 
       activeTab: 'pending',
+      filterVersion: 0,
       list: [],
       showSheet: false,
       showPreview: false,
@@ -132,6 +135,7 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   async onShow() {
+    this.filterVersion++
     try { uni.removeStorageSync('staff_back_target') } catch (e) { /* ignore */ }
     this.refresh(true)
     this.activeTab = getActiveKey('financeRefund', 'pending')
@@ -140,10 +144,18 @@ export default {
     onTabClick(key) {
       if (this.activeTab === key) return
       this.activeTab = key
+      this.filterVersion++
       setActiveKey('financeRefund', key)
     },
     refresh(syncChangedTab = false) {
-      this.list = getRefundList()
+      this.list = getRefundList().map(item => {
+        const meta = refundStatusMeta[item.status] || {}
+        return {
+          ...item,
+          bg: `var(--${meta.color || 'wa'}-bg)`,
+          iconColor: `var(--${meta.color || 'wa'})`
+        }
+      })
       if (syncChangedTab) this.syncActiveTabFromLastChange()
     },
     syncActiveTabFromLastChange() {
@@ -216,17 +228,19 @@ export default {
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
 .body { height: 0; flex: 1; }
-.list { padding: 24rpx 28rpx 48rpx; display: flex; flex-direction: column; }
-.list > * + * { margin-top: 20rpx; }
-.item { display: flex; align-items: flex-start; padding: 28rpx; background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); transition: transform .18s, background .18s; }
-.item:active { transform: scale(.985); background: var(--N50); }
-.avatar { width: 80rpx; height: 80rpx; border-radius: 50%; background: var(--er-bg); color: var(--er); display: flex; align-items: center; justify-content: center; font-size: var(--fs-15); font-weight: 600; flex-shrink: 0; }
-.main { flex: 1; min-width: 0; margin-left: 22rpx; }
-.top { display: flex; align-items: center; justify-content: space-between; }
-.top > * + * { margin-left: 16rpx; }
-.name { font-size: var(--fs-15); font-weight: 600; color: var(--N900); }
-.meta, .reason { display: block; margin-top: 8rpx; font-size: var(--fs-12); color: var(--N500); line-height: 1.5; }
-.amount { display: block; margin-top: 10rpx; color: var(--er); font-size: var(--fs-16); font-weight: 700; }
+
+.sc { padding: 20rpx 28rpx 28rpx; display: flex; flex-direction: column; }
+.sc > * + * { margin-top: 20rpx; }
+.card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); overflow: hidden; }
+.card-bd { padding: var(--card-body-padding); }
+.li { display: flex; align-items: center; }
+.li > * + * { margin-left: 20rpx; }
+.li-ico { width: 80rpx; height: 80rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 600; flex-shrink: 0; }
+.li-info { flex: 1; min-width: 0; }
+.li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
+.li-meta { font-size: var(--fs-11); color: var(--N500); display: block; margin-top: 4rpx; }
+.li-desc { font-size: var(--fs-11); color: var(--N600); display: block; margin-top: 4rpx; line-height: 1.4; }
+.li-arrow { font-size: 28rpx; color: var(--N400); flex-shrink: 0; }
 .sheet-info > * + * { margin-top: 18rpx; }
 .preview-entry { min-height: 92rpx; padding: 20rpx 24rpx; border-radius: var(--r-12); background: var(--N25); display: flex; align-items: center; }
 .preview-main { flex: 1; min-width: 0; }

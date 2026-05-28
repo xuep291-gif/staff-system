@@ -1,23 +1,23 @@
 <template>
   <view class="page">
-    <SNavBar title="校外住宿审核" :showBack="true" />
-    <StatusTabs tabGroup="govNonDorm" :tabs="tabs" />
+    <SNavBar title="校外住宿审核" :showBack="true" fallbackUrl="/pages/government/home/index" />
+    <StatusTabs tabGroup="govNonDorm" :tabs="tabs" @change="onTabClick" />
     <scroll-view scroll-y class="body">
       <view class="sc">
-        <view class="card" v-for="item in filteredList" :key="item.uid" @click="goReview(item)">
+        <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="goReview(item)">
           <view class="card-bd">
             <view class="li">
-              <view class="li-ico">{{ item.avatar }}</view>
+              <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>
               <view class="li-info">
                 <text class="li-name">{{ item.name }}</text>
                 <text class="li-meta">{{ item.id }} · {{ item.address }}</text>
               </view>
               <SBadge :color="item.listBadgeColor">{{ item.listStatusLabel }}</SBadge>
-              <text class="li-arrow">&#8250;</text>
+              <text class="li-arrow">›</text>
             </view>
           </view>
         </view>
-        <SEmpty v-if="filteredList.length === 0" text="当前状态暂无校外住宿申请" />
+        <SEmpty v-if="filteredList.length === 0" text="暂无校外住宿申请" />
       </view>
     </scroll-view>
   </view>
@@ -29,26 +29,18 @@ import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildDormReviewTabs, filterDormReviewByTab, getDormReviewList, getLastBusinessChange } from '@/utils/businessState.js'
+import { buildDormReviewTabs, dormReviewStatusMeta, filterDormReviewByTab, getDormReviewList, getLastBusinessChange } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const DORM_KEY_MAP = ['pending', 'approved', 'rejected']
-
-function getTabKey(item) {
-  const status = item.status || item.filterKey
-  if (status === 'approved') return 'approved'
-  if (status === 'rejected') return 'rejected'
-  return 'pending'
-}
 
 export default {
   name: 'GovernmentNonDorm',
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
-    return { list: [], lastSyncedChange: '' }
+    return { activeTab: 'pending', filterVersion: 0, list: [], lastSyncedChange: '' }
   },
   computed: {
-    activeTab() { return getActiveKey('govNonDorm', 'pending') },
     tabs() {
       return buildDormReviewTabs(this.list).map((tab, i) => ({
         ...tab,
@@ -60,6 +52,9 @@ export default {
       return filterDormReviewByTab(this.list, idx >= 0 ? idx : 0)
     }
   },
+  watch: {
+    activeTab() { this.filterVersion++ }
+  },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
       if (collection === 'nonDorm') this.refresh(true)
@@ -70,15 +65,25 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   async onShow() {
+    this.filterVersion++
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
+    this.activeTab = getActiveKey('govNonDorm', 'pending')
   },
   methods: {
-    onTabChange(key) {
+    onTabClick(key) {
+      this.activeTab = key
       setActiveKey('govNonDorm', key)
-      console.log('校外住宿切换:', key)
     },
     refresh(syncChangedTab = false) {
-      this.list = getDormReviewList('nonDorm')
+      this.list = getDormReviewList('nonDorm').map(item => {
+        const meta = dormReviewStatusMeta[item.status] || {}
+        return {
+          ...item,
+          bg: `var(--${meta.color || 'wa'}-bg)`,
+          iconColor: `var(--${meta.color || 'wa'})`
+        }
+      })
       if (syncChangedTab) this.syncActiveTabFromLastChange()
     },
     syncActiveTabFromLastChange() {
@@ -87,7 +92,9 @@ export default {
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
-      setActiveKey('govNonDorm', getTabKey(item))
+      const status = item.status || item.filterKey
+      const index = status === 'approved' ? 1 : status === 'rejected' ? 2 : 0
+      setActiveKey('govNonDorm', DORM_KEY_MAP[index] || 'pending')
     },
     goReview(item) {
       rememberStaffBackTarget('/pages/government/non-dorm/index')
@@ -100,13 +107,14 @@ export default {
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
 .body { height: 0; flex: 1; }
-.sc { padding: 28rpx; display: flex; flex-direction: column; }
+
+.sc { padding: 20rpx 28rpx 28rpx; display: flex; flex-direction: column; }
 .sc > * + * { margin-top: 20rpx; }
 .card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); overflow: hidden; }
 .card-bd { padding: var(--card-body-padding); }
 .li { display: flex; align-items: center; }
 .li > * + * { margin-left: 20rpx; }
-.li-ico { width: 80rpx; height: 80rpx; border-radius: 50%; background: var(--ac-t); color: var(--ac); display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 600; flex-shrink: 0; }
+.li-ico { width: 80rpx; height: 80rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 600; flex-shrink: 0; }
 .li-info { flex: 1; min-width: 0; }
 .li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
 .li-meta { font-size: var(--fs-11); color: var(--N500); display: block; margin-top: 4rpx; }

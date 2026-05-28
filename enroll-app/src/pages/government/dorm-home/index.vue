@@ -1,22 +1,24 @@
 <template>
   <view class="page">
-    <SNavBar title="换房审批" :showBack="true" />
-    <StatusTabs tabGroup="govDormHome" :tabs="tabs" />
+    <SNavBar title="换房审批" :showBack="true" fallbackUrl="/pages/government/home/index" />
+    <StatusTabs tabGroup="govDormHome" :tabs="tabs" @change="onTabClick" />
     <scroll-view scroll-y class="body">
-      <view class="list">
-        <view class="item" v-for="item in filteredList" :key="item.uid" @click="goReview(item)">
-          <view class="avatar">{{ item.avatar || item.name.charAt(0) }}</view>
-          <view class="main">
-            <view class="top">
-              <text class="name">{{ item.name }}</text>
+      <view class="sc">
+        <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="goReview(item)">
+          <view class="card-bd">
+            <view class="li">
+              <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>
+              <view class="li-info">
+                <text class="li-name">{{ item.name }}</text>
+                <text class="li-meta">{{ item.id }} · {{ item.from }} → {{ item.to }}</text>
+                <text class="li-desc">{{ item.reason }}</text>
+              </view>
               <SBadge :color="item.listBadgeColor">{{ item.listStatusLabel }}</SBadge>
+              <text class="li-arrow">›</text>
             </view>
-            <text class="meta">{{ item.id }} · {{ item.from }} -> {{ item.to }}</text>
-            <text class="reason">{{ item.reason }}</text>
           </view>
-          <text class="arrow">›</text>
         </view>
-        <SEmpty v-if="filteredList.length === 0" text="当前状态暂无换房申请" />
+        <SEmpty v-if="filteredList.length === 0" text="暂无换房申请" />
       </view>
     </scroll-view>
   </view>
@@ -28,7 +30,7 @@ import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildDormReviewTabs, filterDormReviewByTab, getDormReviewList, getLastBusinessChange } from '@/utils/businessState.js'
+import { buildDormReviewTabs, dormReviewStatusMeta, filterDormReviewByTab, getDormReviewList, getLastBusinessChange } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const DORM_KEY_MAP = ['pending', 'approved', 'rejected']
@@ -37,10 +39,9 @@ export default {
   name: 'GovernmentDormHome',
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
-    return { list: [], lastSyncedChange: '' }
+    return { activeTab: 'pending', filterVersion: 0, list: [], lastSyncedChange: '' }
   },
   computed: {
-    activeTab() { return getActiveKey('govDormHome', 'pending') },
     tabs() {
       return buildDormReviewTabs(this.list).map((tab, i) => ({
         ...tab,
@@ -52,6 +53,9 @@ export default {
       return filterDormReviewByTab(this.list, idx >= 0 ? idx : 0)
     }
   },
+  watch: {
+    activeTab() { this.filterVersion++ }
+  },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
       if (collection === 'roomChanges') this.refresh(true)
@@ -62,20 +66,28 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   onShow() {
+    this.filterVersion++
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
+    this.activeTab = getActiveKey('govDormHome', 'pending')
   },
   methods: {
-    onTabChange(key) {
+    onTabClick(key) {
+      this.activeTab = key
       setActiveKey('govDormHome', key)
-      console.log('政务换房审批切换:', key)
     },
     refresh(syncChangedTab = false) {
       const source = getDormReviewList('roomChanges')
-      this.list = source.map(item => ({
-        ...item,
-        from: item.oldDorm || item.from,
-        to: item.targetDorm || item.to
-      }))
+      this.list = source.map(item => {
+        const meta = dormReviewStatusMeta[item.status] || {}
+        return {
+          ...item,
+          from: item.oldDorm || item.from,
+          to: item.targetDorm || item.to,
+          bg: `var(--${meta.color || 'wa'}-bg)`,
+          iconColor: `var(--${meta.color || 'wa'})`
+        }
+      })
       if (syncChangedTab) this.syncActiveTabFromLastChange()
     },
     syncActiveTabFromLastChange() {
@@ -98,14 +110,17 @@ export default {
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
 .body { height: 0; flex: 1; }
-.list { padding: 28rpx; display: flex; flex-direction: column; }
-.list > * + * { margin-top: 20rpx; }
-.item { display: flex; align-items: center; padding: 28rpx; background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); }
-.avatar { width: 80rpx; height: 80rpx; border-radius: var(--r-full); background: var(--brand-t); color: var(--brand-d); display: flex; align-items: center; justify-content: center; font-size: var(--fs-14); font-weight: 600; flex-shrink: 0; }
-.main { flex: 1; min-width: 0; margin-left: 24rpx; }
-.top { display: flex; align-items: center; justify-content: space-between; }
-.name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); }
-.meta, .reason { display: block; font-size: var(--fs-12); color: var(--N500); margin-top: 8rpx; }
-.reason { color: var(--N400); }
-.arrow { font-size: var(--fs-18); color: var(--N400); margin-left: 16rpx; flex-shrink: 0; }
+
+.sc { padding: 20rpx 28rpx 28rpx; display: flex; flex-direction: column; }
+.sc > * + * { margin-top: 20rpx; }
+.card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); overflow: hidden; }
+.card-bd { padding: var(--card-body-padding); }
+.li { display: flex; align-items: center; }
+.li > * + * { margin-left: 20rpx; }
+.li-ico { width: 80rpx; height: 80rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 600; flex-shrink: 0; }
+.li-info { flex: 1; min-width: 0; }
+.li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
+.li-meta { font-size: var(--fs-11); color: var(--N500); display: block; margin-top: 4rpx; }
+.li-desc { font-size: var(--fs-11); color: var(--N600); display: block; margin-top: 4rpx; }
+.li-arrow { font-size: 28rpx; color: var(--N400); flex-shrink: 0; }
 </style>

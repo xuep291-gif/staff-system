@@ -68,10 +68,10 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   async onShow() {
-    this.activeTab = getActiveKey('teacherDormWithdraw', 'pending')
     this.filterVersion++
     try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
+    this.activeTab = getActiveKey('teacherDormWithdraw', 'pending')
   },
   methods: {
     onTabClick(key) {

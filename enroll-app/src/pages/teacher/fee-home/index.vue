@@ -1,6 +1,6 @@
 <template>
   <view class="page">
-    <SNavBar title="缴费管理" :showBack="true" />
+    <SNavBar title="缴费管理" :showBack="true" fallbackUrl="/pages/teacher/home/index" />
     <scroll-view scroll-y class="sbody">
       <view class="year-row">
         <text class="year-label">当前学年</text>
@@ -253,6 +253,7 @@ export default {
     console.log('[fee-home] onShow fired')
     this.activeTab = getActiveKey('feeHome', 'unpaid')
     this.filterVersion++
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     try { this.activeYear = uni.getStorageSync('teacher_fee_school_year') || this.activeYear } catch (e) { /* optional */ }
     this.refresh()
     this.showSheet = false

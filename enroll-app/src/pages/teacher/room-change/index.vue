@@ -3,25 +3,23 @@
     <SNavBar title="换宿审核" :showBack="true" fallbackUrl="/pages/teacher/home/index" />
     <StatusTabs tabGroup="teacherRoomChange" :tabs="tabs" @change="onTabClick" />
     <scroll-view scroll-y class="body">
-      <view
-        class="review-card"
-        v-for="item in filteredList"
-        :key="filterVersion + '-' + item.uid"
-        @click="goReview(item)"
-      >
-        <view class="avatar">{{ item.avatar }}</view>
-        <view class="info">
-          <view class="name-row">
-            <text class="name">{{ item.name }}</text>
-            <SBadge :color="item.listBadgeColor">{{ item.listStatusLabel }}</SBadge>
+      <view class="sc">
+        <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="goReview(item)">
+          <view class="card-bd">
+            <view class="li">
+              <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>
+              <view class="li-info">
+                <text class="li-name">{{ item.name }}</text>
+                <text class="li-meta">{{ item.id }} · {{ item.className }}</text>
+                <text class="li-desc">{{ item.oldDorm }} → {{ item.targetDorm }}</text>
+              </view>
+              <SBadge :color="item.listBadgeColor">{{ item.listStatusLabel }}</SBadge>
+              <text class="li-arrow">›</text>
+            </view>
           </view>
-          <text class="meta">{{ item.id }} · {{ item.className }}</text>
-          <text class="desc">{{ item.oldDorm }} → {{ item.targetDorm }}</text>
-          <text class="time">申请时间：{{ item.applyTime }}</text>
         </view>
-        <text class="arrow">›</text>
+        <SEmpty v-if="filteredList.length === 0" text="暂无换宿申请" />
       </view>
-      <SEmpty v-if="filteredList.length === 0" text="暂无换宿申请" />
     </scroll-view>
   </view>
 </template>
@@ -32,7 +30,7 @@ import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildDormReviewTabs, filterDormReviewByTab, getDormReviewList, getLastBusinessChange } from '@/utils/businessState.js'
+import { buildDormReviewTabs, dormReviewStatusMeta, filterDormReviewByTab, getDormReviewList, getLastBusinessChange } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const DORM_KEY_MAP = ['pending', 'approved', 'rejected']
@@ -80,7 +78,14 @@ export default {
       setActiveKey('teacherRoomChange', key)
     },
     refresh(syncChangedTab = false) {
-      this.list = getDormReviewList('roomChanges')
+      this.list = getDormReviewList('roomChanges').map(item => {
+        const meta = dormReviewStatusMeta[item.status] || {}
+        return {
+          ...item,
+          bg: `var(--${meta.color || 'wa'}-bg)`,
+          iconColor: `var(--${meta.color || 'wa'})`
+        }
+      })
       if (syncChangedTab) this.syncActiveTabFromLastChange()
     },
     syncActiveTabFromLastChange() {
@@ -102,37 +107,18 @@ export default {
 
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
-.body { height: 0; flex: 1; padding: 28rpx; box-sizing: border-box; }
-.review-card {
-  background: var(--white);
-  border-radius: var(--r-14);
-  box-shadow: var(--card-shadow);
-  padding: 28rpx;
-  display: flex;
-  align-items: center;
-  margin-bottom: 20rpx;
-}
-.review-card:active { transform: scale(.995); background: var(--N50); }
-.review-card > * + * { margin-left: 20rpx; }
-.avatar {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: var(--r-full);
-  background: var(--brand-t);
-  color: var(--brand);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--fs-15);
-  font-weight: 700;
-  flex-shrink: 0;
-}
-.info { flex: 1; min-width: 0; }
-.name-row { display: flex; align-items: center; justify-content: space-between; }
-.name { font-size: var(--fs-15); font-weight: 700; color: var(--N900); }
-.meta,
-.desc,
-.time { display: block; margin-top: 6rpx; font-size: var(--fs-12); color: var(--N500); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.desc { color: var(--N700); font-weight: 600; }
-.arrow { color: var(--N400); font-size: 32rpx; flex-shrink: 0; }
+.body { height: 0; flex: 1; }
+
+.sc { padding: 20rpx 28rpx 28rpx; display: flex; flex-direction: column; }
+.sc > * + * { margin-top: 20rpx; }
+.card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); overflow: hidden; }
+.card-bd { padding: var(--card-body-padding); }
+.li { display: flex; align-items: center; }
+.li > * + * { margin-left: 20rpx; }
+.li-ico { width: 80rpx; height: 80rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 600; flex-shrink: 0; }
+.li-info { flex: 1; min-width: 0; }
+.li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
+.li-meta { font-size: var(--fs-11); color: var(--N500); display: block; margin-top: 4rpx; }
+.li-desc { font-size: var(--fs-11); color: var(--N700); font-weight: 500; display: block; margin-top: 4rpx; }
+.li-arrow { font-size: 28rpx; color: var(--N400); flex-shrink: 0; }
 </style>

@@ -2,132 +2,132 @@
   <view class="page">
     <SNavBar title="线下收款确认" :showBack="true" fallbackUrl="/pages/finance/home/index" />
 
-    <StatusTabs :tabs="tabs" v-model="currentTab" />
+    <StatusTabs tabGroup="financeCollect" :tabs="tabs" :modelValue="activeTab" @change="onTabClick" />
 
     <!-- Tab 待确认 -->
-    <view class="list-section" v-if="currentTab === 'pending'">
-      <SEmpty v-if="!pendingList.length" text="当前暂无待确认线下收款" />
-      <view
-        class="list-item"
-        v-for="item in pendingList"
-        :key="item.id"
-      >
-        <view class="item-left">
-          <view class="avatar avatar-pending">{{ item.avatar }}</view>
-          <view class="item-info">
-            <view class="item-row">
-              <text class="item-name">{{ item.name }}</text>
-              <text class="item-no">{{ item.studentNo }}</text>
+    <view class="list-section" v-if="activeTab === 'pending'">
+        <SEmpty v-if="!pendingList.length" text="当前暂无待确认线下收款" />
+        <view
+          class="list-item"
+          v-for="item in pendingList"
+          :key="filterVersion + '-' + item.id"
+        >
+          <view class="item-left">
+            <view class="avatar avatar-pending">{{ item.avatar }}</view>
+            <view class="item-info">
+              <view class="item-row">
+                <text class="item-name">{{ item.name }}</text>
+                <text class="item-no">{{ item.studentNo }}</text>
+              </view>
+              <view class="item-row">
+                <text class="item-meta">{{ item.method }} · {{ item.location }} · 凭证可预览</text>
+              </view>
             </view>
-            <view class="item-row">
-              <text class="item-meta">{{ item.method }} · {{ item.location }} · 凭证可预览</text>
+          </view>
+          <view class="item-right">
+            <text class="item-time">{{ item.time }}</text>
+            <text class="item-amount">¥{{ formatAmount(item.amount) }}</text>
+            <SBadge color="wa">待确认</SBadge>
+            <view class="confirm-mini-btn" hover-class="confirm-mini-btn-hover" @tap.stop="onItemClick(item)">
+              <text>财务确认</text>
             </view>
           </view>
         </view>
-        <view class="item-right">
-          <text class="item-time">{{ item.time }}</text>
-          <text class="item-amount">¥{{ formatAmount(item.amount) }}</text>
-          <SBadge color="wa">待确认</SBadge>
-          <view class="confirm-mini-btn" hover-class="confirm-mini-btn-hover" @tap.stop="onItemClick(item)">
-            <text>财务确认</text>
-          </view>
+        <view class="more-link" v-if="pendingMoreCount > 0" @click="onViewMore">
+          <text>还有 {{ pendingMoreCount }} 笔待确认</text>
+          <text class="more-arrow">›</text>
         </view>
       </view>
-      <view class="more-link" v-if="pendingMoreCount > 0" @click="onViewMore">
-        <text>还有 {{ pendingMoreCount }} 笔待确认</text>
-        <text class="more-arrow">›</text>
-      </view>
-    </view>
 
-    <!-- Tab 已确认 -->
-    <view class="list-section" v-if="currentTab === 'confirmed'">
-      <SEmpty v-if="!confirmedList.length" text="当前暂无已确认线下收款" />
-      <view
-        class="list-item"
-        v-for="item in confirmedList"
-        :key="item.id"
-      >
-        <view class="item-left">
-          <view class="avatar avatar-confirmed">{{ item.avatar }}</view>
-          <view class="item-info">
-            <view class="item-row">
-              <text class="item-name">{{ item.name }}</text>
-              <text class="item-no">{{ item.studentNo }}</text>
-            </view>
-            <view class="item-row">
-              <text class="item-meta">{{ item.confirmPayMethod || item.collectionType }} · {{ item.confirmOperator || item.confirmedBy }} · {{ item.confirmTime }}</text>
-            </view>
-            <view class="item-row" v-if="item.receiptNo">
-              <text class="item-receipt">收据号：{{ item.receiptNo }}</text>
+      <!-- Tab 已确认 -->
+      <view class="list-section" v-if="activeTab === 'confirmed'">
+        <SEmpty v-if="!confirmedList.length" text="当前暂无已确认线下收款" />
+        <view
+          class="list-item"
+          v-for="item in confirmedList"
+          :key="filterVersion + '-' + item.id"
+        >
+          <view class="item-left">
+            <view class="avatar avatar-confirmed">{{ item.avatar }}</view>
+            <view class="item-info">
+              <view class="item-row">
+                <text class="item-name">{{ item.name }}</text>
+                <text class="item-no">{{ item.studentNo }}</text>
+              </view>
+              <view class="item-row">
+                <text class="item-meta">{{ item.confirmPayMethod || item.collectionType }} · {{ item.confirmOperator || item.confirmedBy }} · {{ item.confirmTime }}</text>
+              </view>
+              <view class="item-row" v-if="item.receiptNo">
+                <text class="item-receipt">收据号：{{ item.receiptNo }}</text>
+              </view>
             </view>
           </view>
-        </view>
-        <view class="item-right">
-          <text class="item-amount item-amount-ok">¥{{ formatAmount(item.amount) }}</text>
-          <SBadge color="ok">已确认</SBadge>
-          <view v-if="canVoid" class="void-mini-btn" @tap.stop="onVoidClick(item)">
-            <text>作废</text>
+          <view class="item-right">
+            <text class="item-amount item-amount-ok">¥{{ formatAmount(item.amount) }}</text>
+            <SBadge color="ok">已确认</SBadge>
+            <view v-if="canVoid" class="void-mini-btn" @tap.stop="onVoidClick(item)">
+              <text>作废</text>
+            </view>
           </view>
         </view>
       </view>
-    </view>
 
-    <!-- Tab 收款记录查询 -->
-    <view class="list-section" v-if="currentTab === 'records'">
-      <view class="filter-card">
-        <input class="search-input" v-model.trim="filters.keyword" placeholder="姓名 / 学号 / 学院 / 时间" />
-        <picker :range="paymentMethods" :value="paymentMethodIndex" @change="onPaymentFilterChange">
-          <view class="filter-picker">
-            <text>{{ filters.method }}</text>
-            <text class="select-arrow">›</text>
+      <!-- Tab 收款记录查询 -->
+      <view class="list-section" v-if="activeTab === 'records'">
+        <view class="filter-card">
+          <input class="search-input" v-model.trim="filters.keyword" placeholder="姓名 / 学号 / 学院 / 时间" />
+          <picker :range="paymentMethods" :value="paymentMethodIndex" @change="onPaymentFilterChange">
+            <view class="filter-picker">
+              <text>{{ filters.method }}</text>
+              <text class="select-arrow">›</text>
+            </view>
+          </picker>
+        </view>
+        <view class="section-header">
+          <text class="section-header-text">查询到 {{ recordList.length }} 笔收款记录</text>
+        </view>
+        <SEmpty v-if="!recordList.length" text="未找到符合条件的收款记录" />
+        <view
+          class="list-item"
+          v-for="item in recordList"
+          :key="filterVersion + '-' + item.id"
+        >
+          <view class="item-left">
+            <view
+              class="avatar"
+              :class="item.status === 'pending' ? 'avatar-pending' : item.status === 'voided' ? 'avatar-voided' : 'avatar-confirmed'"
+            >{{ item.avatar }}</view>
+            <view class="item-info">
+              <view class="item-row">
+                <text class="item-name">{{ item.name }}</text>
+                <text class="item-no">{{ item.studentNo }}</text>
+              </view>
+              <view class="item-row">
+                <text class="item-meta">{{ item.college }} · {{ item.status === 'confirmed' || item.status === 'voided' ? (item.confirmPayMethod || item.collectionType) : item.method }}</text>
+                <text v-if="item.status === 'confirmed'" class="item-meta">{{ item.confirmOperator || item.confirmedBy }} · {{ item.confirmTime }}</text>
+                <text v-else-if="item.status === 'voided'" class="item-meta">已作废 · {{ item.voidTime }}</text>
+                <text v-else class="item-meta">{{ item.location }} · {{ item.time }}</text>
+              </view>
+              <view class="item-row" v-if="item.receiptNo">
+                <text class="item-receipt">收据号：{{ item.receiptNo }}</text>
+              </view>
+            </view>
           </view>
-        </picker>
-      </view>
-      <view class="section-header">
-        <text class="section-header-text">查询到 {{ recordList.length }} 笔收款记录</text>
-      </view>
-      <SEmpty v-if="!recordList.length" text="未找到符合条件的收款记录" />
-      <view
-        class="list-item"
-        v-for="item in recordList"
-        :key="item.id"
-      >
-        <view class="item-left">
-          <view
-            class="avatar"
-            :class="item.status === 'pending' ? 'avatar-pending' : item.status === 'voided' ? 'avatar-voided' : 'avatar-confirmed'"
-          >{{ item.avatar }}</view>
-          <view class="item-info">
-            <view class="item-row">
-              <text class="item-name">{{ item.name }}</text>
-              <text class="item-no">{{ item.studentNo }}</text>
-            </view>
-            <view class="item-row">
-              <text class="item-meta">{{ item.college }} · {{ item.status === 'confirmed' || item.status === 'voided' ? (item.confirmPayMethod || item.collectionType) : item.method }}</text>
-              <text v-if="item.status === 'confirmed'" class="item-meta">{{ item.confirmOperator || item.confirmedBy }} · {{ item.confirmTime }}</text>
-              <text v-else-if="item.status === 'voided'" class="item-meta">已作废 · {{ item.voidTime }}</text>
-              <text v-else class="item-meta">{{ item.location }} · {{ item.time }}</text>
-            </view>
-            <view class="item-row" v-if="item.receiptNo">
-              <text class="item-receipt">收据号：{{ item.receiptNo }}</text>
+          <view class="item-right">
+            <text class="item-time" v-if="item.time">{{ item.time }}</text>
+            <text
+              class="item-amount"
+              :class="{ 'item-amount-ok': item.status === 'confirmed', 'item-amount-er': item.status === 'voided' }"
+            >¥{{ formatAmount(item.amount) }}</text>
+            <SBadge :color="item.status === 'pending' ? 'wa' : item.status === 'voided' ? 'er' : 'ok'">
+              {{ item.status === 'pending' ? '待确认' : item.status === 'voided' ? '已作废' : '已确认' }}
+            </SBadge>
+            <view v-if="item.status === 'pending'" class="confirm-mini-btn" hover-class="confirm-mini-btn-hover" @tap.stop="onItemClick(item)">
+              <text>财务确认</text>
             </view>
           </view>
         </view>
-        <view class="item-right">
-          <text class="item-time" v-if="item.time">{{ item.time }}</text>
-          <text
-            class="item-amount"
-            :class="{ 'item-amount-ok': item.status === 'confirmed', 'item-amount-er': item.status === 'voided' }"
-          >¥{{ formatAmount(item.amount) }}</text>
-          <SBadge :color="item.status === 'pending' ? 'wa' : item.status === 'voided' ? 'er' : 'ok'">
-            {{ item.status === 'pending' ? '待确认' : item.status === 'voided' ? '已作废' : '已确认' }}
-          </SBadge>
-          <view v-if="item.status === 'pending'" class="confirm-mini-btn" hover-class="confirm-mini-btn-hover" @tap.stop="onItemClick(item)">
-            <text>财务确认</text>
-          </view>
-        </view>
       </view>
-    </view>
 
     <!-- 确认收款弹窗：原生 overlay，用 v-if 控制 -->
     <view class="confirm-overlay" v-if="showSheet" @tap="onOverlayClose">
@@ -187,7 +187,7 @@
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
-
+import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import { confirmOfflineCollection, voidOfflineCollection, getOfflineCollectionList, getStudentBill, generateReceiptNumber } from '@/utils/businessState.js'
@@ -198,7 +198,8 @@ export default {
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
     return {
-      currentTab: 'pending',
+      activeTab: 'pending',
+      filterVersion: 0,
       showSheet: false,
       currentItem: null,
       list: [],
@@ -265,7 +266,8 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   onShow() {
-    this.currentTab = 'pending'
+    this.activeTab = getActiveKey('financeCollect', 'pending')
+    this.filterVersion++
     this.filters = { keyword: '', method: '全部方式' }
     try { uni.removeStorageSync('staff_back_target') } catch (e) { /* ignore */ }
     this.refresh()
@@ -279,6 +281,13 @@ export default {
           this.currentItem = { ...updated }
         }
       }
+    },
+
+    onTabClick(key) {
+      if (this.activeTab === key) return
+      this.activeTab = key
+      this.filterVersion++
+      setActiveKey('financeCollect', key)
     },
 
     onItemClick(item) {
@@ -385,7 +394,7 @@ export default {
         this.refresh()
         uni.showToast({ title: '线下收款已确认', icon: 'success' })
         this.$nextTick(() => {
-          this.currentTab = 'confirmed'
+          this.onTabClick('confirmed')
         })
       } catch (e) {
         uni.showToast({ title: '确认失败，请重试', icon: 'none' })
@@ -395,7 +404,7 @@ export default {
     },
 
     onViewMore() {
-      this.currentTab = 'pending'
+      this.onTabClick('pending')
     },
 
     onVoidClick(item) {

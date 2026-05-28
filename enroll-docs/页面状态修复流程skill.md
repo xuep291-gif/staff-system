@@ -321,6 +321,63 @@ onShow() {
 
 ---
 
+## Phase 5: 修复首击 tab 数据不更新（syncActiveTabFromLastChange 导致的双状态源）
+
+### 问题表现
+
+进入页面后默认在某个 tab（如"审批中"），点击另一个 tab（如"待审批"）时，标签下划线移动了但列表数据没变，第二次点击才恢复正常。该问题仅出现在第一个 tab→第二个 tab 的切换，第三个 tab 不受影响。
+
+### 根本原因
+
+`onShow` 中 `refresh(true)` 内部调用 `syncActiveTabFromLastChange()`，它会通过 `setActiveKey` 修改共享 reactive state，**但不会同步更新 `this.activeTab`**。
+
+```js
+// ❌ 有问题的顺序
+async onShow() {
+  this.activeTab = getActiveKey('teacherLoanHome', 'pending')  // 读到旧值 'processing'
+  this.filterVersion++
+  this.refresh(true)  // syncActiveTabFromLastChange 可能 setActiveKey 为 'pending'
+  // 此时：共享 state = 'pending'，但 this.activeTab 仍是 'processing'
+}
+
+// 用户点击"待审批" → onTabClick('pending')
+// this.activeTab = 'pending' → 但原值已经是 'pending'（因为共享 state 被改了）
+// Vue 视为未变化 → watch 不触发 → filteredList 不重算 → 数据不变
+```
+
+双状态源（`this.activeTab` 和共享 reactive state）不同步导致了"首击失效"。
+
+### 修复方案
+
+`this.activeTab = getActiveKey(...)` 移到 `refresh(true)` **之后**，确保读到最终的共享状态值：
+
+```js
+// ✅ 正确的顺序
+async onShow() {
+  this.filterVersion++
+  try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
+  this.refresh(true)  // syncActiveTabFromLastChange 先更新共享 state
+  this.activeTab = getActiveKey('teacherLoanHome', 'pending')  // 再读取最终值
+}
+```
+
+### 受影响页面
+
+所有使用 `buildReviewTabs` / `filterReviewByTab` 的审核子页面：
+- `loan-home` — 助学贷款
+- `aid-home` — 助学金审核
+- `doc-home` — 资料审核
+- `dorm-withdraw` — 退宿审核
+- `room-change` — 换宿审核
+
+### 检查清单（追加）
+
+| # | 检查项 | 修改内容 |
+|---|--------|---------|
+| 15 | `onShow` 中 `getActiveKey` 位置 | 必须在 `refresh(true)` **之后**调用，避免 `syncActiveTabFromLastChange` 覆盖造成的双状态源不同步 |
+
+---
+
 ## 常见坑
 
 1. **`uni.removeStorageSync` 可能抛异常**：必须包裹 `try/catch`，storage 在非浏览器环境不可用

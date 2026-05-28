@@ -63,39 +63,7 @@
         <text v-else class="empty-text">缴费完成后生成票据</text>
       </SCard>
 
-      <SCard title="催缴发送记录" :padding="16" v-if="fee && fee.urgeTimes && fee.urgeTimes.length">
-        <view class="record" v-for="(time, index) in fee.urgeTimes" :key="time + index">
-          <text class="record-title">第 {{ fee.urgeTimes.length - index }} 次催缴通知</text>
-          <text class="record-meta">{{ time }}</text>
-        </view>
-      </SCard>
-
-      <!-- Action Buttons -->
-      <view class="btn-area" v-if="canUrge">
-        <view class="btn-p" @click="onOpenSheet">
-          <text>发送催缴通知</text>
-        </view>
-      </view>
     </scroll-view>
-
-    <!-- Urge BottomSheet -->
-    <view v-if="showSheet" class="ovl on" @click="showSheet = false">
-      <view class="sheet" @click.stop>
-        <view class="shandle" />
-        <text class="stitle">确认发送催缴通知</text>
-        <view class="sbody2">
-          <text class="smsg">确认向 {{ student.name }} 发送缴费催缴通知？</text>
-          <view class="brow">
-            <view class="btn-e" @click="showSheet = false">
-              <text>取消</text>
-            </view>
-            <view class="btn-p" @click="confirmUrge">
-              <text>确认发送</text>
-            </view>
-          </view>
-        </view>
-      </view>
-    </view>
   </view>
 </template>
 
@@ -104,10 +72,10 @@ import SNavBar from '@/components/shared/SNavBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SBadge from '@/components/shared/SBadge.vue'
-import { getStudent, getFeeList, urgeStudents } from '@/utils/businessState.js'
+import { getStudent, getFeeList } from '@/utils/businessState.js'
 import { studentApi } from '@/common/api/student.js'
 import { paymentApi } from '@/common/api/payment.js'
-import { reminderApi } from '@/common/api/reminder.js'
+
 
 const STORAGE_KEYS = ['teacher_doc_list', 'teacher_aid_list', 'teacher_loan_list', 'teacher_nondorm_list']
 
@@ -140,7 +108,6 @@ export default {
   components: { SNavBar, SCard, SInfoRow, SBadge },
   data() {
     return {
-      showSheet: false,
       student: { ...DEFAULT_STUDENT },
       fee: null
     }
@@ -149,9 +116,6 @@ export default {
     maskedIdNo() {
       const id = this.student.idNo || ''
       return id.length > 10 ? `${id.slice(0, 6)}********${id.slice(-4)}` : id
-    },
-    canUrge() {
-      return this.fee && ['unpaid', 'overdue'].includes(this.fee.payStatus)
     }
   },
   async onLoad(options) {
@@ -219,17 +183,6 @@ export default {
     copySid() {
       uni.setClipboardData({ data: this.student.sid, success: () => uni.showToast({ title: '学号已复制', icon: 'success' }) })
     },
-    onOpenSheet() {
-      if (!this.canUrge) return
-      this.showSheet = true
-    },
-    async confirmUrge() {
-      this.showSheet = false
-      urgeStudents([this.student.sid])
-      this.fee = getFeeList().find(i => i.sid === this.student.sid)
-      await reminderApi.sendReminder({ studentId: this.student.sid, channels: ['site', 'sms'] })
-      uni.showToast({ title: '催缴通知已发送', icon: 'success' })
-    },
     formatMoney(value) {
       return Number(String(value || 0).replace(/,/g, '')).toLocaleString()
     }
@@ -265,26 +218,4 @@ export default {
 .record-meta { display: block; margin-top: 6rpx; font-size: var(--fs-11); color: var(--N500); }
 .empty-text { display: block; font-size: var(--fs-12); color: var(--N400); padding: 8rpx 0; }
 
-/* ── Buttons ── */
-.btn-area { padding: 0 28rpx; display: flex; flex-direction: column; }
-.btn-area > * + * { margin-top: 20rpx; }
-.btn-p { width: 100%; height: 96rpx; background: var(--brand); color: #fff; border-radius: 24rpx; font-size: var(--fs-15); font-weight: 600; display: flex; align-items: center; justify-content: center; transition: background .3s, transform .2s; }
-.btn-p:active { background: var(--brand-d); transform: scale(0.97); }
-.btn-e-outline { width: 100%; height: 96rpx; border-radius: 24rpx; border: 2px solid var(--brand); color: var(--brand); font-size: var(--fs-15); font-weight: 600; display: flex; align-items: center; justify-content: center; background: var(--white); }
-.btn-e-outline:active { background: var(--brand-t); }
-.btn-e { flex: 1; height: 96rpx; border-radius: 24rpx; background: var(--er-bg); color: var(--er); font-size: var(--fs-15); font-weight: 600; border: 1px solid var(--er-bd); display: flex; align-items: center; justify-content: center; }
-.btn-e:active { background: var(--er); color: #fff; }
-
-/* ── BottomSheet ── */
-.ovl { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0,0,0,0); z-index: 300; visibility: hidden; transition: background .25s, visibility .25s; }
-.ovl.on { background: rgba(0,0,0,.45); visibility: visible; }
-.sheet { position: absolute; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 40rpx 40rpx 0 0; padding: 0 0 72rpx; transform: translateY(100%); transition: transform .28s cubic-bezier(.32,.72,0,1); }
-.ovl.on .sheet { transform: translateY(0); }
-.shandle { width: 72rpx; height: 8rpx; background: var(--N200); border-radius: 4rpx; margin: 20rpx auto 0; }
-.stitle { font-size: var(--fs-16); font-weight: 600; color: var(--N900); padding: 28rpx 32rpx 24rpx; border-bottom: 1px solid var(--N50); display: block; text-align: center; }
-.sbody2 { padding: 32rpx; display: flex; flex-direction: column; }
-.sbody2 > * + * { margin-top: 24rpx; }
-.smsg { font-size: var(--fs-13); color: var(--N500); text-align: center; line-height: 1.6; display: block; }
-.brow { display: flex; }
-.brow > * + * { margin-left: 16rpx; }
 </style>

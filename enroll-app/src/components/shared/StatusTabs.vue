@@ -77,7 +77,7 @@ export default {
   min-width: 0;
   min-height: 80rpx;
   font-size: var(--fs-13);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--N500);
   display: flex;
   align-items: center;

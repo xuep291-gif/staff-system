@@ -195,7 +195,9 @@ const seed = {
     { sid: '2026010030', amount: '5,800', payStatus: 'paid', urgeCount: 0, urgeTimes: [], billId: 'BILL20260006', schoolYear: '2026-2027', chargeItem: '学费' },
     { sid: '2026010035', amount: '5,800', payStatus: 'paid', urgeCount: 0, urgeTimes: [], billId: 'BILL20260007', schoolYear: '2026-2027', chargeItem: '学费' },
     { sid: '2026010039', amount: '2,900', payStatus: 'unpaid', urgeCount: 0, urgeTimes: [], billId: 'BILL20260008', schoolYear: '2026-2027', chargeItem: '教材费' },
-    { sid: '2026010042', amount: '0', payStatus: 'channel', urgeCount: 0, urgeTimes: [], billId: 'BILL20260009', schoolYear: '2026-2027', chargeItem: '学费' }
+    { sid: '2026010042', amount: '0', payStatus: 'channel', urgeCount: 0, urgeTimes: [], billId: 'BILL20260009', schoolYear: '2026-2027', chargeItem: '学费' },
+    { sid: '2026010018', amount: '5,800', payStatus: 'partial', urgeCount: 0, urgeTimes: [], billId: 'BILL20260010', schoolYear: '2026-2027', chargeItem: '学费' },
+    { sid: '2026010027', amount: '3,200', payStatus: 'partial', urgeCount: 0, urgeTimes: [], billId: 'BILL20260011', schoolYear: '2026-2027', chargeItem: '学费' }
   ],
   documents: [
     { uid: 'doc-1', sid: '2026010001', status: MATERIAL_STATUS.PENDING, submittedAt: '05-15 14:32', tags: ['身份证', '录取通知书', '户口本', '证件照'], logs: [{ node: '学生提交', time: '2026-05-15 14:32', result: '已提交' }] },
@@ -741,7 +743,7 @@ export function urgeStudents(sids) {
   const time = nowText()
   let changedItem = null
   list.forEach(item => {
-    if (sids.includes(item.sid) && ['unpaid', 'overdue'].includes(item.payStatus)) {
+    if (sids.includes(item.sid) && ['unpaid', 'overdue', 'partial'].includes(item.payStatus)) {
       item.urgeCount = (item.urgeCount || 0) + 1
       item.urgeTimes = item.urgeTimes || []
       item.urgeTimes.unshift(time)

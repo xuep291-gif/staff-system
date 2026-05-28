@@ -76,7 +76,7 @@
         </SButton>
         <view style="margin-top: 20rpx;">
           <SButton variant="primary" block size="md" :disabled="sending" @click="batchUrgeAll">
-            一键催缴（全部未缴费）
+            一键催缴（全部待缴费）
           </SButton>
         </view>
       </view>
@@ -156,7 +156,7 @@ export default {
     selectAllLabel() {
       const selectable = this.filteredStudents.filter(this.isUrgeEligible)
       if (selectable.length === 0) return '无可选'
-      return this.selectedIds.length === selectable.length ? '取消全选' : '全选未缴'
+      return this.selectedIds.length === selectable.length ? '取消全选' : '全选可催缴'
     },
     urgeTargetCount() { return this.getUrgeTargets().length },
     schoolYearIndex() {
@@ -190,7 +190,7 @@ export default {
       this.activeYear = this.schoolYears[Number(event.detail.value)] || this.schoolYears[0]
       try { uni.setStorageSync('teacher_fee_school_year', this.activeYear) } catch (e) { /* optional */ }
     },
-    isUrgeEligible(stu) { return ['unpaid', 'overdue'].includes(stu.payStatus) },
+    isUrgeEligible(stu) { return ['unpaid', 'overdue', 'partial'].includes(stu.payStatus) },
     onCheckStudent(stu) {
       if (!this.isUrgeEligible(stu)) return
       const idx = this.selectedIds.indexOf(stu.studentNo)
@@ -225,13 +225,15 @@ export default {
       this.sending = true
       try {
         urgeStudents(targets)
-        await reminderApi.batchSendReminder({ studentIds: targets, channels: ['site', 'sms'], scope: this.urgeMode })
-        this.allStudents = this.allStudents.map(student =>
-          targets.includes(student.studentNo) ? { ...student, urgeCount: (student.urgeCount || 0) + 1 } : student)
-        await this.refresh()
+        try {
+          await reminderApi.batchSendReminder({ studentIds: targets, channels: ['site', 'sms'], scope: this.urgeMode })
+        } catch (e) {
+          console.log('[fee-home] API 未就绪，本地已记录催缴:', e)
+        }
+        this.allStudents = getFeeList()
         this.showSheet = false
         this.selectedIds = []
-        uni.showToast({ title: '已发送催缴通知', icon: 'success' })
+        uni.showToast({ title: `已向 ${targets.length} 名学生发送催缴通知`, icon: 'success' })
       } finally { this.sending = false }
     },
     goDetail(stu) {

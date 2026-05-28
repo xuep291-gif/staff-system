@@ -30,7 +30,7 @@
       <StatusTabs tabGroup="feeHome" :tabs="paymentTabs" @change="onTabClick" />
 
       <!-- 学生列表卡片 -->
-      <SCard :padding="0">
+      <SCard :padding="0" :key="'scard-' + filterVersion">
         <template #header>
           <text class="card-ttl">学生列表</text>
         </template>
@@ -163,7 +163,7 @@ export default {
     formattedOutstanding() { return this.formatMoney(this.stats.outstandingAmount) }
   },
   watch: {
-    activeTab() { this.selectedIds = [] }
+    activeTab() { this.selectedIds = []; this.filterVersion++ }
   },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {

@@ -71,38 +71,16 @@
 
       <!-- §6.10 操作按钮 -->
       <view class="btn-area">
-        <SButton variant="secondary" block size="md" @click="openSheet('selected')">
-          催缴选中（{{ selectedIds.length }}人）
+        <SButton variant="secondary" block size="md" :disabled="sending" @click="confirmSendSelected">
+          确认发送（{{ selectedIds.length }}人）
         </SButton>
         <view style="margin-top: 20rpx;">
-          <SButton variant="primary" block size="md" :disabled="sending" @click="batchUrgeAll">
+          <SButton variant="primary" block size="md" :disabled="sending" @click="confirmSendAll">
             一键催缴（全部待缴费）
           </SButton>
         </view>
       </view>
     </scroll-view>
-
-    <!-- §6.25 催缴确认 BottomSheet -->
-    <SBottomSheet v-model="showSheet" :title="urgeDone ? '' : '确认发送催缴通知'" :closable="!sending">
-      <template v-if="urgeDone">
-        <view class="urge-ok">
-          <text class="urge-ok-icon">✓</text>
-          <text class="urge-ok-text">催缴成功</text>
-          <text class="urge-ok-sub">已向 {{ urgeDoneCount }} 名学生发送缴费提醒</text>
-        </view>
-      </template>
-      <template v-else>
-        <text class="smsg">即将向 {{ urgeTargetCount }} 名学生发送缴费提醒通知，确认发送？</text>
-        <view class="send-preview" v-if="urgeTargetCount > 0">
-          <view v-if="sending" class="spin" />
-          <text>{{ sending ? '正在发送催缴通知…' : '本次发送对象会逐一记录催缴次数和时间' }}</text>
-        </view>
-        <view class="brow">
-          <SButton variant="danger" block size="md" @click="showSheet = false">取消</SButton>
-          <SButton variant="primary" block size="md" :disabled="sending" @click="confirmUrge">确认发送</SButton>
-        </view>
-      </template>
-    </SBottomSheet>
   </view>
 </template>
 
@@ -115,7 +93,6 @@ import SButton from '@/components/shared/SButton.vue'
 import SProgressBar from '@/components/shared/SProgressBar.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import SCheckbox from '@/components/shared/SCheckbox.vue'
-import SBottomSheet from '@/components/shared/SBottomSheet.vue'
 import { getFeeList, getPaymentSummary, urgeStudents } from '@/utils/businessState.js'
 import { reminderApi } from '@/common/api/reminder.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
@@ -130,15 +107,11 @@ const PAYMENT_KEY_STATUS_MAP = {
 
 export default {
   name: 'TeacherFeeHome',
-  components: { SNavBar, StatusTabs, SCard, SBadge, SButton, SProgressBar, SEmpty, SCheckbox, SBottomSheet },
+  components: { SNavBar, StatusTabs, SCard, SBadge, SButton, SProgressBar, SEmpty, SCheckbox },
   data() {
     return {
       selectedIds: [],
-      showSheet: false,
-      urgeMode: 'selected',
       sending: false,
-      urgeDone: false,
-      urgeDoneCount: 0,
       activeTab: 'unpaid',
       filterVersion: 0,
       contentKey: 0,
@@ -169,7 +142,6 @@ export default {
       if (selectable.length === 0) return '无可选'
       return this.selectedIds.length === selectable.length ? '取消全选' : '全选可催缴'
     },
-    urgeTargetCount() { return this.getUrgeTargets().length },
     schoolYearIndex() {
       const index = this.schoolYears.indexOf(this.activeYear)
       return index >= 0 ? index : 0
@@ -214,34 +186,28 @@ export default {
       if (this.selectedIds.length === selectable.length) this.selectedIds = []
       else this.selectedIds = selectable.map(s => s.studentNo)
     },
-    openSheet(mode = 'selected') {
-      if (mode === 'selected' && this.selectedIds.length === 0) {
+    confirmSendSelected() {
+      if (this.selectedIds.length === 0) {
         uni.showToast({ title: '请先选择学生', icon: 'none' })
         return
       }
-      this.urgeMode = mode
-      this.urgeDone = false
-      this.showSheet = true
+      this.doSendUrge(this.selectedIds)
     },
-    getUrgeTargets() {
-      if (this.urgeMode === 'all') return this.allStudents.filter(this.isUrgeEligible).map(s => s.studentNo)
-      return this.selectedIds
-    },
-    confirmUrge() {
-      console.log('[fee-home] confirmUrge called')
-      if (this.sending) return
-      const targets = this.getUrgeTargets()
-      console.log('[fee-home] targets:', targets)
+    confirmSendAll() {
+      const targets = this.allStudents.filter(this.isUrgeEligible).map(s => s.studentNo)
       if (targets.length === 0) {
         uni.showToast({ title: '没有需要催缴的学生', icon: 'none' })
         return
       }
+      this.doSendUrge(targets)
+    },
+    doSendUrge(targets) {
+      if (this.sending) return
       this.sending = true
       urgeStudents(targets)
-      reminderApi.batchSendReminder({ studentIds: targets, channels: ['site', 'sms'], scope: this.urgeMode })
+      reminderApi.batchSendReminder({ studentIds: targets, channels: ['site', 'sms'], scope: 'selected' })
         .catch(e => console.log('[fee-home] API 未就绪，本地已记录催缴:', e))
       this.allStudents = getFeeList()
-      this.showSheet = false
       this.selectedIds = []
       this.sending = false
       uni.hideLoading()
@@ -257,12 +223,6 @@ export default {
       rememberStaffBackTarget('/pages/teacher/fee-home/index')
       uni.navigateTo({ url: `/pages/teacher/student-detail/index?id=${stu.studentId}&sid=${stu.studentNo}` })
     },
-    batchUrgeAll() {
-      const targets = this.allStudents.filter(this.isUrgeEligible)
-      if (targets.length === 0) return uni.showToast({ title: '没有需要催缴的学生', icon: 'none' })
-      this.selectedIds = targets.map(s => s.studentNo)
-      this.openSheet('all')
-    },
     refresh() {
       this.allStudents = getFeeList()
       console.log('[fee-home] refresh done, allStudents count:', this.allStudents.length, 'activeTab:', this.activeTab)
@@ -277,9 +237,7 @@ export default {
     try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     try { this.activeYear = uni.getStorageSync('teacher_fee_school_year') || this.activeYear } catch (e) { /* optional */ }
     this.refresh()
-    this.showSheet = false
     this.sending = false
-    this.urgeDone = false
   }
 }
 </script>
@@ -363,47 +321,4 @@ export default {
 
 /* ── 按钮区 ── */
 .btn-area { padding: 8rpx 28rpx 40rpx; }
-
-/* ── BottomSheet 内容 ── */
-.smsg { font-size: var(--fs-13); color: var(--N500); text-align: center; line-height: 1.6; display: block; }
-.send-preview {
-  display: flex; align-items: center; justify-content: center;
-  min-height: 56rpx; padding: 12rpx 16rpx;
-  border-radius: var(--r-8);
-  background: var(--brand-t); color: var(--brand);
-  font-size: var(--fs-12);
-  > * + * { margin-left: 12rpx; }
-}
-.spin {
-  width: 28rpx; height: 28rpx;
-  border: 4rpx solid rgba(43,108,176,.18);
-  border-top-color: var(--brand);
-  border-radius: var(--r-full);
-  animation: spin .7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.brow { display: flex; }
-.brow > * + * { margin-left: 16rpx; }
-
-.urge-ok {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 32rpx 0;
-}
-.urge-ok-icon {
-  width: 96rpx; height: 96rpx;
-  background: var(--ok);
-  border-radius: var(--r-full);
-  color: var(--white);
-  font-size: var(--fs-22); font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-}
-.urge-ok-text {
-  margin-top: 24rpx;
-  font-size: var(--fs-16); font-weight: 600;
-  color: var(--N900);
-}
-.urge-ok-sub {
-  margin-top: 12rpx;
-  font-size: var(--fs-12); color: var(--N500);
-}
 </style>

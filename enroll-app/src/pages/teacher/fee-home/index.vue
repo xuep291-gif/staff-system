@@ -83,16 +83,25 @@
     </scroll-view>
 
     <!-- §6.25 催缴确认 BottomSheet -->
-    <SBottomSheet v-model="showSheet" title="确认发送催缴通知">
-      <text class="smsg">即将向 {{ urgeTargetCount }} 名学生发送缴费提醒通知，确认发送？</text>
-      <view class="send-preview" v-if="urgeTargetCount > 0">
-        <view v-if="sending" class="spin" />
-        <text>{{ sending ? '正在发送催缴通知…' : '本次发送对象会逐一记录催缴次数和时间' }}</text>
-      </view>
-      <view class="brow">
-        <SButton variant="danger" block size="md" @click="showSheet = false">取消</SButton>
-        <SButton variant="primary" block size="md" :disabled="sending" @click="confirmUrge">确认发送</SButton>
-      </view>
+    <SBottomSheet v-model="showSheet" :title="urgeDone ? '' : '确认发送催缴通知'" :closable="!sending">
+      <template v-if="urgeDone">
+        <view class="urge-ok">
+          <text class="urge-ok-icon">✓</text>
+          <text class="urge-ok-text">催缴成功</text>
+          <text class="urge-ok-sub">已向 {{ urgeDoneCount }} 名学生发送缴费提醒</text>
+        </view>
+      </template>
+      <template v-else>
+        <text class="smsg">即将向 {{ urgeTargetCount }} 名学生发送缴费提醒通知，确认发送？</text>
+        <view class="send-preview" v-if="urgeTargetCount > 0">
+          <view v-if="sending" class="spin" />
+          <text>{{ sending ? '正在发送催缴通知…' : '本次发送对象会逐一记录催缴次数和时间' }}</text>
+        </view>
+        <view class="brow">
+          <SButton variant="danger" block size="md" @click="showSheet = false">取消</SButton>
+          <SButton variant="primary" block size="md" :disabled="sending" @click="confirmUrge">确认发送</SButton>
+        </view>
+      </template>
     </SBottomSheet>
   </view>
 </template>
@@ -128,6 +137,8 @@ export default {
       showSheet: false,
       urgeMode: 'selected',
       sending: false,
+      urgeDone: false,
+      urgeDoneCount: 0,
       activeTab: 'unpaid',
       filterVersion: 0,
       contentKey: 0,
@@ -209,6 +220,7 @@ export default {
         return
       }
       this.urgeMode = mode
+      this.urgeDone = false
       this.showSheet = true
     },
     getUrgeTargets() {
@@ -227,12 +239,14 @@ export default {
       reminderApi.batchSendReminder({ studentIds: targets, channels: ['site', 'sms'], scope: this.urgeMode })
         .catch(e => console.log('[fee-home] API 未就绪，本地已记录催缴:', e))
       this.allStudents = getFeeList()
-      this.showSheet = false
       this.selectedIds = []
+      this.urgeDoneCount = targets.length
+      this.urgeDone = true
+      this.sending = false
       setTimeout(() => {
-        this.sending = false
-        uni.showToast({ title: '催缴成功', icon: 'success' })
-      }, 300)
+        this.showSheet = false
+        setTimeout(() => { this.urgeDone = false }, 300)
+      }, 1200)
     },
     goDetail(stu) {
       console.log('[fee-home] goDetail navigateTo student-detail')
@@ -261,6 +275,7 @@ export default {
     this.refresh()
     this.showSheet = false
     this.sending = false
+    this.urgeDone = false
   }
 }
 </script>
@@ -365,4 +380,26 @@ export default {
 @keyframes spin { to { transform: rotate(360deg); } }
 .brow { display: flex; }
 .brow > * + * { margin-left: 16rpx; }
+
+.urge-ok {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 32rpx 0;
+}
+.urge-ok-icon {
+  width: 96rpx; height: 96rpx;
+  background: var(--ok);
+  border-radius: var(--r-full);
+  color: var(--white);
+  font-size: var(--fs-22); font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.urge-ok-text {
+  margin-top: 24rpx;
+  font-size: var(--fs-16); font-weight: 600;
+  color: var(--N900);
+}
+.urge-ok-sub {
+  margin-top: 12rpx;
+  font-size: var(--fs-12); color: var(--N500);
+}
 </style>

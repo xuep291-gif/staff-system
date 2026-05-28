@@ -2,7 +2,7 @@
   <view class="page">
     <SNavBar title="线下收款确认" :showBack="true" fallbackUrl="/pages/finance/home/index" />
 
-    <StatusTabs tabGroup="financeCollect" :tabs="tabs" v-model="activeTab" @change="onTabChanged" />
+    <StatusTabs tabGroup="financeCollect" :tabs="tabs" :modelValue="activeTab" @change="onTabClick" />
 
     <!-- Tab 待确认 -->
     <view class="list-section" v-if="activeTab === 'pending'" key="tab-pending">
@@ -256,12 +256,6 @@ export default {
       return index >= 0 ? index : 0
     }
   },
-  watch: {
-    activeTab(key) {
-      this.filterVersion++
-      setActiveKey('financeCollect', key)
-    }
-  },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
       if (collection === 'offlineCollections') this.refresh()
@@ -289,8 +283,11 @@ export default {
       }
     },
 
-    onTabChanged(key) {
-      // v-model 已设置 activeTab，watch 已处理 filterVersion 和 setActiveKey
+    onTabClick(key) {
+      if (this.activeTab === key) return
+      this.activeTab = key
+      this.filterVersion++
+      setActiveKey('financeCollect', key)
     },
 
     onItemClick(item) {
@@ -397,7 +394,7 @@ export default {
         this.refresh()
         uni.showToast({ title: '线下收款已确认', icon: 'success' })
         this.$nextTick(() => {
-          this.activeTab = 'confirmed'
+          this.onTabClick('confirmed')
         })
       } catch (e) {
         uni.showToast({ title: '确认失败，请重试', icon: 'none' })
@@ -407,7 +404,7 @@ export default {
     },
 
     onViewMore() {
-      this.activeTab = 'pending'
+      this.onTabClick('pending')
     },
 
     onVoidClick(item) {

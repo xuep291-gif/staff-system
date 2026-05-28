@@ -1,7 +1,7 @@
 <template>
   <view class="page">
-    <SNavBar title="退费审核" :showBack="true" />
-    <StatusTabs tabGroup="financeRefund" :tabs="tabs" />
+    <SNavBar title="退费审核" :showBack="true" fallbackUrl="/pages/finance/home/index" />
+    <StatusTabs tabGroup="financeRefund" :tabs="tabs" :modelValue="activeTab" @change="onTabClick" />
     <scroll-view scroll-y class="body">
       <view v-if="filteredList.length" class="list">
         <view class="item" v-for="item in filteredList" :key="item.uid" @click="openSheet(item)">
@@ -94,6 +94,7 @@ export default {
     return {
       REFUND_STATUS,
 
+      activeTab: 'pending',
       list: [],
       showSheet: false,
       showPreview: false,
@@ -104,7 +105,6 @@ export default {
     }
   },
   computed: {
-    activeTab() { return getActiveKey('financeRefund', 'pending') },
     tabs() {
       return buildRefundTabs(this.list).map((tab, i) => ({
         ...tab,
@@ -132,12 +132,13 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   async onShow() {
+    this.activeTab = getActiveKey('financeRefund', 'pending')
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* ignore */ }
     this.refresh(true)
   },
   methods: {
-    onTabChange(key) {
-      setActiveKey('financeRefund', key)
-      console.log('退费审核切换:', key)
+    onTabClick(key) {
+      this.activeTab = key
     },
     refresh(syncChangedTab = false) {
       this.list = getRefundList()
@@ -150,7 +151,9 @@ export default {
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
       const idx = getRefundTabIndex(item)
-      setActiveKey('financeRefund', REFUND_KEY_MAP[idx] || 'pending')
+      const key = REFUND_KEY_MAP[idx] || 'pending'
+      this.activeTab = key
+      setActiveKey('financeRefund', key)
     },
     openSheet(item) {
       this.currentItem = item

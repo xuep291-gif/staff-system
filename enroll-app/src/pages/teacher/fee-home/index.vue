@@ -1,7 +1,7 @@
 <template>
   <view class="page">
     <SNavBar title="缴费管理" :showBack="true" fallbackUrl="/pages/teacher/home/index" />
-    <scroll-view scroll-y class="sbody">
+    <view class="top-area">
       <view class="year-row">
         <text class="year-label">当前学年</text>
         <picker :range="schoolYears" :value="schoolYearIndex" @change="onYearChange">
@@ -25,10 +25,12 @@
           <text class="outstanding-amount">¥{{ formattedOutstanding }}</text>
         </view>
       </SCard>
+    </view>
 
-      <!-- §6.19 下划线式 Tab -->
-      <StatusTabs tabGroup="feeHome" :tabs="paymentTabs" @change="onTabClick" />
+    <!-- §6.19 下划线式 Tab（在 scroll-view 外部，避免触摸事件冲突） -->
+    <StatusTabs tabGroup="feeHome" :tabs="paymentTabs" :modelValue="activeTab" @change="onTabClick" />
 
+    <scroll-view scroll-y class="sbody">
       <!-- 学生列表卡片 -->
       <view :key="'scard-wrap-' + contentKey">
         <SCard :padding="0">
@@ -46,7 +48,7 @@
             class="stu-item"
             :class="{ selected: selectedIds.includes(stu.studentNo) }"
             v-for="stu in filteredStudents"
-            :key="filterVersion + '-' + stu.studentNo"
+            :key="activeTab + '-' + filterVersion + '-' + selectionVersion + '-' + stu.studentNo"
           >
             <view class="stu-check" @click="onCheckStudent(stu)">
               <SCheckbox :modelValue="selectedIds.includes(stu.studentNo)" :disabled="!isUrgeEligible(stu)" />
@@ -115,6 +117,7 @@ export default {
       activeTab: 'unpaid',
       filterVersion: 0,
       contentKey: 0,
+      selectionVersion: 0,
       allStudents: [],
       activeYear: '2025-2026学年',
       schoolYears: ['2025-2026学年', '2024-2025学年']
@@ -148,9 +151,6 @@ export default {
     },
     formattedOutstanding() { return this.formatMoney(this.stats.outstandingAmount) }
   },
-  watch: {
-    activeTab() { this.selectedIds = []; this.filterVersion++ }
-  },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
       if (collection === 'fees') this.refresh()
@@ -165,8 +165,13 @@ export default {
       this.onTabClick(key)
     },
     onTabClick(key) {
-      console.log('[fee-home] onTabClick key=', key)
+      console.log('[fee-home] onTabClick key=', key, 'current=', this.activeTab)
+      if (this.activeTab === key) return
       this.activeTab = key
+      this.selectedIds = []
+      this.filterVersion++
+      this.contentKey++
+      this.selectionVersion++
       setActiveKey('feeHome', key)
     },
     onYearChange(event) {
@@ -176,15 +181,19 @@ export default {
     isUrgeEligible(stu) { return ['unpaid', 'overdue', 'partial'].includes(stu.payStatus) },
     onCheckStudent(stu) {
       if (!this.isUrgeEligible(stu)) return
-      const idx = this.selectedIds.indexOf(stu.studentNo)
-      if (idx > -1) this.selectedIds.splice(idx, 1)
-      else this.selectedIds.push(stu.studentNo)
+      if (this.selectedIds.includes(stu.studentNo)) {
+        this.selectedIds = this.selectedIds.filter(id => id !== stu.studentNo)
+      } else {
+        this.selectedIds = this.selectedIds.concat(stu.studentNo)
+      }
+      this.selectionVersion++
     },
     toggleSelectAll() {
       const selectable = this.filteredStudents.filter(this.isUrgeEligible)
       if (selectable.length === 0) return
       if (this.selectedIds.length === selectable.length) this.selectedIds = []
       else this.selectedIds = selectable.map(s => s.studentNo)
+      this.selectionVersion++
     },
     confirmSendSelected() {
       if (this.selectedIds.length === 0) {
@@ -209,6 +218,7 @@ export default {
         .catch(e => console.log('[fee-home] API 未就绪，本地已记录催缴:', e))
       this.allStudents = getFeeList()
       this.selectedIds = []
+      this.selectionVersion++
       this.sending = false
       uni.hideLoading()
       uni.showModal({
@@ -244,6 +254,7 @@ export default {
 
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
+.top-area { flex-shrink: 0; }
 .sbody { height: 0; flex: 1; padding-bottom: 40rpx; overflow-y: scroll; }
 
 .year-row {

@@ -6,7 +6,7 @@
         :key="tab.key"
         class="status-tab"
         :class="{ active: tab.key === activeKey }"
-        @tap.stop="onSelect(tab.key)"
+        @tap="onSelect(tab.key)"
       >
         <text class="status-tab-label">{{ tab.label }}</text>
         <text class="status-tab-count">{{ tab.count }}</text>
@@ -29,8 +29,9 @@ export default {
   },
   computed: {
     activeKey() {
+      if (this.modelValue) return this.modelValue
       const ns = this.tabGroup || 'default'
-      const fallback = this.modelValue || this.tabs[0]?.key || ''
+      const fallback = this.tabs[0]?.key || ''
       return getActiveKey(ns, fallback)
     },
     activeIndex() {

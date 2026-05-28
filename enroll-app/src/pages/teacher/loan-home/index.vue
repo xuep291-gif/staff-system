@@ -1,10 +1,10 @@
 <template>
   <view class="page">
-    <SNavBar title="助学贷款" :showBack="true" />
-    <StatusTabs tabGroup="teacherLoanHome" :tabs="tabs" />
+    <SNavBar title="助学贷款" :showBack="true" fallbackUrl="/pages/teacher/home/index" />
+    <StatusTabs tabGroup="teacherLoanHome" :tabs="tabs" @change="onTabClick" />
     <scroll-view scroll-y class="body">
       <view class="sc">
-        <view class="card" v-for="item in filteredList" :key="item.uid" @click="goDetail(item)">
+        <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="goDetail(item)">
           <view class="card-bd">
             <view class="li">
               <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>
@@ -39,13 +39,13 @@ export default {
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
     return {
-
+      activeTab: 'pending',
+      filterVersion: 0,
       list: [],
       lastSyncedChange: ''
     }
   },
   computed: {
-    activeTab() { return getActiveKey('teacherLoanHome', 'pending') },
     tabs() {
       return buildReviewTabs(this.list, 'teacher').map((tab, i) => ({
         ...tab,
@@ -57,6 +57,9 @@ export default {
       return filterReviewByTab(this.list, 'teacher', idx >= 0 ? idx : 0)
     }
   },
+  watch: {
+    activeTab() { this.filterVersion++ }
+  },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
       if (collection === 'loans') this.refresh(true)
@@ -67,12 +70,16 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   async onShow() {
+    this.activeTab = getActiveKey('teacherLoanHome', 'pending')
+    this.filterVersion++
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
   },
   methods: {
-    onTabChange(key) {
+    onTabClick(key) {
+      console.log('[loan-home] onTabClick key=', key)
+      this.activeTab = key
       setActiveKey('teacherLoanHome', key)
-      console.log('助学贷款切换:', key)
     },
     refresh(syncChangedTab = false) {
       const rows = getReviewList('loans')

@@ -1,18 +1,18 @@
 <template>
   <view class="page">
-    <SNavBar title="资料审核" showBack>
+    <SNavBar title="资料审核" showBack fallbackUrl="/pages/teacher/home/index">
       <template #right>
         <text class="nav-right-text">班主任初核</text>
       </template>
     </SNavBar>
 
-    <StatusTabs tabGroup="teacherDocHome" :tabs="tabs" />
+    <StatusTabs tabGroup="teacherDocHome" :tabs="tabs" @change="onTabClick" />
 
     <view class="tab-content">
       <view
         class="student-card"
         v-for="item in filteredList"
-        :key="item.uid"
+        :key="filterVersion + '-' + item.uid"
       >
         <view class="card-row-between">
           <view class="card-left" @click="goDetail(item)">
@@ -61,10 +61,9 @@ export default {
   name: 'TeacherDocHome',
   components: { SNavBar, StatusTabs, SBadge },
   data() {
-    return { list: [], lastSyncedChange: '' }
+    return { activeTab: 'pending', filterVersion: 0, list: [], lastSyncedChange: '' }
   },
   computed: {
-    activeTab() { return getActiveKey('teacherDocHome', 'pending') },
     tabs() {
       return [
         { key: 'pending', label: '待审核', count: this.list.filter(i => DOC_KEY_STATUS_MAP.pending.includes(i.status)).length },
@@ -81,6 +80,9 @@ export default {
       return map[this.activeTab] || '暂无资料'
     }
   },
+  watch: {
+    activeTab() { this.filterVersion++ }
+  },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
       if (collection === 'documents') this.refresh(true)
@@ -91,12 +93,16 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   onShow() {
+    this.activeTab = getActiveKey('teacherDocHome', 'pending')
+    this.filterVersion++
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
   },
   methods: {
-    onTabChange(key) {
+    onTabClick(key) {
+      console.log('[doc-home] onTabClick key=', key)
+      this.activeTab = key
       setActiveKey('teacherDocHome', key)
-      console.log('资料审核切换:', key)
     },
     refresh(syncChangedTab = false) {
       this.list = getReviewList('documents')

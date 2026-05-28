@@ -1,12 +1,12 @@
 <template>
   <view class="page">
-    <SNavBar title="换宿审核" :showBack="true" />
-    <StatusTabs tabGroup="teacherRoomChange" :tabs="tabs" />
+    <SNavBar title="换宿审核" :showBack="true" fallbackUrl="/pages/teacher/home/index" />
+    <StatusTabs tabGroup="teacherRoomChange" :tabs="tabs" @change="onTabClick" />
     <scroll-view scroll-y class="body">
       <view
         class="review-card"
         v-for="item in filteredList"
-        :key="item.uid"
+        :key="filterVersion + '-' + item.uid"
         @click="goReview(item)"
       >
         <view class="avatar">{{ item.avatar }}</view>
@@ -41,10 +41,9 @@ export default {
   name: 'TeacherRoomChange',
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
-    return { list: [], lastSyncedChange: '' }
+    return { activeTab: 'pending', filterVersion: 0, list: [], lastSyncedChange: '' }
   },
   computed: {
-    activeTab() { return getActiveKey('teacherRoomChange', 'pending') },
     tabs() {
       return buildDormReviewTabs(this.list).map((tab, i) => ({
         ...tab,
@@ -56,6 +55,9 @@ export default {
       return filterDormReviewByTab(this.list, idx >= 0 ? idx : 0)
     }
   },
+  watch: {
+    activeTab() { this.filterVersion++ }
+  },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
       if (collection === 'roomChanges') this.refresh(true)
@@ -66,12 +68,16 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   async onShow() {
+    this.activeTab = getActiveKey('teacherRoomChange', 'pending')
+    this.filterVersion++
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
   },
   methods: {
-    onTabChange(key) {
+    onTabClick(key) {
+      console.log('[room-change] onTabClick key=', key)
+      this.activeTab = key
       setActiveKey('teacherRoomChange', key)
-      console.log('换宿审核切换:', key)
     },
     refresh(syncChangedTab = false) {
       this.list = getDormReviewList('roomChanges')

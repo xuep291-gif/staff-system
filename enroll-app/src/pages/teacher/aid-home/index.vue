@@ -1,18 +1,18 @@
 <template>
   <view class="page">
-    <SNavBar title="助学金审核" showBack>
+    <SNavBar title="助学金审核" showBack fallbackUrl="/pages/teacher/home/index">
       <template #right>
         <text class="nav-right">初审</text>
       </template>
     </SNavBar>
 
-    <StatusTabs tabGroup="teacherAidHome" :tabs="tabs" />
+    <StatusTabs tabGroup="teacherAidHome" :tabs="tabs" @change="onTabClick" />
 
     <scroll-view scroll-y class="body">
       <SCard :padding="0" v-if="filteredList.length">
         <SListItem
           v-for="item in filteredList"
-          :key="item.uid"
+          :key="filterVersion + '-' + item.uid"
           :avatar="item.name.charAt(0)"
           :avatarBg="'var(--brand-t)'"
           showArrow
@@ -59,13 +59,13 @@ export default {
   components: { SNavBar, StatusTabs, SCard, SListItem, SBadge, SEmpty },
   data() {
     return {
-
+      activeTab: 'pending',
+      filterVersion: 0,
       list: [],
       lastSyncedChange: ''
     }
   },
   computed: {
-    activeTab() { return getActiveKey('teacherAidHome', 'pending') },
     tabs() {
       return buildReviewTabs(this.list, 'teacher').map((tab, i) => ({
         ...tab,
@@ -77,6 +77,9 @@ export default {
       return filterReviewByTab(this.list, 'teacher', idx >= 0 ? idx : 0)
     }
   },
+  watch: {
+    activeTab() { this.filterVersion++ }
+  },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
       if (collection === 'aids') this.refresh(true)
@@ -87,12 +90,16 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   async onShow() {
+    this.activeTab = getActiveKey('teacherAidHome', 'pending')
+    this.filterVersion++
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
   },
   methods: {
-    onTabChange(key) {
+    onTabClick(key) {
+      console.log('[aid-home] onTabClick key=', key)
+      this.activeTab = key
       setActiveKey('teacherAidHome', key)
-      console.log('助学金审核切换:', key)
     },
     refresh(syncChangedTab = false) {
       this.list = getReviewList('aids')

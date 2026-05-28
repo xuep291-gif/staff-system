@@ -215,7 +215,7 @@ export default {
       if (this.urgeMode === 'all') return this.allStudents.filter(this.isUrgeEligible).map(s => s.studentNo)
       return this.selectedIds
     },
-    async confirmUrge() {
+    confirmUrge() {
       if (this.sending) return
       const targets = this.getUrgeTargets()
       if (targets.length === 0) {
@@ -229,8 +229,10 @@ export default {
       this.allStudents = getFeeList()
       this.showSheet = false
       this.selectedIds = []
-      this.sending = false
-      uni.showToast({ title: `已向 ${targets.length} 名学生发送催缴通知`, icon: 'success' })
+      setTimeout(() => {
+        this.sending = false
+        uni.showToast({ title: '催缴成功', icon: 'success' })
+      }, 300)
     },
     goDetail(stu) {
       console.log('[fee-home] goDetail navigateTo student-detail')

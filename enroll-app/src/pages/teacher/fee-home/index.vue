@@ -30,7 +30,8 @@
       <StatusTabs tabGroup="feeHome" :tabs="paymentTabs" @change="onTabClick" />
 
       <!-- 学生列表卡片 -->
-      <SCard :padding="0" :key="'scard-' + filterVersion">
+      <view :key="'scard-wrap-' + contentKey">
+        <SCard :padding="0">
         <template #header>
           <text class="card-ttl">学生列表</text>
         </template>
@@ -66,6 +67,7 @@
           <SEmpty v-if="filteredStudents.length === 0" text="暂无数据" />
         </view>
       </SCard>
+      </view>
 
       <!-- §6.10 操作按钮 -->
       <view class="btn-area">
@@ -128,6 +130,7 @@ export default {
       sending: false,
       activeTab: 'unpaid',
       filterVersion: 0,
+      contentKey: 0,
       allStudents: [],
       activeYear: '2025-2026学年',
       schoolYears: ['2025-2026学年', '2024-2025学年']
@@ -181,7 +184,6 @@ export default {
     onTabClick(key) {
       console.log('[fee-home] onTabClick key=', key)
       this.activeTab = key
-      this.filterVersion++
       setActiveKey('feeHome', key)
     },
     onYearChange(event) {
@@ -253,6 +255,7 @@ export default {
     console.log('[fee-home] onShow fired')
     this.activeTab = getActiveKey('feeHome', 'unpaid')
     this.filterVersion++
+    this.contentKey++
     try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     try { this.activeYear = uni.getStorageSync('teacher_fee_school_year') || this.activeYear } catch (e) { /* optional */ }
     this.refresh()

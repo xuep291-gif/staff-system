@@ -235,12 +235,100 @@ export default {
 
 ---
 
+## Phase 4: 修复切 tab 时页面布局横向偏移
+
+### 问题表现
+
+切换 tab 时，整个页面横向偏移约 17px（浏览器滚动条宽度）。通常发生在内容数量差异大的 tab 之间（如"未缴费"切到"绿色通道"）。
+
+### 根本原因
+
+两层问题叠加：
+
+| 层级 | 原因 | 表现 |
+|------|------|------|
+| SCard `:key` 随 tab 变化 | SCard 每次切 tab 都销毁重建，内容瞬间为空 | 滚动条消失 → 偏移 |
+| `overflow-y: auto`（默认） | 内容短时无滚动条，内容长时有滚动条 | 页面宽度变化 17px |
+
+### 修复方案
+
+#### 4.1 SCard 不随 tab 切换重建
+
+**问题代码：**
+
+```html
+<!-- ❌ 每次切 tab 都销毁重建 SCard -->
+<SCard :padding="0" :key="'scard-' + filterVersion">
+```
+
+**修复代码：**
+
+```html
+<!-- ✅ 用 contentKey 包裹，仅在 onShow 返回时重建 -->
+<view :key="'scard-wrap-' + contentKey">
+  <SCard :padding="0">
+    ...
+  </SCard>
+</view>
+```
+
+```js
+data() {
+  return {
+    filterVersion: 0,   // 切 tab / onShow 都递增，用于 v-for key
+    contentKey: 0,      // 仅在 onShow 递增，用于包裹 SCard 的 key
+  }
+},
+watch: {
+  activeTab() { this.selectedIds = []; this.filterVersion++ }
+  // 注意：不再额外操作 contentKey
+},
+onTabClick(key) {
+  this.activeTab = key
+  setActiveKey('feeHome', key)
+  // 注意：不再手动 this.filterVersion++，watch 已处理
+},
+onShow() {
+  this.activeTab = getActiveKey('feeHome', 'unpaid')
+  this.filterVersion++  // v-for 列表重建
+  this.contentKey++     // SCard 包装器重建（仅返回时）
+  this.refresh()
+}
+```
+
+**关键区别：**
+- `filterVersion`：切 tab 时 watch 递增，驱动 v-for 列表项重建
+- `contentKey`：仅 onShow 递增，驱动 SCard 包装 view 重建。切 tab 时不变 → SCard 不销毁
+
+#### 4.2 强制滚动条常驻
+
+```scss
+/* ✅ 强制始终显示垂直滚动条，消除内容高度变化导致的宽度跳变 */
+.sbody { height: 0; flex: 1; padding-bottom: 40rpx; overflow-y: scroll; }
+```
+
+`overflow-y: scroll` 与 `overflow-y: auto` 的区别：
+- `auto`：内容超出才显示滚动条（默认）→ 页面宽度不固定
+- `scroll`：始终显示滚动条轨道 → 页面宽度恒定
+
+### 检查清单（追加）
+
+| # | 检查项 | 修改内容 |
+|---|--------|---------|
+| 12 | SCard 的 `:key` | 确认没有绑定 `filterVersion`。如需 Flow B 重建，改用外层 `<view :key="contentKey">` 包裹 |
+| 13 | scroll-view CSS | 添加 `overflow-y: scroll` 强制滚动条常驻 |
+| 14 | `onTabClick` | 确认方法内只做 `this.activeTab = key` + `setActiveKey(ns, key)`，不手动递增 `filterVersion`（由 watch 统一处理） |
+
+---
+
 ## 常见坑
 
 1. **`uni.removeStorageSync` 可能抛异常**：必须包裹 `try/catch`，storage 在非浏览器环境不可用
 2. **`filterVersion` 要放在 key 字符串前面**：`filterVersion + '-' + uid` 而非 `uid + '-' + filterVersion`，确保 Vue diff 识别为新 key
 3. **不要保留 `onHide` 中的内容销毁逻辑**：会干扰 `navigateBack` 导航动画和页面栈
 4. **`fallbackUrl` 仅当 `getCurrentPages().length === 1` 时生效**：配合 `onShow` 清除 `staff_back_target` 才能正常工作
+5. **切 tab 时 SCard 不能用 `filterVersion` 做 key**：会导致每次切 tab 都销毁重建，引起页面偏移。改用独立的 `contentKey` 仅在 onShow 递增
+6. **不同 tab 内容高度差异大时需强制滚动条**：`overflow-y: scroll` 防止滚动条出现/消失导致水平偏移
 
 ---
 

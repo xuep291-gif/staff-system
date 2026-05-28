@@ -5,7 +5,7 @@
     <StatusTabs tabGroup="financeCollect" :tabs="tabs" :modelValue="activeTab" @change="onTabClick" />
 
     <!-- Tab 待确认 -->
-    <view class="list-section" v-if="activeTab === 'pending'" key="tab-pending">
+    <view class="list-section" v-if="activeTab === 'pending'">
         <SEmpty v-if="!pendingList.length" text="当前暂无待确认线下收款" />
         <view
           class="list-item"
@@ -40,7 +40,7 @@
       </view>
 
       <!-- Tab 已确认 -->
-      <view class="list-section" v-else-if="activeTab === 'confirmed'" key="tab-confirmed">
+      <view class="list-section" v-if="activeTab === 'confirmed'">
         <SEmpty v-if="!confirmedList.length" text="当前暂无已确认线下收款" />
         <view
           class="list-item"
@@ -73,7 +73,7 @@
       </view>
 
       <!-- Tab 收款记录查询 -->
-      <view class="list-section" v-else key="tab-records">
+      <view class="list-section" v-if="activeTab === 'records'">
         <view class="filter-card">
           <input class="search-input" v-model.trim="filters.keyword" placeholder="姓名 / 学号 / 学院 / 时间" />
           <picker :range="paymentMethods" :value="paymentMethodIndex" @change="onPaymentFilterChange">

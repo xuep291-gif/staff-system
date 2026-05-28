@@ -2,7 +2,7 @@
   <view class="page">
     <SNavBar title="线下收款确认" :showBack="true" fallbackUrl="/pages/finance/home/index" />
 
-    <StatusTabs tabGroup="financeCollect" :tabs="tabs" />
+    <StatusTabs :tabs="tabs" v-model="currentTab" />
 
     <!-- Tab 待确认 -->
     <view class="list-section" v-if="currentTab === 'pending'">
@@ -187,7 +187,7 @@
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
-import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
+
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import { confirmOfflineCollection, voidOfflineCollection, getOfflineCollectionList, getStudentBill, generateReceiptNumber } from '@/utils/businessState.js'
@@ -198,8 +198,7 @@ export default {
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
     return {
-      _tabsId: '',
-      _tabs: null,
+      currentTab: 'pending',
       showSheet: false,
       currentItem: null,
       list: [],
@@ -215,20 +214,15 @@ export default {
     }
   },
   computed: {
-    currentTab() { return getActiveKey('financeCollect', 'pending') },
     canVoid() {
       return hasPermission('finance:void') || hasPermission('finance:admin')
     },
     tabs() {
-      const id = `${this.pendingList.length}|${this.confirmedList.length}|${this.recordList.length}`
-      if (this._tabsId === id) return this._tabs
-      this._tabsId = id
-      this._tabs = [
+      return [
         { key: 'pending', label: '待确认', count: this.pendingList.length },
         { key: 'confirmed', label: '已确认', count: this.confirmedList.length },
         { key: 'records', label: '记录查询', count: this.recordList.length }
       ]
-      return this._tabs
     },
     pendingList() {
       return this.list.filter(item => item.status === 'pending')
@@ -271,7 +265,7 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   onShow() {
-    setActiveKey('financeCollect', 'pending')
+    this.currentTab = 'pending'
     this.filters = { keyword: '', method: '全部方式' }
     try { uni.removeStorageSync('staff_back_target') } catch (e) { /* ignore */ }
     this.refresh()
@@ -285,10 +279,6 @@ export default {
           this.currentItem = { ...updated }
         }
       }
-    },
-
-    onTabChange(key) {
-      setActiveKey('financeCollect', key)
     },
 
     onItemClick(item) {
@@ -395,7 +385,7 @@ export default {
         this.refresh()
         uni.showToast({ title: '线下收款已确认', icon: 'success' })
         this.$nextTick(() => {
-          setActiveKey('financeCollect', 'confirmed')
+          this.currentTab = 'confirmed'
         })
       } catch (e) {
         uni.showToast({ title: '确认失败，请重试', icon: 'none' })
@@ -405,7 +395,7 @@ export default {
     },
 
     onViewMore() {
-      setActiveKey('financeCollect', 'pending')
+      this.currentTab = 'pending'
     },
 
     onVoidClick(item) {

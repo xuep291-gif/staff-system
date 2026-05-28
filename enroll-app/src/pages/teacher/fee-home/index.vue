@@ -267,7 +267,7 @@ export default {
 
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
-.sbody { height: 0; flex: 1; padding-bottom: 40rpx; }
+.sbody { height: 0; flex: 1; padding-bottom: 40rpx; overflow-y: scroll; }
 
 .year-row {
   margin: 24rpx 28rpx 0;

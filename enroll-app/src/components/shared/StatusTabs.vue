@@ -78,18 +78,13 @@ export default {
   min-height: 80rpx;
   font-size: var(--fs-13);
   font-weight: 600;
-  color: var(--N500);
+  color: var(--N700);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   box-sizing: border-box;
   white-space: nowrap;
-  transition: color .18s ease;
-}
-
-.status-tab.active {
-  color: var(--N900);
 }
 
 .status-tab-label {

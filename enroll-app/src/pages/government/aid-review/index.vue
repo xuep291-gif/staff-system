@@ -13,9 +13,18 @@
       <SReviewProgress :steps="statusSteps" />
 
       <SCard title="申请信息" :padding="16">
-        <SInfoRow label="助学金档位">{{ item.type || '特殊困难助学金' }}</SInfoRow>
-        <SInfoRow label="申请档位">
-          <text class="amount-highlight">¥{{ item.amount || '4,000' }}</text>
+        <SInfoRow label="助学金类型">
+          <picker v-if="canReview" mode="selector" :range="aidTypes" :value="aidTypeIndex" @change="onTypeChange">
+            <view class="picker-val">{{ item.type || '国家助学金' }} <text class="picker-arrow">▾</text></view>
+          </picker>
+          <text v-else>{{ item.type || '国家助学金' }}</text>
+        </SInfoRow>
+        <SInfoRow label="申请金额">
+          <view v-if="canReview" class="amount-edit-row">
+            <text class="amount-prefix">¥</text>
+            <input class="amount-input" v-model="editAmount" type="digit" placeholder="请输入金额" />
+          </view>
+          <text v-else class="amount-highlight">¥{{ item.amount || '4,000' }}</text>
         </SInfoRow>
         <SInfoRow label="家庭情况">{{ item.familySituation || '农村低保家庭' }}</SInfoRow>
         <SInfoRow label="申请原因">
@@ -119,9 +128,12 @@ export default {
   name: 'GovernmentAidReview',
   components: { SNavBar, SCard, SInfoRow, SBadge, SEmpty, SReviewProgress },
   data() {
-    return { uid: '', item: null, opinion: '资格复核通过，同意进入教师终审。', rejectReason: '', showPreview: false, showReject: false, submitting: false }
+    return { uid: '', item: null, opinion: '资格复核通过，同意进入教师终审。', rejectReason: '', showPreview: false, showReject: false, submitting: false, aidTypes: ['国家助学金', '学校助学金', '社会助学金', '临时困难补助'], editAmount: '' }
   },
   computed: {
+    aidTypeIndex() {
+      return this.aidTypes.indexOf(this.item?.type)
+    },
     canReview() {
       return this.item && this.item.status === REVIEW_STATUS.FIRST_PASS
     },
@@ -136,8 +148,12 @@ export default {
     const localItem = this.uid ? getReviewItem('aids', this.uid) : null
     const res = this.uid ? await scholarshipApi.getScholarshipDetail(this.uid) : null
     this.item = localItem || (res?.data?.code === 0 ? res.data.data : null)
+    if (this.item) this.editAmount = String(this.item.amount || '')
   },
   methods: {
+    onTypeChange(e) {
+      if (this.item) this.item.type = this.aidTypes[Number(e.detail.value)] || this.aidTypes[0]
+    },
     async onApprove() {
       if (this.submitting) return
       this.submitting = true
@@ -175,6 +191,11 @@ export default {
 .meta { font-size: var(--fs-12); color: var(--N500); display: block; margin-top: 8rpx; }
 .amount-highlight { color: var(--er); font-weight: 700; font-size: var(--fs-15); }
 .reason-text { color: var(--N500); font-size: var(--fs-12); line-height: 1.6; }
+.picker-val { color: var(--brand); font-weight: 500; display: flex; align-items: center; }
+.picker-arrow { font-size: var(--fs-10); color: var(--N400); margin-left: 8rpx; }
+.amount-edit-row { display: flex; align-items: center; }
+.amount-prefix { font-size: var(--fs-15); font-weight: 700; color: var(--N500); margin-right: 8rpx; }
+.amount-input { flex: 1; height: 64rpx; padding: 0 16rpx; border: 1.5px solid var(--N200); border-radius: 12rpx; font-size: var(--fs-14); font-weight: 600; color: var(--N900); }
 .preview-entry { display: flex; align-items: center; min-height: 96rpx; }
 .preview-entry > * + * { margin-left: 20rpx; }
 .preview-icon { width: 72rpx; height: 72rpx; border-radius: var(--r-12); background: var(--brand-t); color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: var(--fs-20); }

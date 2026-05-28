@@ -2,10 +2,10 @@
   <view class="page">
     <SNavBar title="线下收款确认" :showBack="true" fallbackUrl="/pages/finance/home/index" />
 
-    <StatusTabs tabGroup="financeCollect" :tabs="tabs" />
+    <StatusTabs tabGroup="financeCollect" :tabs="tabs" :modelValue="activeTab" @change="onTabClick" />
 
     <!-- Tab 待确认 -->
-    <view class="list-section" v-if="currentTab === 'pending'">
+    <view class="list-section" v-if="activeTab === 'pending'">
       <SEmpty v-if="!pendingList.length" text="当前暂无待确认线下收款" />
       <view
         class="list-item"
@@ -40,7 +40,7 @@
     </view>
 
     <!-- Tab 已确认 -->
-    <view class="list-section" v-if="currentTab === 'confirmed'">
+    <view class="list-section" v-if="activeTab === 'confirmed'">
       <SEmpty v-if="!confirmedList.length" text="当前暂无已确认线下收款" />
       <view
         class="list-item"
@@ -73,7 +73,7 @@
     </view>
 
     <!-- Tab 收款记录查询 -->
-    <view class="list-section" v-if="currentTab === 'records'">
+    <view class="list-section" v-if="activeTab === 'records'">
       <view class="filter-card">
         <input class="search-input" v-model.trim="filters.keyword" placeholder="姓名 / 学号 / 学院 / 时间" />
         <picker :range="paymentMethods" :value="paymentMethodIndex" @change="onPaymentFilterChange">
@@ -198,7 +198,7 @@ export default {
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
     return {
-
+      activeTab: 'pending',
       showSheet: false,
       currentItem: null,
       list: [],
@@ -214,7 +214,6 @@ export default {
     }
   },
   computed: {
-    currentTab() { return getActiveKey('financeCollect', 'pending') },
     canVoid() {
       return hasPermission('finance:void') || hasPermission('finance:admin')
     },
@@ -266,6 +265,7 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   onShow() {
+    this.activeTab = 'pending'
     setActiveKey('financeCollect', 'pending')
     this.filters = { keyword: '', method: '全部方式' }
     try { uni.removeStorageSync('staff_back_target') } catch (e) { /* ignore */ }
@@ -282,9 +282,9 @@ export default {
       }
     },
 
-    onTabChange(key) {
-      setActiveKey('financeCollect', key)
-      console.log('线下收款切换:', key)
+    onTabClick(key) {
+      this.activeTab = key
+      // 不调 setActiveKey — StatusTabs 内部 onSelect 已写共享 state，避免双重重渲染
     },
 
     onItemClick(item) {
@@ -391,6 +391,7 @@ export default {
         this.refresh()
         uni.showToast({ title: '线下收款已确认', icon: 'success' })
         this.$nextTick(() => {
+          this.activeTab = 'confirmed'
           setActiveKey('financeCollect', 'confirmed')
         })
       } catch (e) {
@@ -401,7 +402,7 @@ export default {
     },
 
     onViewMore() {
-      setActiveKey('financeCollect', 'pending')
+      this.onTabClick('pending')
     },
 
     onVoidClick(item) {

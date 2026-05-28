@@ -236,11 +236,28 @@ export default {
 
 function applyFilter(list, filters) {
   const kw = filters.keyword.trim()
-  return list.filter(item => {
-    const mm = filters.method === '全部方式' || String(item.collectionType || item.method || '').includes(filters.method)
-    const km = !kw || [item.name, item.studentNo, item.college, item.className, item.time, item.confirmTime].some(v => String(v || '').includes(kw))
-    return mm && km
-  })
+  const mm = item => filters.method === '全部方式' || String(item.collectionType || item.method || '').includes(filters.method)
+  const score = item => {
+    if (!kw) return 0
+    const vals = [
+      { v: item.name, w: 10 },
+      { v: item.studentNo, w: 8 },
+      { v: item.college, w: 3 },
+      { v: item.className, w: 2 },
+      { v: item.time, w: 1 },
+      { v: item.confirmTime, w: 1 }
+    ]
+    return vals.reduce((s, { v, w }) => {
+      const sv = String(v || '')
+      if (sv === kw) return s + w * 10
+      if (sv.startsWith(kw)) return s + w * 5
+      if (sv.includes(kw)) return s + w
+      return s
+    }, 0)
+  }
+  return list
+    .filter(item => mm(item) && (!kw || score(item) > 0))
+    .sort((a, b) => score(b) - score(a))
 }
 </script>
 

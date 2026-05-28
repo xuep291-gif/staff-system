@@ -4,9 +4,20 @@
     <view class="top-area">
       <view class="year-row">
         <text class="year-label">当前学年</text>
-        <picker :range="schoolYears" :value="schoolYearIndex" @change="onYearChange">
-          <view class="year-picker">{{ activeYear }} <text>⌄</text></view>
-        </picker>
+        <view class="year-picker" @click.stop="showYearPicker = !showYearPicker">
+          <text>{{ activeYear }}</text>
+          <text class="year-arrow" :class="{ open: showYearPicker }">▾</text>
+        </view>
+        <view class="year-dropdown" v-if="showYearPicker">
+          <view
+            class="year-option"
+            :class="{ active: year === activeYear }"
+            v-for="year in schoolYears"
+            :key="year"
+            @click.stop="selectYear(year)"
+          >{{ year }}</view>
+        </view>
+        <view class="year-mask" v-if="showYearPicker" @click.stop="showYearPicker = false" />
       </view>
 
       <!-- §6.8 统计卡片 -->
@@ -63,7 +74,6 @@
               </text>
             </view>
             <text class="stu-amount">¥{{ formatMoney(stu.dueAmount) }}</text>
-            <SBadge :color="stu.listBadgeColor">{{ stu.listStatusLabel }}</SBadge>
             <text v-if="stu.urgeCount > 0" class="urge-tag">已催缴{{ stu.urgeCount }}次</text>
           </view>
           <SEmpty v-if="filteredStudents.length === 0" text="暂无数据" />
@@ -119,8 +129,9 @@ export default {
       contentKey: 0,
       selectionVersion: 0,
       allStudents: [],
-      activeYear: '2025-2026学年',
-      schoolYears: ['2025-2026学年', '2024-2025学年']
+      activeYear: '2026-2027学年',
+      schoolYears: ['2026-2027学年', '2025-2026学年', '2024-2025学年'],
+      showYearPicker: false
     }
   },
   computed: {
@@ -144,10 +155,6 @@ export default {
       const selectable = this.filteredStudents.filter(this.isUrgeEligible)
       if (selectable.length === 0) return '无可选'
       return this.selectedIds.length === selectable.length ? '取消全选' : '全选可催缴'
-    },
-    schoolYearIndex() {
-      const index = this.schoolYears.indexOf(this.activeYear)
-      return index >= 0 ? index : 0
     },
     formattedOutstanding() { return this.formatMoney(this.stats.outstandingAmount) },
     urgeCount() { return this.allStudents.filter(this.isUrgeEligible).length }
@@ -175,9 +182,15 @@ export default {
       this.selectionVersion++
       setActiveKey('feeHome', key)
     },
-    onYearChange(event) {
-      this.activeYear = this.schoolYears[Number(event.detail.value)] || this.schoolYears[0]
-      try { uni.setStorageSync('teacher_fee_school_year', this.activeYear) } catch (e) { /* optional */ }
+    selectYear(year) {
+      this.activeYear = year
+      this.showYearPicker = false
+      this.selectedIds = []
+      this.filterVersion++
+      this.contentKey++
+      this.selectionVersion++
+      try { uni.setStorageSync('teacher_fee_school_year', year) } catch (e) { /* optional */ }
+      this.refresh()
     },
     isUrgeEligible(stu) { return ['unpaid', 'overdue', 'partial'].includes(stu.payStatus) },
     onCheckStudent(stu) {
@@ -235,8 +248,9 @@ export default {
       uni.navigateTo({ url: `/pages/teacher/student-detail/index?id=${stu.studentId}&sid=${stu.studentNo}` })
     },
     refresh() {
-      this.allStudents = getFeeList()
-      console.log('[fee-home] refresh done, allStudents count:', this.allStudents.length, 'activeTab:', this.activeTab)
+      const yearKey = this.activeYear.replace('学年', '')
+      this.allStudents = getFeeList().filter(s => !s.schoolYear || s.schoolYear === yearKey)
+      console.log('[fee-home] refresh done, allStudents count:', this.allStudents.length, 'activeTab:', this.activeTab, 'year:', yearKey)
     },
     formatMoney(value) { return Number(value || 0).toLocaleString() }
   },
@@ -261,17 +275,43 @@ export default {
 .year-row {
   margin: 24rpx 28rpx 0;
   display: flex; align-items: center; justify-content: space-between;
+  position: relative;
 }
 .year-label { font-size: var(--fs-12); color: var(--N500); }
 .year-picker {
-  min-height: 64rpx; padding: 0 20rpx;
+  min-height: 64rpx; padding: 0 20rpx 0 28rpx;
   border-radius: var(--r-8);
   background: var(--white);
-  display: flex; align-items: center;
-  color: var(--N700); font-size: var(--fs-12);
-  box-shadow: var(--card-shadow);
+  display: flex; align-items: center; justify-content: space-between;
+  color: var(--N700); font-size: var(--fs-13); font-weight: 500;
+  box-shadow: var(--card-shadow); gap: 16rpx;
 }
-.year-picker > * + * { margin-left: 12rpx; }
+.year-picker:active { opacity: 0.7; }
+.year-arrow {
+  font-size: var(--fs-10); color: var(--N400);
+  margin-left: 8rpx; flex-shrink: 0;
+  transition: transform .2s;
+}
+.year-arrow.open { transform: rotate(180deg); }
+
+.year-dropdown {
+  position: absolute; top: 100%; right: 0; margin-top: 8rpx;
+  background: var(--white); border-radius: var(--r-8);
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,.12);
+  overflow: hidden; z-index: 10; min-width: 240rpx;
+}
+.year-option {
+  padding: 20rpx 28rpx; font-size: var(--fs-13); color: var(--N700);
+  border-bottom: 1px solid var(--N50); text-align: center;
+}
+.year-option:last-child { border-bottom: none; }
+.year-option:active { background: var(--N50); }
+.year-option.active { color: var(--brand); font-weight: 600; background: var(--brand-t); }
+
+.year-mask {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 5; background: transparent;
+}
 
 /* ── 统计卡片内 ── */
 .prog-section { padding: 24rpx 32rpx 12rpx; }

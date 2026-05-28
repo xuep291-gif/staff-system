@@ -4,7 +4,7 @@
 
     <!-- 搜索筛选栏 — 始终在顶部 -->
     <view class="filter-bar">
-      <input class="search-input" v-model.trim="filters.keyword" placeholder="姓名 / 学号 / 学院" />
+      <input class="search-input" v-model.trim="filters.keyword" placeholder="姓名 / 学号" />
       <picker :range="paymentMethods" :value="paymentMethodIndex" @change="onPaymentFilterChange">
         <view class="filter-picker">
           <text>{{ filters.method }}</text>
@@ -242,8 +242,7 @@ function applyFilter(list, filters) {
     const vals = [
       { v: item.name, w: 10 },
       { v: item.studentNo, w: 8 },
-      { v: item.college, w: 3 },
-      { v: item.className, w: 2 },
+      { v: item.className, w: 3 },
       { v: item.time, w: 1 },
       { v: item.confirmTime, w: 1 }
     ]

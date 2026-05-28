@@ -1,43 +1,30 @@
 <template>
   <view class="page">
-    <SNavBar title="资料审核" showBack fallbackUrl="/pages/teacher/home/index">
-      <template #right>
-        <text class="nav-right-text">班主任初核</text>
-      </template>
-    </SNavBar>
-
+    <SNavBar title="资料审核" :showBack="true" fallbackUrl="/pages/teacher/home/index" />
     <StatusTabs tabGroup="teacherDocHome" :tabs="tabs" @change="onTabClick" />
-
-    <view class="tab-content">
-      <view
-        class="student-card"
-        v-for="item in filteredList"
-        :key="filterVersion + '-' + item.uid"
-      >
-        <view class="card-row-between">
-          <view class="card-left" @click="goDetail(item)">
-            <view class="avatar">{{ item.name.charAt(0) }}</view>
-            <view class="info">
-            <text class="name">{{ item.name }}</text>
-            <text class="meta">{{ item.id }} · 提交于 {{ item.submittedAt }}</text>
+    <scroll-view scroll-y class="body">
+      <view class="sc">
+        <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="goReview(item)">
+          <view class="card-bd">
+            <view class="li">
+              <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>
+              <view class="li-info">
+                <text class="li-name">{{ item.name }}</text>
+                <text class="li-meta">{{ item.id }} · {{ item.college }} · {{ item.submittedAt }}</text>
+              </view>
+              <text class="li-arrow">›</text>
             </view>
           </view>
-          <view class="review-entry" @click.stop="goReview(item)">
-            <SBadge :color="item.listBadgeColor">{{ item.listStatusLabel }}</SBadge>
-            <text class="card-arrow">›</text>
+          <view class="card-ft" v-if="activeTab === 'pending' && item.tags && item.tags.length">
+            <SBadge v-for="(tag, ti) in item.tags" :key="ti" color="wa" customStyle="margin-right: 12rpx; margin-bottom: 8rpx;">{{ tag }}</SBadge>
+          </view>
+          <view class="card-ft reason" v-if="activeTab === 'rejected' && item.reason">
+            <text class="reason-text">退回原因：{{ item.reason }}</text>
           </view>
         </view>
-        <view class="doc-tags" v-if="activeTab === 'pending'">
-          <SBadge v-for="(tag, ti) in item.tags" :key="ti" color="wa" customStyle="margin-right: 12rpx; margin-bottom: 8rpx;">{{ tag }}</SBadge>
-        </view>
-        <view class="reason" v-if="activeTab === 'rejected' && item.reason">
-          <text class="reason-text">{{ item.reason }}</text>
-        </view>
+        <SEmpty v-if="filteredList.length === 0" text="暂无资料" />
       </view>
-      <view v-if="filteredList.length === 0" class="empty-state">
-        <text class="empty-text">{{ emptyText }}</text>
-      </view>
-    </view>
+    </scroll-view>
   </view>
 </template>
 
@@ -46,7 +33,8 @@ import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
-import { getLastBusinessChange, getMaterialTabIndex, getReviewList } from '@/utils/businessState.js'
+import SEmpty from '@/components/shared/SEmpty.vue'
+import { getLastBusinessChange, getMaterialTabIndex, getReviewList, materialStatusMeta } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const DOC_KEY_STATUS_MAP = {
@@ -59,7 +47,7 @@ const DOC_TAB_KEYS = ['pending', 'passed', 'rejected']
 
 export default {
   name: 'TeacherDocHome',
-  components: { SNavBar, StatusTabs, SBadge },
+  components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
     return { activeTab: 'pending', filterVersion: 0, list: [], lastSyncedChange: '' }
   },
@@ -74,10 +62,6 @@ export default {
     filteredList() {
       const statuses = DOC_KEY_STATUS_MAP[this.activeTab] || DOC_KEY_STATUS_MAP.pending
       return this.list.filter(i => statuses.includes(i.status))
-    },
-    emptyText() {
-      const map = { pending: '暂无待审核资料', passed: '暂无已通过记录', rejected: '暂无已退回记录' }
-      return map[this.activeTab] || '暂无资料'
     }
   },
   watch: {
@@ -105,7 +89,15 @@ export default {
       setActiveKey('teacherDocHome', key)
     },
     refresh(syncChangedTab = false) {
-      this.list = getReviewList('documents')
+      this.list = getReviewList('documents').map(item => {
+        const meta = materialStatusMeta[item.status] || {}
+        return {
+          ...item,
+          badgeColor: meta.color || item.badgeColor,
+          bg: `var(--${meta.color || 'wa'}-bg)`,
+          iconColor: `var(--${meta.color || 'wa'})`
+        }
+      })
       if (syncChangedTab) this.syncActiveTabFromLastChange()
     },
     syncActiveTabFromLastChange() {
@@ -120,33 +112,28 @@ export default {
     goReview(item) {
       rememberStaffBackTarget('/pages/teacher/doc-home/index')
       uni.navigateTo({ url: '/pages/teacher/doc-review/index?uid=' + item.uid })
-    },
-    goDetail(item) {
-      rememberStaffBackTarget('/pages/teacher/doc-home/index')
-      uni.navigateTo({ url: `/pages/teacher/student-detail/index?id=${item.studentId || ''}&sid=${item.sid || item.id}` })
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.page { min-height: 100vh; background: var(--N50); padding-bottom: 40rpx; }
-.nav-right-text { font-size: var(--fs-13); color: var(--brand); font-weight: 600; }
-.tab-content { padding: 28rpx 28rpx 0; }
-.student-card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); padding: 28rpx; margin-bottom: 20rpx; }
-.card-row-between { display: flex; align-items: center; justify-content: space-between; }
-.card-left { display: flex; align-items: center; flex: 1; min-width: 0; }
-.card-left > * + * { margin-left: 20rpx; }
-.avatar { width: 80rpx; height: 80rpx; border-radius: 50%; background: var(--brand-t); color: var(--brand); font-size: var(--fs-15); font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.info { flex: 1; min-width: 0; }
-.name { font-size: var(--fs-15); font-weight: 600; color: var(--N900); display: block; }
-.meta { font-size: var(--fs-12); color: var(--N500); margin-top: 6rpx; display: block; }
-.review-entry { display: flex; align-items: center; margin-left: 16rpx; min-height: 64rpx; flex-shrink: 0; }
-.review-entry > * + * { margin-left: 12rpx; }
-.card-arrow { color: var(--N400); font-size: 32rpx; line-height: 1; }
-.doc-tags { margin-top: 20rpx; display: flex; flex-wrap: wrap; }
-.reason { margin-top: 20rpx; padding: 20rpx; background: var(--N50); border-radius: var(--r-8); }
-.reason-text { font-size: var(--fs-12); color: var(--N700); }
-.empty-state { padding: 72rpx 0; text-align: center; }
-.empty-text { color: var(--N400); font-size: var(--fs-13); }
+.page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
+.body { height: 0; flex: 1; }
+
+.sc { padding: 20rpx 28rpx 28rpx; display: flex; flex-direction: column; }
+.sc > * + * { margin-top: 20rpx; }
+.card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); overflow: hidden; }
+.card-bd { padding: var(--card-body-padding); }
+.li { display: flex; align-items: center; }
+.li > * + * { margin-left: 20rpx; }
+.li-ico { width: 80rpx; height: 80rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 600; flex-shrink: 0; }
+.li-info { flex: 1; min-width: 0; }
+.li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
+.li-meta { font-size: var(--fs-11); color: var(--N500); display: block; margin-top: 4rpx; }
+.li-arrow { font-size: 28rpx; color: var(--N400); flex-shrink: 0; }
+
+.card-ft { padding: 0 28rpx 20rpx; display: flex; flex-wrap: wrap; }
+.card-ft.reason { flex-direction: column; }
+.reason-text { font-size: var(--fs-11); color: var(--N600); line-height: 1.5; display: block; }
 </style>

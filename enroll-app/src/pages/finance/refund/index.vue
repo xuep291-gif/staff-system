@@ -132,13 +132,15 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   async onShow() {
-    this.activeTab = getActiveKey('financeRefund', 'pending')
     try { uni.removeStorageSync('staff_back_target') } catch (e) { /* ignore */ }
     this.refresh(true)
+    this.activeTab = getActiveKey('financeRefund', 'pending')
   },
   methods: {
     onTabClick(key) {
+      if (this.activeTab === key) return
       this.activeTab = key
+      setActiveKey('financeRefund', key)
     },
     refresh(syncChangedTab = false) {
       this.list = getRefundList()

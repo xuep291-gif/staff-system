@@ -6,6 +6,9 @@
           <text class="bell-icon">🔔</text>
           <view class="bell-dot" v-if="unreadCount > 0" />
         </view>
+        <view class="banner-gear" @click="goSettings">
+          <text class="gear-icon">⚙</text>
+        </view>
       </template>
     </SBanner>
 
@@ -108,6 +111,7 @@ export default {
   methods: {
     goTo(url) { uni.navigateTo({ url }) },
     goMessages() { uni.navigateTo({ url: '/pages/finance/messages/index' }) },
+    goSettings() { uni.navigateTo({ url: '/pages/finance/settings/index' }) },
     onTabSwitch(idx) {
       const routes = [null, '/pages/finance/collect/index', '/pages/finance/refund/index', '/pages/finance/urge/index', '/pages/finance/messages/index']
       if (idx > 0 && routes[idx]) { uni.navigateTo({ url: routes[idx] }) }
@@ -119,12 +123,13 @@ export default {
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); padding-bottom: var(--tabbar-h); }
 
-.banner-bell {
+.banner-bell, .banner-gear {
   width: 72rpx; height: 72rpx; background: rgba(255,255,255,.15);
   border-radius: var(--r-full); display: flex; align-items: center; justify-content: center;
   position: relative; flex-shrink: 0;
 }
-.bell-icon { font-size: var(--fs-20); }
+.banner-gear:active { opacity: 0.7; }
+.bell-icon, .gear-icon { font-size: var(--fs-20); }
 .bell-dot {
   width: 16rpx; height: 16rpx; background: var(--er); border-radius: var(--r-full);
   position: absolute; top: 12rpx; right: 12rpx; border: 3rpx solid var(--brand);

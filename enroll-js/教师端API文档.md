@@ -126,7 +126,7 @@ POST /auth/switch-role
 请求: `{ role }`
 
 返回: `{ accessToken, currentRole, homePage, permissions }`
-
+      
 ### 1.7 登出
 
 ```

@@ -1,42 +1,25 @@
 <template>
   <view class="page">
-    <SNavBar title="助学金审核" showBack fallbackUrl="/pages/teacher/home/index">
-      <template #right>
-        <text class="nav-right">初审</text>
-      </template>
-    </SNavBar>
-
+    <SNavBar title="助学金审核" :showBack="true" fallbackUrl="/pages/teacher/home/index" />
     <StatusTabs tabGroup="teacherAidHome" :tabs="tabs" @change="onTabClick" />
-
     <scroll-view scroll-y class="body">
-      <SCard :padding="0" v-if="filteredList.length">
-        <SListItem
-          v-for="item in filteredList"
-          :key="filterVersion + '-' + item.uid"
-          :avatar="item.name.charAt(0)"
-          :avatarBg="'var(--brand-t)'"
-          showArrow
-          @click="goReview(item)"
-        >
-          <view class="item-body">
-            <view class="item-row">
-              <text class="item-name">{{ item.name }}</text>
-              <text class="item-sid">{{ item.sid }}</text>
-            </view>
-            <view class="item-row">
-              <text class="item-label">申请档位</text>
-              <text class="item-amount">¥{{ item.amount }}</text>
-              <text class="item-sep">|</text>
-              <text class="item-type">{{ item.type }}</text>
-            </view>
-            <view class="item-row">
+      <view class="sc">
+        <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="goReview(item)">
+          <view class="card-bd">
+            <view class="li">
+              <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>
+              <view class="li-info">
+                <text class="li-name">{{ item.name }}</text>
+                <text class="li-meta">{{ item.id }} · {{ item.college }}</text>
+                <text class="li-amount">申请金额：¥{{ item.amount }} · {{ item.type }}</text>
+              </view>
               <SBadge :color="item.listBadgeColor">{{ item.listStatusLabel }}</SBadge>
-              <text class="item-date">{{ item.date }}</text>
+              <text class="li-arrow">›</text>
             </view>
           </view>
-        </SListItem>
-      </SCard>
-      <SEmpty v-else icon="📋" text="当前状态暂无助学金申请" />
+        </view>
+        <SEmpty v-if="filteredList.length === 0" text="暂无补助申请" />
+      </view>
     </scroll-view>
   </view>
 </template>
@@ -45,18 +28,16 @@
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
-import SCard from '@/components/shared/SCard.vue'
-import SListItem from '@/components/shared/SListItem.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex } from '@/utils/businessState.js'
+import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const REVIEW_KEY_MAP = ['pending', 'processing', 'completed']
 
 export default {
   name: 'TeacherAidHome',
-  components: { SNavBar, StatusTabs, SCard, SListItem, SBadge, SEmpty },
+  components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
     return {
       activeTab: 'pending',
@@ -102,7 +83,13 @@ export default {
       setActiveKey('teacherAidHome', key)
     },
     refresh(syncChangedTab = false) {
-      this.list = getReviewList('aids')
+      const rows = getReviewList('aids')
+      this.list = rows.map(item => ({
+        ...item,
+        badgeColor: reviewStatusMeta[item.status]?.color || item.badgeColor,
+        bg: `var(--${reviewStatusMeta[item.status]?.color || 'wa'}-bg)`,
+        iconColor: `var(--${reviewStatusMeta[item.status]?.color || 'wa'})`
+      }))
       if (syncChangedTab) this.syncActiveTabFromLastChange()
     },
     syncActiveTabFromLastChange() {
@@ -123,19 +110,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.nav-right { font-size: 22rpx; color: var(--brand); font-weight: 600; }
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
-.body { height: 0; flex: 1; padding: 28rpx; box-sizing: border-box; }
-.item-body { flex: 1; min-width: 0; }
-.item-body > * + * { margin-top: 8rpx; }
-.item-row { display: flex; align-items: center; }
-.item-row > * + * { margin-left: 12rpx; }
-.item-name { font-size: 28rpx; font-weight: 600; color: var(--N900); }
-.item-sid { font-size: 24rpx; color: var(--N500); }
-.item-label { font-size: 22rpx; color: var(--N500); }
-.item-amount { font-size: 24rpx; font-weight: 600; color: var(--N900); }
-.item-sep { font-size: 22rpx; color: var(--N200); }
-.item-type { font-size: 22rpx; color: var(--N500); }
-.item-date { font-size: 22rpx; color: var(--N400); }
-.item-info { font-size: 22rpx; color: var(--in); }
+.body { height: 0; flex: 1; }
+
+.sc { padding: 20rpx 28rpx 28rpx; display: flex; flex-direction: column; }
+.sc > * + * { margin-top: 20rpx; }
+.card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); overflow: hidden; }
+.card-bd { padding: var(--card-body-padding); }
+.li { display: flex; align-items: center; }
+.li > * + * { margin-left: 20rpx; }
+.li-ico { width: 80rpx; height: 80rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 600; flex-shrink: 0; }
+.li-info { flex: 1; min-width: 0; }
+.li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
+.li-meta { font-size: var(--fs-11); color: var(--N500); display: block; margin-top: 4rpx; }
+.li-amount { font-size: var(--fs-11); color: var(--brand); display: block; margin-top: 4rpx; font-weight: 500; }
+.li-arrow { font-size: 28rpx; color: var(--N400); flex-shrink: 0; }
 </style>

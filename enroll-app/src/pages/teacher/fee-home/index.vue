@@ -27,7 +27,7 @@
       </SCard>
 
       <!-- §6.19 下划线式 Tab -->
-      <StatusTabs tabGroup="feeHome" :tabs="paymentTabs" />
+      <StatusTabs tabGroup="feeHome" :tabs="paymentTabs" @change="onTabClick" />
 
       <!-- 学生列表卡片 -->
       <SCard :padding="0">
@@ -45,7 +45,7 @@
             class="stu-item"
             :class="{ selected: selectedIds.includes(stu.studentNo) }"
             v-for="stu in filteredStudents"
-            :key="stu.studentNo"
+            :key="filterVersion + '-' + stu.studentNo"
           >
             <view class="stu-check" @click="onCheckStudent(stu)">
               <SCheckbox :modelValue="selectedIds.includes(stu.studentNo)" :disabled="!isUrgeEligible(stu)" />
@@ -127,6 +127,8 @@ export default {
       urgeMode: 'selected',
       sending: false,
       pageVisible: true,
+      activeTab: 'unpaid',
+      filterVersion: 0,
       allStudents: [],
       activeYear: '2025-2026学年',
       schoolYears: ['2025-2026学年', '2024-2025学年']
@@ -143,13 +145,10 @@ export default {
     },
     stats() { return getPaymentSummary(this.allStudents) },
     payRate() { return this.stats.payRate },
-    activePaymentStatus() {
-      return getActiveKey('feeHome', 'unpaid')
-    },
     filteredStudents() {
-      const statuses = PAYMENT_KEY_STATUS_MAP[this.activePaymentStatus] || PAYMENT_KEY_STATUS_MAP.unpaid
+      const statuses = PAYMENT_KEY_STATUS_MAP[this.activeTab] || PAYMENT_KEY_STATUS_MAP.unpaid
       const result = this.allStudents.filter(s => statuses.includes(s.payStatus))
-      console.log('[fee-home] filteredStudents: activePaymentStatus=', this.activePaymentStatus, 'statuses=', statuses, 'input=', this.allStudents.length, 'output=', result.length)
+      console.log('[fee-home] filteredStudents: activeTab=', this.activeTab, 'statuses=', statuses, 'input=', this.allStudents.length, 'output=', result.length)
       return result
     },
     selectAllLabel() {
@@ -165,7 +164,7 @@ export default {
     formattedOutstanding() { return this.formatMoney(this.stats.outstandingAmount) }
   },
   watch: {
-    activePaymentStatus() { this.selectedIds = [] }
+    activeTab() { this.selectedIds = [] }
   },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
@@ -178,7 +177,12 @@ export default {
   },
   methods: {
     onPaymentTabChange(key) {
-      console.log('[fee-home] onPaymentTabChange key=', key)
+      this.onTabClick(key)
+    },
+    onTabClick(key) {
+      console.log('[fee-home] onTabClick key=', key)
+      this.activeTab = key
+      this.filterVersion++
       setActiveKey('feeHome', key)
     },
     onYearChange(event) {
@@ -242,12 +246,14 @@ export default {
     },
     refresh() {
       this.allStudents = getFeeList()
-      console.log('[fee-home] refresh done, allStudents count:', this.allStudents.length, 'activePaymentStatus:', this.activePaymentStatus)
+      console.log('[fee-home] refresh done, allStudents count:', this.allStudents.length, 'activeTab:', this.activeTab)
     },
     formatMoney(value) { return Number(value || 0).toLocaleString() }
   },
   onShow() {
     console.log('[fee-home] onShow fired')
+    this.activeTab = getActiveKey('feeHome', 'unpaid')
+    this.filterVersion++
     this.pageVisible = true
     try { this.activeYear = uni.getStorageSync('teacher_fee_school_year') || this.activeYear } catch (e) { /* optional */ }
     this.refresh()

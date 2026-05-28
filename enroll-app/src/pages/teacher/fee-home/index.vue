@@ -223,18 +223,14 @@ export default {
         return
       }
       this.sending = true
-      try {
-        urgeStudents(targets)
-        try {
-          await reminderApi.batchSendReminder({ studentIds: targets, channels: ['site', 'sms'], scope: this.urgeMode })
-        } catch (e) {
-          console.log('[fee-home] API 未就绪，本地已记录催缴:', e)
-        }
-        this.allStudents = getFeeList()
-        this.showSheet = false
-        this.selectedIds = []
-        uni.showToast({ title: `已向 ${targets.length} 名学生发送催缴通知`, icon: 'success' })
-      } finally { this.sending = false }
+      urgeStudents(targets)
+      reminderApi.batchSendReminder({ studentIds: targets, channels: ['site', 'sms'], scope: this.urgeMode })
+        .catch(e => console.log('[fee-home] API 未就绪，本地已记录催缴:', e))
+      this.allStudents = getFeeList()
+      this.showSheet = false
+      this.selectedIds = []
+      this.sending = false
+      uni.showToast({ title: `已向 ${targets.length} 名学生发送催缴通知`, icon: 'success' })
     },
     goDetail(stu) {
       console.log('[fee-home] goDetail navigateTo student-detail')

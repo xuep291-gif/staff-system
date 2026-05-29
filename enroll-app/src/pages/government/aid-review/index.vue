@@ -161,17 +161,18 @@ export default {
   },
   async onShow() {
     const localItem = this.uid ? getReviewItem('aids', this.uid) : null
-    const res = this.uid ? await scholarshipApi.getScholarshipDetail(this.uid) : null
-    const apiItem = res?.data?.code === 0 ? res.data.data : null
-    // API 优先，local fallback
-    const item = apiItem || localItem
-    if (!item) return
-    if (item.status !== REVIEW_STATUS.FIRST_PASS) {
-      uni.showToast({ title: '当前状态: ' + (item.status || '?') + '，非学院复审阶段', icon: 'none', duration: 2000 })
-      setTimeout(() => uni.navigateBack(), 600)
+    // local 优先（与列表页同一数据源），API 仅作 fallback
+    if (localItem) {
+      if (localItem.status !== REVIEW_STATUS.FIRST_PASS) {
+        uni.showToast({ title: '当前状态: ' + (localItem.status || '?') + '，非学院复审阶段', icon: 'none', duration: 2000 })
+        setTimeout(() => uni.navigateBack(), 600)
+        return
+      }
+      this.item = localItem
       return
     }
-    this.item = item
+    const res = this.uid ? await scholarshipApi.getScholarshipDetail(this.uid) : null
+    this.item = res?.data?.code === 0 ? res.data.data : null
   },
   methods: {
     selectType(type) {

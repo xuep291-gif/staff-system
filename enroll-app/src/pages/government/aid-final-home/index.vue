@@ -98,7 +98,7 @@ export default {
     goReview(item) {
       rememberStaffBackTarget('/pages/government/aid-final-home/index')
       if (this.activeTab === 'pending' && item.status !== REVIEW_STATUS.REVIEW_PASS) return
-      uni.navigateTo({ url: '/pages/government/aid-final-review/index?uid=' + item.uid })
+      uni.navigateTo({ url: '/pages/government/aid-final-review/index?uid=' + item.uid + '&status=' + item.status })
     }
   }
 }

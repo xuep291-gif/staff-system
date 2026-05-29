@@ -136,12 +136,12 @@ export default {
   name: 'GovernmentAidReview',
   components: { SNavBar, SCard, SInfoRow, SBadge, SEmpty, SReviewProgress },
   data() {
-    return { REVIEW_STATUS, uid: '', item: null, opinion: '学院负责人复审通过，提交学工处审批。', rejectReason: '', showPreview: false, showReject: false, submitting: false, aidTypes: ['国家助学金', '学校助学金', '社会助学金', '临时困难补助'], showTypePicker: false }
+    return { REVIEW_STATUS, uid: '', expectedStatus: '', item: null, opinion: '学院负责人复审通过，提交学工处审批。', rejectReason: '', showPreview: false, showReject: false, submitting: false, aidTypes: ['国家助学金', '学校助学金', '社会助学金', '临时困难补助'], showTypePicker: false }
   },
   computed: {
     canReview() {
       if (!this.item) return false
-      return this.item.status === REVIEW_STATUS.FIRST_PASS
+      return this.expectedStatus === REVIEW_STATUS.FIRST_PASS
     },
     approveLabel() { return '复审通过' },
     reviewTitle() { return '学院负责人复审' },
@@ -158,16 +158,11 @@ export default {
   },
   onLoad(options) {
     this.uid = options.uid || ''
+    this.expectedStatus = options.status || ''
   },
   async onShow() {
     const localItem = this.uid ? getReviewItem('aids', this.uid) : null
-    // local 优先（与列表页同一数据源），API 仅作 fallback
     if (localItem) {
-      if (localItem.status !== REVIEW_STATUS.FIRST_PASS) {
-        uni.showToast({ title: '当前状态: ' + (localItem.status || '?') + '，非学院复审阶段', icon: 'none', duration: 2000 })
-        setTimeout(() => uni.navigateBack(), 600)
-        return
-      }
       this.item = localItem
       return
     }

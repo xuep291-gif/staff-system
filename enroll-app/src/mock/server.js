@@ -486,7 +486,11 @@ function handleAuth(path, method, params, state) {
     state.currentUserId = user.userId
     const accessToken = `mock_token_${user.roles[0]}_${now()}`
     state.tokens[accessToken] = user.userId
-    return ok({ accessToken, refreshToken: `mock_refresh_${now()}`, expiresIn: 7200, user: { ...user, hasType: true, orgId: 'org-001', orgName: '华东科技大学', accessToken }, defaultRole: user.roles[0], homePage: `/pages/${user.roles[0]}/home/index`, permissions: [`${user.roles[0]}:*`] })
+    const perm = getPermissionsData(state, { userId: user.userId })
+    const subRole = perm.data?.subRole || ''
+    const permissions = perm.data?.permissions || [`${user.roles[0]}:*`]
+    const dataScope = perm.data?.dataScope || { type: 'all' }
+    return ok({ accessToken, refreshToken: `mock_refresh_${now()}`, expiresIn: 7200, user: { ...user, hasType: true, orgId: 'org-001', orgName: '华东科技大学', accessToken, subRole, permissions, dataScope }, defaultRole: user.roles[0], homePage: `/pages/${user.roles[0]}/home/index`, permissions: [`${user.roles[0]}:*`] })
   }
   if (path === '/auth/refresh' && method === 'POST') {
     const user = Object.values(state.users).find(u => u.userId === state.currentUserId) || state.users['1001']

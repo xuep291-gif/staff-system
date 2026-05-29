@@ -156,14 +156,18 @@ export function getUserPermissions() {
 }
 
 export function getSubRole() {
-  // 优先读直接存储的 key，避免 $cache 格式兼容问题
   try {
     const direct = uni.getStorageSync('staff_sub_role')
     if (direct) return direct
   } catch (e) { /* ignore */ }
   const user = readUserInfo()
-  if (!user) return ''
-  return user.subRole || ''
+  if (user && user.subRole) return user.subRole
+  // 硬编码兜底：按 userId 映射
+  if (user) {
+    if (user.userId === 'staff_gov_001') return SUB_ROLES.STUDENT_AFFAIRS
+    if (user.userId === 'staff_gov_002') return SUB_ROLES.COLLEGE_DEAN
+  }
+  return ''
 }
 
 export function getDataScope() {

@@ -153,8 +153,8 @@ function seedState() {
       '13800138001': { userId: 'staff_finance_001', name: '陈美玲', workNo: 'F2026001', phone: '13800138001', roles: ['finance'], type: 3, typeList: [3], departmentName: '财务处' },
       '3001': { userId: 'staff_gov_001', name: '李明远', workNo: 'G2026001', phone: '13800138002', roles: ['government'], type: 5, typeList: [5], departmentName: '学工处' },
       '13800138002': { userId: 'staff_gov_001', name: '李明远', workNo: 'G2026001', phone: '13800138002', roles: ['government'], type: 5, typeList: [5], departmentName: '学工处' },
-      '3002': { userId: 'staff_college_001', name: '张教授', workNo: 'C2026001', phone: '13800138003', roles: ['government'], type: 5, typeList: [5], departmentName: '计算机学院' },
-      '13800138003': { userId: 'staff_college_001', name: '张教授', workNo: 'C2026001', phone: '13800138003', roles: ['government'], type: 5, typeList: [5], departmentName: '计算机学院' }
+      '3002': { userId: 'staff_gov_002', name: '李明远', workNo: 'C2026001', phone: '13800138003', roles: ['government'], type: 5, typeList: [5], departmentName: '计算机学院' },
+      '13800138003': { userId: 'staff_gov_002', name: '李明远', workNo: 'C2026001', phone: '13800138003', roles: ['government'], type: 5, typeList: [5], departmentName: '计算机学院' }
     },
     currentUserId: 'staff_teacher_001',
     tokens: {},

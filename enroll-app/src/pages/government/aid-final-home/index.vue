@@ -1,7 +1,7 @@
 <template>
   <view class="page">
-    <SNavBar title="学院负责人复审" :showBack="true" fallbackUrl="/pages/government/home/index" />
-    <StatusTabs tabGroup="govAidHome" :tabs="tabs" @change="onTabClick" />
+    <SNavBar title="学工处审批" :showBack="true" fallbackUrl="/pages/government/home/index" />
+    <StatusTabs tabGroup="govAidFinalHome" :tabs="tabs" @change="onTabClick" />
     <scroll-view scroll-y class="body">
       <view class="sc">
         <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="goReview(item)">
@@ -34,7 +34,7 @@ import { getLastBusinessChange, getReviewList, REVIEW_STATUS, statusMeta as revi
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 export default {
-  name: 'GovernmentAidHome',
+  name: 'GovernmentAidFinalHome',
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
     return { activeTab: 'pending', filterVersion: 0, list: [], lastSyncedChange: '' }
@@ -42,15 +42,15 @@ export default {
   computed: {
     tabs() {
       return [
-        { key: 'pending', label: '待审批', count: this.list.filter(i => i.status === REVIEW_STATUS.FIRST_PASS).length },
-        { key: 'processing', label: '审批中', count: this.list.filter(i => i.status === REVIEW_STATUS.REVIEW_PASS).length },
-        { key: 'completed', label: '已完结', count: this.list.filter(i => [REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED].includes(i.status)).length }
+        { key: 'pending', label: '待审批', count: this.list.filter(i => i.status === REVIEW_STATUS.REVIEW_PASS).length },
+        { key: 'processing', label: '审批中', count: this.list.filter(i => i.status === REVIEW_STATUS.FINAL_PASS).length },
+        { key: 'completed', label: '已完结', count: this.list.filter(i => [REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED].includes(i.status)).length }
       ]
     },
     filteredList() {
-      if (this.activeTab === 'pending') return this.list.filter(i => i.status === REVIEW_STATUS.FIRST_PASS)
-      if (this.activeTab === 'processing') return this.list.filter(i => i.status === REVIEW_STATUS.REVIEW_PASS)
-      return this.list.filter(i => [REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED].includes(i.status))
+      if (this.activeTab === 'pending') return this.list.filter(i => i.status === REVIEW_STATUS.REVIEW_PASS)
+      if (this.activeTab === 'processing') return this.list.filter(i => i.status === REVIEW_STATUS.FINAL_PASS)
+      return this.list.filter(i => [REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED].includes(i.status))
     }
   },
   watch: {
@@ -69,12 +69,12 @@ export default {
     this.filterVersion++
     try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
-    this.activeTab = getActiveKey('govAidHome', 'pending')
+    this.activeTab = getActiveKey('govAidFinalHome', 'pending')
   },
   methods: {
     onTabClick(key) {
       this.activeTab = key
-      setActiveKey('govAidHome', key)
+      setActiveKey('govAidFinalHome', key)
     },
     refresh(syncChangedTab = false) {
       const rows = getReviewList('aids')
@@ -92,13 +92,13 @@ export default {
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
-      const key = item.status === REVIEW_STATUS.FIRST_PASS ? 'pending' : item.status === REVIEW_STATUS.REVIEW_PASS ? 'processing' : 'completed'
-      setActiveKey('govAidHome', key)
+      const key = item.status === REVIEW_STATUS.REVIEW_PASS ? 'pending' : item.status === REVIEW_STATUS.FINAL_PASS ? 'processing' : 'completed'
+      setActiveKey('govAidFinalHome', key)
     },
     goReview(item) {
-      rememberStaffBackTarget('/pages/government/aid-home/index')
-      if (this.activeTab === 'pending' && item.status !== REVIEW_STATUS.FIRST_PASS) return
-      uni.navigateTo({ url: '/pages/government/aid-review/index?uid=' + item.uid })
+      rememberStaffBackTarget('/pages/government/aid-final-home/index')
+      if (this.activeTab === 'pending' && item.status !== REVIEW_STATUS.REVIEW_PASS) return
+      uni.navigateTo({ url: '/pages/government/aid-final-review/index?uid=' + item.uid })
     }
   }
 }

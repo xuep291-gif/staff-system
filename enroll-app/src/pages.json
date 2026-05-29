@@ -350,7 +350,21 @@
       "path": "pages/government/aid-review/index",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "助学金复审"
+        "navigationBarTitleText": "学院负责人复审"
+      }
+    },
+    {
+      "path": "pages/government/aid-final-home/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "学工处审批列表"
+      }
+    },
+    {
+      "path": "pages/government/aid-final-review/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "学工处审批"
       }
     },
     {

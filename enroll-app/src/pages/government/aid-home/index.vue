@@ -30,27 +30,29 @@ import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
+import { getLastBusinessChange, getReviewList, REVIEW_STATUS, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
-const REVIEW_KEY_MAP = ['pending', 'processing', 'completed']
+const REVIEW_KEY_MAP = ['first_pass', 'review_pass', 'completed']
 
 export default {
   name: 'GovernmentAidHome',
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
-    return { activeTab: 'pending', filterVersion: 0, list: [], lastSyncedChange: '' }
+    return { activeTab: 'first_pass', filterVersion: 0, list: [], lastSyncedChange: '' }
   },
   computed: {
     tabs() {
-      return buildReviewTabs(this.list, 'government').map((tab, i) => ({
-        ...tab,
-        key: REVIEW_KEY_MAP[i] || `tab-${i}`
-      }))
+      return [
+        { key: 'first_pass', label: '待学院复审', count: this.list.filter(i => i.status === REVIEW_STATUS.FIRST_PASS).length },
+        { key: 'review_pass', label: '待学工处审批', count: this.list.filter(i => i.status === REVIEW_STATUS.REVIEW_PASS).length },
+        { key: 'completed', label: '已完结', count: this.list.filter(i => [REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED].includes(i.status)).length }
+      ]
     },
     filteredList() {
-      const idx = REVIEW_KEY_MAP.indexOf(this.activeTab)
-      return filterReviewByTab(this.list, 'government', idx >= 0 ? idx : 0)
+      if (this.activeTab === 'first_pass') return this.list.filter(i => i.status === REVIEW_STATUS.FIRST_PASS)
+      if (this.activeTab === 'review_pass') return this.list.filter(i => i.status === REVIEW_STATUS.REVIEW_PASS)
+      return this.list.filter(i => [REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED].includes(i.status))
     }
   },
   watch: {
@@ -69,7 +71,7 @@ export default {
     this.filterVersion++
     try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
-    this.activeTab = getActiveKey('govAidHome', 'pending')
+    this.activeTab = getActiveKey('govAidHome', 'first_pass')
   },
   methods: {
     onTabClick(key) {
@@ -92,12 +94,16 @@ export default {
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
-      const idx = getReviewTabIndex(item, 'government')
-      setActiveKey('govAidHome', REVIEW_KEY_MAP[idx] || 'pending')
+      const key = item.status === REVIEW_STATUS.FIRST_PASS ? 'first_pass' : item.status === REVIEW_STATUS.REVIEW_PASS ? 'review_pass' : 'completed'
+      setActiveKey('govAidHome', key)
     },
     goReview(item) {
       rememberStaffBackTarget('/pages/government/aid-home/index')
-      uni.navigateTo({ url: '/pages/government/aid-review/index?uid=' + item.uid })
+      // 双重校验：item.status 必须匹配当前 tab
+      if (this.activeTab === 'first_pass' && item.status !== REVIEW_STATUS.FIRST_PASS) return
+      if (this.activeTab === 'review_pass' && item.status !== REVIEW_STATUS.REVIEW_PASS) return
+      const page = this.activeTab === 'review_pass' ? 'aid-final-review' : 'aid-review'
+      uni.navigateTo({ url: `/pages/government/${page}/index?uid=` + item.uid })
     }
   }
 }

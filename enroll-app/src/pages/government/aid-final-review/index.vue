@@ -133,24 +133,24 @@ function buildAidSteps(status) {
 }
 
 export default {
-  name: 'GovernmentAidReview',
+  name: 'GovernmentAidFinalReview',
   components: { SNavBar, SCard, SInfoRow, SBadge, SEmpty, SReviewProgress },
   data() {
-    return { REVIEW_STATUS, uid: '', item: null, opinion: '学院负责人复审通过，提交学工处审批。', rejectReason: '', showPreview: false, showReject: false, submitting: false, aidTypes: ['国家助学金', '学校助学金', '社会助学金', '临时困难补助'], showTypePicker: false }
+    return { REVIEW_STATUS, uid: '', item: null, opinion: '学工处审批通过，提交财务打款。', rejectReason: '', showPreview: false, showReject: false, submitting: false, aidTypes: ['国家助学金', '学校助学金', '社会助学金', '临时困难补助'], showTypePicker: false }
   },
   computed: {
     canReview() {
       if (!this.item) return false
-      return this.item.status === REVIEW_STATUS.FIRST_PASS
+      return this.item.status === REVIEW_STATUS.REVIEW_PASS
     },
-    approveLabel() { return '复审通过' },
-    reviewTitle() { return '学院负责人复审' },
+    approveLabel() { return '审批通过' },
+    reviewTitle() { return '学工处审批' },
     lockedMessage() {
       if (!this.item) return ''
       if (this.canReview) return ''
       if (this.item.status === REVIEW_STATUS.REJECTED) return '申请已驳回，仅供查看。'
       if ([REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(this.item.status)) return '流程已完结，仅供查看。'
-      return '当前阶段为学工处审批或后续流程，请等待其他角色处理。'
+      return '当前阶段为财务打款或前置流程未完成，请等待其他角色处理。'
     },
     statusSteps() {
       return buildAidSteps(this.item?.status)
@@ -163,8 +163,8 @@ export default {
     const localItem = this.uid ? getReviewItem('aids', this.uid) : null
     const res = this.uid ? await scholarshipApi.getScholarshipDetail(this.uid) : null
     const item = localItem || (res?.data?.code === 0 ? res.data.data : null)
-    if (item && item.status !== REVIEW_STATUS.FIRST_PASS) {
-      uni.showToast({ title: '该申请不在学院复审阶段', icon: 'none', duration: 1500 })
+    if (item && item.status !== REVIEW_STATUS.REVIEW_PASS) {
+      uni.showToast({ title: '该申请不在学工处审批阶段', icon: 'none', duration: 1500 })
       setTimeout(() => uni.navigateBack(), 500)
       return
     }
@@ -180,10 +180,10 @@ export default {
       this.submitting = true
       this.showPreview = false
       this.showReject = false
-      await scholarshipApi.approveScholarship(this.uid, { opinion: this.opinion, targetStatus: REVIEW_STATUS.REVIEW_PASS })
-      updateReview('aids', this.uid, REVIEW_STATUS.REVIEW_PASS, { node: '学院负责人复审', result: '复审通过', remark: this.opinion })
-      this.item = getReviewItem('aids', this.uid) || { ...this.item, status: REVIEW_STATUS.REVIEW_PASS }
-      uni.showToast({ title: '复审通过', icon: 'success' })
+      await scholarshipApi.approveScholarship(this.uid, { opinion: this.opinion, targetStatus: REVIEW_STATUS.FINAL_PASS })
+      updateReview('aids', this.uid, REVIEW_STATUS.FINAL_PASS, { node: '学工处审批', result: '审批通过', remark: this.opinion })
+      this.item = getReviewItem('aids', this.uid) || { ...this.item, status: REVIEW_STATUS.FINAL_PASS }
+      uni.showToast({ title: '审批通过', icon: 'success' })
       setTimeout(() => uni.navigateBack(), 500)
     },
     async onReject() {
@@ -191,9 +191,9 @@ export default {
       this.submitting = true
       this.showReject = false
       this.showPreview = false
-      const reason = this.rejectReason || '复审驳回'
+      const reason = this.rejectReason || '审批驳回'
       await scholarshipApi.rejectScholarship(this.uid, { rejectReason: reason })
-      updateReview('aids', this.uid, REVIEW_STATUS.REJECTED, { node: '学院负责人复审', result: '已驳回', remark: reason })
+      updateReview('aids', this.uid, REVIEW_STATUS.REJECTED, { node: '学工处审批', result: '已驳回', remark: reason })
       this.item = getReviewItem('aids', this.uid) || { ...this.item, status: REVIEW_STATUS.REJECTED }
       uni.showToast({ title: '已驳回', icon: 'none' })
       setTimeout(() => uni.navigateBack(), 500)

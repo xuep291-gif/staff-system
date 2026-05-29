@@ -144,12 +144,12 @@ export default {
       this.todos = [
         { key: 'room-change', label: '换房审批', desc: '待审批申请', barColor: 'var(--er)', badgeColor: 'er', count: 6 },
         { key: 'aid-home', label: '助学金学工处审批', desc: '学院复审已通过，待学工处审批', barColor: 'var(--wa)', badgeColor: 'wa', count: 3 },
-        { key: 'loan-home', label: '助学贷款终审', desc: '待终审申请', barColor: 'var(--in)', badgeColor: 'in', count: 2 }
+        { key: 'loan-home', label: '助学贷款学工处审批', desc: '学院复审已通过，待学工处审批', barColor: 'var(--in)', badgeColor: 'in', count: 2 }
       ]
       this.quickFns = [
         { key: 'room-change', icon: '🏠', label: '换房审批' },
         { key: 'aid-home', icon: '📄', label: '助学金审批' },
-        { key: 'loan-home', icon: '🏦', label: '贷款终审' },
+        { key: 'loan-home', icon: '🏦', label: '贷款审批' },
         { key: 'checkin', icon: '✅', label: '报到统计' },
         { key: 'stats', icon: '📊', label: '统计概览' },
         { key: 'messages', icon: '🔔', label: '消息通知' }
@@ -159,7 +159,7 @@ export default {
       this.todos = [
         { key: 'room-change', label: '换房审批(本院)', desc: '待审批申请', barColor: 'var(--er)', badgeColor: 'er', count: 6 },
         { key: 'aid-home', label: '助学金学院复审', desc: '辅导员初审已通过，待学院复审', barColor: 'var(--wa)', badgeColor: 'wa', count: 3 },
-        { key: 'loan-home', label: '助学贷款复审(本院)', desc: '待复审申请', barColor: 'var(--in)', badgeColor: 'in', count: 2 }
+        { key: 'loan-home', label: '助学贷款学院复审', desc: '辅导员初审已通过，待学院复审', barColor: 'var(--in)', badgeColor: 'in', count: 2 }
       ]
       this.quickFns = [
         { key: 'room-change', icon: '🏠', label: '换房审批' },
@@ -188,7 +188,7 @@ export default {
       const routes = {
         'room-change': '/pages/government/room-change/index',
         'aid-home': this.isSchool ? '/pages/government/aid-final-home/index' : '/pages/government/aid-home/index',
-        'loan-home': '/pages/government/loan-home/index',
+        'loan-home': this.isSchool ? '/pages/government/loan-final-home/index' : '/pages/government/loan-home/index',
         checkin: '/pages/government/checkin/index',
         dorm: '/pages/government/dorm-home/index',
         messages: '/pages/government/messages/index',

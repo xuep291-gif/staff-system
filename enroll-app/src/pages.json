@@ -138,20 +138,6 @@
       }
     },
     {
-      "path": "pages/teacher/dorm-withdraw/index",
-      "style": {
-        "navigationStyle": "custom",
-        "navigationBarTitleText": "退宿审核"
-      }
-    },
-    {
-      "path": "pages/teacher/dorm-withdraw-review/index",
-      "style": {
-        "navigationStyle": "custom",
-        "navigationBarTitleText": "退宿审核详情"
-      }
-    },
-    {
       "path": "pages/teacher/supply/index",
       "style": {
         "navigationStyle": "custom",
@@ -170,13 +156,6 @@
       "style": {
         "navigationStyle": "custom",
         "navigationBarTitleText": "尺码详情"
-      }
-    },
-    {
-      "path": "pages/teacher/uniform/stats",
-      "style": {
-        "navigationStyle": "custom",
-        "navigationBarTitleText": "尺码统计"
       }
     },
     {
@@ -371,14 +350,28 @@
       "path": "pages/government/loan-home/index",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "助学贷款复审"
+        "navigationBarTitleText": "学院贷款复审列表"
       }
     },
     {
       "path": "pages/government/loan-review/index",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "助学贷款复审"
+        "navigationBarTitleText": "学院贷款复审详情"
+      }
+    },
+    {
+      "path": "pages/government/loan-final-home/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "学工处贷款审批列表"
+      }
+    },
+    {
+      "path": "pages/government/loan-final-review/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "学工处贷款审批详情"
       }
     },
     {

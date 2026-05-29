@@ -514,7 +514,18 @@ function maskPhone(phone = '') {
 }
 
 function getPermissionsData(state, params) {
-  const user = params.userId ? state.users[params.userId] : null
+  // 通过 userId 或 workNo 查找用户（state.users 的 key 是工号/手机号，不是 userId）
+  let user = null
+  let accountKey = null
+  if (params.userId) {
+    for (const [key, u] of Object.entries(state.users)) {
+      if (u.userId === params.userId || u.workNo === params.userId) {
+        user = u
+        accountKey = key
+        break
+      }
+    }
+  }
   if (!user) return fail('用户不存在', 40400)
   const permissionsMap = {
     '1001': { subRole: 'head_teacher', permissions: ['teacher:overview','teacher:fee-list','teacher:student-detail','teacher:urge','teacher:aid-list','teacher:loan-list','teacher:doc-review','teacher:dorm-view','teacher:checkin'], dataScope: { type: 'class', classId: 'class-2026-1' } },
@@ -523,7 +534,8 @@ function getPermissionsData(state, params) {
     '3002': { subRole: 'college_dean', permissions: ['gov:overview','gov:aid-review','gov:loan-review','gov:dorm-review','gov:checkin-stats','gov:non-dorm','gov:stats-college'], dataScope: { type: 'college', collegeId: 'cs' } },
     'C2026001': { subRole: 'college_dean', permissions: ['gov:overview','gov:aid-review','gov:loan-review','gov:dorm-review','gov:checkin-stats','gov:non-dorm','gov:stats-college'], dataScope: { type: 'college', collegeId: 'cs' } }
   }
-  const perm = permissionsMap[params.userId || user.workNo] || { subRole: '', permissions: [], dataScope: { type: 'all' } }
+  // 按工号(accountKey)、workNo、userId 依次匹配权限
+  const perm = permissionsMap[accountKey] || permissionsMap[user.workNo] || permissionsMap[user.userId] || { subRole: '', permissions: [], dataScope: { type: 'all' } }
   return ok({ userId: user.userId, name: user.name, role: user.roles[0], ...perm })
 }
 

@@ -37,7 +37,6 @@
 
       <SCard title="财务意见" :padding="16" v-if="canPay">
         <view class="form-group">
-          <text class="form-label">财务意见</text>
           <textarea class="opinion-textarea" v-model="opinion" placeholder="请输入财务意见…" />
         </view>
       </SCard>
@@ -116,32 +115,31 @@ import { scholarshipApi } from '@/common/api/scholarship.js'
 
 function buildLoanSteps(status) {
   const steps = [
-    { label: '学生提交', sub: '2026-05-20', done: true, current: false, popping: false },
-    { label: '初审通过', sub: '当前步骤', done: false, current: true, popping: false },
-    { label: '政务复审', sub: '待进行', done: false, current: false, popping: false },
-    { label: '教师终审', sub: '待进行', done: false, current: false, popping: false },
-    { label: '待打款', sub: '待进行', done: false, current: false, popping: false }
+    { label: '学生提交申请', sub: '2026-05-20', done: true, current: false, popping: false },
+    { label: '辅导员初审', sub: '待进行', done: false, current: false, popping: false },
+    { label: '学院负责人复审', sub: '待进行', done: false, current: false, popping: false },
+    { label: '学工处审批', sub: '待进行', done: false, current: false, popping: false },
+    { label: '财务打款', sub: '待进行', done: false, current: false, popping: false }
   ]
   if (status === REVIEW_STATUS.FIRST_PASS) {
-    steps[1] = { label: '初审通过', sub: '已通过', done: true, current: false, popping: false }
-    steps[2] = { label: '政务复审', sub: '待复审', done: false, current: true, popping: false }
+    steps[1] = { label: '辅导员初审', sub: '已通过', done: true, current: false, popping: false }
+    steps[2] = { label: '学院负责人复审', sub: '当前步骤', done: false, current: true, popping: false }
   } else if (status === REVIEW_STATUS.REVIEW_PASS) {
-    steps[1] = { label: '初审通过', sub: '已通过', done: true, current: false, popping: false }
-    steps[2] = { label: '政务复审', sub: '已通过', done: true, current: false, popping: false }
-    steps[3] = { label: '教师终审', sub: '当前步骤', done: false, current: true, popping: false }
-  } else if ([REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(status)) {
-    steps[1] = { label: '初审通过', sub: '已通过', done: true, current: false, popping: false }
-    steps[2] = { label: '政务复审', sub: '已通过', done: true, current: false, popping: false }
-    steps[3] = { label: '教师终审', sub: '已通过', done: true, current: false, popping: false }
-    steps[4] = {
-      label: '待打款',
-      sub: status === REVIEW_STATUS.PAYMENT_PENDING ? '当前步骤' : '已打款',
-      done: [REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(status),
-      current: status === REVIEW_STATUS.PAYMENT_PENDING,
-      popping: false
-    }
+    steps[1] = { label: '辅导员初审', sub: '已通过', done: true, current: false, popping: false }
+    steps[2] = { label: '学院负责人复审', sub: '已通过', done: true, current: false, popping: false }
+    steps[3] = { label: '学工处审批', sub: '当前步骤', done: false, current: true, popping: false }
+  } else if ([REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING].includes(status)) {
+    steps[1] = { label: '辅导员初审', sub: '已通过', done: true, current: false, popping: false }
+    steps[2] = { label: '学院负责人复审', sub: '已通过', done: true, current: false, popping: false }
+    steps[3] = { label: '学工处审批', sub: '已通过', done: true, current: false, popping: false }
+    steps[4] = { label: '财务打款', sub: '待打款', done: false, current: true, popping: false }
+  } else if ([REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(status)) {
+    steps[1] = { label: '辅导员初审', sub: '已通过', done: true, current: false, popping: false }
+    steps[2] = { label: '学院负责人复审', sub: '已通过', done: true, current: false, popping: false }
+    steps[3] = { label: '学工处审批', sub: '已通过', done: true, current: false, popping: false }
+    steps[4] = { label: '财务打款', sub: '已完成', done: true, current: false, popping: false }
   } else if (status === REVIEW_STATUS.REJECTED) {
-    steps[1] = { label: '初审通过', sub: '已驳回', done: false, current: false, popping: false }
+    steps[1] = { label: '辅导员初审', sub: '已退回', done: false, current: false, popping: false }
   }
   return steps
 }

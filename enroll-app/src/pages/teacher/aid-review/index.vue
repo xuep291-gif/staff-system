@@ -32,22 +32,26 @@
       <!-- Application Info -->
       <SCard title="申请信息" :padding="16">
         <SInfoRow label="助学金类型">
-          <picker v-if="canReview" mode="selector" :range="aidTypes" :value="aidTypeIndex" @change="onTypeChange">
-            <view class="picker-val">{{ item.type || '国家助学金' }} <text class="picker-arrow">▾</text></view>
-          </picker>
-          <text v-else>{{ item.type || '国家助学金' }}</text>
-        </SInfoRow>
-        <SInfoRow label="申请金额">
-          <view v-if="canReview" class="amount-edit-row">
-            <text class="amount-prefix">¥</text>
-            <input class="amount-input" v-model="editAmount" type="digit" placeholder="请输入金额" />
+          <view v-if="canReview" class="type-picker-wrap">
+            <view class="picker-val" @click.stop="showTypePicker = !showTypePicker">
+              <text>{{ item.type || '国家一等助学金' }}</text>
+              <text class="picker-arrow" :class="{ open: showTypePicker }">▾</text>
+            </view>
+            <view class="type-dropdown" v-if="showTypePicker">
+              <view class="type-option" :class="{ active: item.type === t }" v-for="t in aidTypes" :key="t" @click.stop="selectType(t)">{{ t }}</view>
+            </view>
+            <view class="type-mask" v-if="showTypePicker" @click.stop="showTypePicker = false" />
           </view>
-          <text v-else class="amount-highlight">¥{{ item.amount || '4,000' }}</text>
+          <text v-else>{{ item.type || '国家一等助学金' }}</text>
         </SInfoRow>
-        <SInfoRow label="家庭情况">{{ item.familySituation || '农村低保家庭' }}</SInfoRow>
+<SInfoRow label="家庭人口">{{ item.familySize || '4' }}人</SInfoRow>
+        <SInfoRow label="家庭成员与职业">{{ item.familyMembers || '父亲 务农，母亲 务农，姐姐 在读大学' }}</SInfoRow>
+        <SInfoRow label="家庭年收入">¥{{ item.familyIncome || '12,000' }}</SInfoRow>
+        <SInfoRow label="家庭困难等级">{{ item.difficultyLevel || '特别困难' }}</SInfoRow>
         <SInfoRow label="申请原因">
-          <text class="reason-text">{{ item.reason || '家庭经济困难，申请助学金以完成入学缴费。' }}</text>
+          {{ item.reason || '家庭经济困难，申请助学金以完成入学缴费。' }}
         </SInfoRow>
+        <SInfoRow label="申请日期">{{ item.applyDate || '2026-05-14' }}</SInfoRow>
       </SCard>
 
       <SCard title="佐证材料" :padding="16">
@@ -78,7 +82,6 @@
       <!-- Review Opinion -->
       <SCard title="审核意见" :padding="16" v-if="canReview">
         <view class="form-group">
-          <text class="form-label">审核意见</text>
           <textarea class="opinion-textarea" v-model="opinion" placeholder="请输入审核意见…" />
         </view>
       </SCard>
@@ -153,47 +156,48 @@ export default {
       rejectReason: '',
       submitting: false,
       statusSteps: [],
-      aidTypes: ['国家助学金', '学校助学金', '社会助学金', '临时困难补助'],
-      editAmount: ''
+      aidTypes: ['国家一等助学金', '国家二等助学金', '学校困难补助', '社会助学金'],
+      showTypePicker: false
     }
   },
   computed: {
-    aidTypeIndex() {
-      return this.aidTypes.indexOf(this.item?.type)
-    },
     canReview() {
       if (!this.item) return false
-      return this.item.status === REVIEW_STATUS.PENDING || this.item.status === REVIEW_STATUS.REVIEW_PASS
+      return this.item.status === REVIEW_STATUS.PENDING
     },
     approveLabel() {
-      if (!this.item) return '审核通过'
-      return this.item.status === REVIEW_STATUS.REVIEW_PASS ? '终审通过' : '初审通过'
+      return '初审通过'
     },
     lockedMessage() {
       if (!this.item) return ''
       if (this.canReview) return ''
       if ([REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(this.item.status)) return '流程已完结，仅供查看。'
       if (this.item.status === REVIEW_STATUS.REJECTED) return '申请已驳回，仅供查看。'
-      return '当前阶段暂不可操作，请等待前置流程完成。'
+      return '当前阶段为学院复审或后续流程，请等待其他角色处理。'
     }
   },
   async onLoad(options) {
     const uid = options.uid
     const localItem = uid ? getReviewItem('aids', uid) : null
-    if (uid) this.item = adaptReviewStatus(localItem || loadItem(uid) || { name: '孙文浩', sid: '2026010039', uid: 'aid-1', type: '特殊困难助学金', amount: '4,000', avatar: '孙', status: REVIEW_STATUS.PENDING })
+    if (uid) this.item = adaptReviewStatus(localItem || loadItem(uid) || { name: '孙文浩', sid: '2026010039', uid: 'aid-1', type: '国家一等助学金', amount: '4,000', avatar: '孙', status: REVIEW_STATUS.PENDING })
     if (uid) {
       const detailRes = await scholarshipApi.getScholarshipDetail(uid)
       if (!localItem && detailRes?.data?.code === 0 && detailRes.data.data) this.item = adaptReviewStatus(detailRes.data.data)
     }
     if (this.item) {
-      this.editAmount = String(this.item.amount || '')
-      this.opinion = this.item.status === REVIEW_STATUS.REVIEW_PASS ? '终审复核通过，同意进入财务打款。' : '初审通过，同意进入政务复审。'
+      if (this.item.status !== REVIEW_STATUS.PENDING) {
+        uni.showToast({ title: '该申请不在辅导员初审阶段', icon: 'none' })
+        setTimeout(() => uni.navigateBack(), 800)
+        return
+      }
+      this.opinion = '辅导员初审通过，提交学院负责人复审。'
       this.statusSteps = buildFundingReviewSteps(this.item)
     }
   },
   methods: {
-    onTypeChange(e) {
-      if (this.item) this.item.type = this.aidTypes[Number(e.detail.value)] || this.aidTypes[0]
+    selectType(type) {
+      if (this.item) this.item.type = type
+      this.showTypePicker = false
     },
     stepClass(idx) {
       const s = this.statusSteps[idx]
@@ -204,14 +208,11 @@ export default {
       this.submitting = true
       this.showPreview = false
       this.showReject = false
-      const isFinal = this.item.status === REVIEW_STATUS.REVIEW_PASS
-      const targetStatus = isFinal ? REVIEW_STATUS.FINAL_PASS : REVIEW_STATUS.FIRST_PASS
-      const node = isFinal ? '教师终审' : '教师初审'
-      const result = isFinal ? '终审通过' : '初审通过'
+      const targetStatus = REVIEW_STATUS.FIRST_PASS
       await scholarshipApi.approveScholarship(this.item.uid, { opinion: this.opinion, targetStatus })
-      updateReview('aids', this.item.uid, targetStatus, { node, result, remark: this.opinion })
+      updateReview('aids', this.item.uid, targetStatus, { node: '辅导员初审', result: '初审通过', remark: this.opinion })
       this.item = getReviewItem('aids', this.item.uid) || { ...this.item, status: targetStatus }
-      uni.showToast({ title: result, icon: 'success' })
+      uni.showToast({ title: '初审通过', icon: 'success' })
       setTimeout(() => uni.navigateBack(), 500)
     },
     async onReject() {
@@ -220,10 +221,8 @@ export default {
       this.showReject = false
       this.showPreview = false
       const reason = this.rejectReason || '审核不通过'
-      const isFinal = this.item.status === REVIEW_STATUS.REVIEW_PASS
-      const node = isFinal ? '教师终审' : '教师初审'
       await scholarshipApi.rejectScholarship(this.item.uid, { rejectReason: reason })
-      updateReview('aids', this.item.uid, REVIEW_STATUS.REJECTED, { node, result: '已驳回', remark: reason })
+      updateReview('aids', this.item.uid, REVIEW_STATUS.REJECTED, { node: '辅导员初审', result: '已驳回', remark: reason })
       this.item = getReviewItem('aids', this.item.uid) || { ...this.item, status: REVIEW_STATUS.REJECTED }
       uni.showToast({ title: '已驳回', icon: 'none' })
       setTimeout(() => uni.navigateBack(), 500)
@@ -279,11 +278,17 @@ export default {
 /* ── Highlights ── */
 .amount-highlight { color: var(--er); font-weight: 700; font-size: var(--fs-15); }
 .reason-text { color: var(--N500); font-size: var(--fs-12); line-height: 1.6; }
+.type-picker-wrap { position: relative; }
 .picker-val { color: var(--brand); font-weight: 500; display: flex; align-items: center; }
-.picker-arrow { font-size: var(--fs-10); color: var(--N400); margin-left: 8rpx; }
-.amount-edit-row { display: flex; align-items: center; }
-.amount-prefix { font-size: var(--fs-15); font-weight: 700; color: var(--N500); margin-right: 8rpx; }
-.amount-input { flex: 1; height: 64rpx; padding: 0 16rpx; border: 1.5px solid var(--N200); border-radius: 12rpx; font-size: var(--fs-14); font-weight: 600; color: var(--N900); }
+.picker-val:active { opacity: 0.7; }
+.picker-arrow { font-size: var(--fs-10); color: var(--N400); margin-left: 8rpx; transition: transform .2s; }
+.picker-arrow.open { transform: rotate(180deg); }
+.type-dropdown { position: absolute; top: 100%; left: 0; margin-top: 8rpx; background: var(--white); border-radius: var(--r-8); box-shadow: 0 8rpx 24rpx rgba(0,0,0,.12); overflow: hidden; z-index: 20; min-width: 240rpx; }
+.type-option { padding: 20rpx 24rpx; font-size: var(--fs-13); color: var(--N700); border-bottom: 1px solid var(--N50); }
+.type-option:last-child { border-bottom: none; }
+.type-option:active { background: var(--N50); }
+.type-option.active { color: var(--brand); font-weight: 600; background: var(--brand-t); }
+.type-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10; background: transparent; }
 
 .preview-entry { display: flex; align-items: center; min-height: 96rpx; }
 .preview-entry > * + * { margin-left: 20rpx; }

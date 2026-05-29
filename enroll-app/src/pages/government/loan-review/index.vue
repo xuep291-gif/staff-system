@@ -1,6 +1,6 @@
 <template>
   <view class="page">
-    <SNavBar title="助学贷款复审" :showBack="true" />
+    <SNavBar :title="reviewTitle" :showBack="true" />
     <scroll-view v-if="item" scroll-y class="body">
       <view class="student-card">
         <view class="avatar">{{ item.avatar || item.name.charAt(0) }}</view>
@@ -35,16 +35,15 @@
         </view>
       </SCard>
 
-      <SCard title="复审意见" :padding="16">
+      <SCard :title="reviewTitle + '意见'" :padding="16">
         <view class="form-group">
-          <text class="form-label">复审意见</text>
-          <textarea class="opinion-textarea" v-model="opinion" placeholder="请输入复审意见…" />
+          <textarea class="opinion-textarea" v-model="opinion" :placeholder="'请输入' + reviewTitle + '意见…'" />
         </view>
       </SCard>
 
       <view class="action-row" v-if="canReview">
         <view class="btn-e-outline" @click="showReject = true"><text>不予通过</text></view>
-        <view class="btn-p" @click="onApprove"><text>复审通过</text></view>
+        <view class="btn-p" @click="onApprove"><text>{{ approveLabel }}</text></view>
       </view>
     </scroll-view>
     <SEmpty v-else text="未找到该贷款申请" />
@@ -92,32 +91,31 @@ import { scholarshipApi } from '@/common/api/scholarship.js'
 
 function buildLoanSteps(status) {
   const steps = [
-    { label: '学生提交', sub: '2026-05-20', done: true, current: false, popping: false },
-    { label: '初审通过', sub: '当前步骤', done: false, current: true, popping: false },
-    { label: '政务复审', sub: '待进行', done: false, current: false, popping: false },
-    { label: '教师终审', sub: '待进行', done: false, current: false, popping: false },
-    { label: '待打款', sub: '待进行', done: false, current: false, popping: false }
+    { label: '学生提交申请', sub: '2026-05-20', done: true, current: false, popping: false },
+    { label: '辅导员初审', sub: '待进行', done: false, current: false, popping: false },
+    { label: '学院负责人复审', sub: '待进行', done: false, current: false, popping: false },
+    { label: '学工处审批', sub: '待进行', done: false, current: false, popping: false },
+    { label: '财务打款', sub: '待进行', done: false, current: false, popping: false }
   ]
   if (status === REVIEW_STATUS.FIRST_PASS) {
-    steps[1] = { label: '初审通过', sub: '已通过', done: true, current: false, popping: false }
-    steps[2] = { label: '政务复审', sub: '当前步骤', done: false, current: true, popping: false }
+    steps[1] = { label: '辅导员初审', sub: '已通过', done: true, current: false, popping: false }
+    steps[2] = { label: '学院负责人复审', sub: '当前步骤', done: false, current: true, popping: false }
   } else if (status === REVIEW_STATUS.REVIEW_PASS) {
-    steps[1] = { label: '初审通过', sub: '已通过', done: true, current: false, popping: false }
-    steps[2] = { label: '政务复审', sub: '已通过', done: true, current: false, popping: false }
-    steps[3] = { label: '教师终审', sub: '当前步骤', done: false, current: true, popping: false }
-  } else if ([REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(status)) {
-    steps[1] = { label: '初审通过', sub: '已通过', done: true, current: false, popping: false }
-    steps[2] = { label: '政务复审', sub: '已通过', done: true, current: false, popping: false }
-    steps[3] = { label: '教师终审', sub: '已通过', done: true, current: false, popping: false }
-    steps[4] = {
-      label: '待打款',
-      sub: status === REVIEW_STATUS.PAYMENT_PENDING ? '当前步骤' : '已打款',
-      done: [REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(status),
-      current: status === REVIEW_STATUS.PAYMENT_PENDING,
-      popping: false
-    }
+    steps[1] = { label: '辅导员初审', sub: '已通过', done: true, current: false, popping: false }
+    steps[2] = { label: '学院负责人复审', sub: '已通过', done: true, current: false, popping: false }
+    steps[3] = { label: '学工处审批', sub: '当前步骤', done: false, current: true, popping: false }
+  } else if ([REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING].includes(status)) {
+    steps[1] = { label: '辅导员初审', sub: '已通过', done: true, current: false, popping: false }
+    steps[2] = { label: '学院负责人复审', sub: '已通过', done: true, current: false, popping: false }
+    steps[3] = { label: '学工处审批', sub: '已通过', done: true, current: false, popping: false }
+    steps[4] = { label: '财务打款', sub: '待打款', done: false, current: true, popping: false }
+  } else if ([REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(status)) {
+    steps[1] = { label: '辅导员初审', sub: '已通过', done: true, current: false, popping: false }
+    steps[2] = { label: '学院负责人复审', sub: '已通过', done: true, current: false, popping: false }
+    steps[3] = { label: '学工处审批', sub: '已通过', done: true, current: false, popping: false }
+    steps[4] = { label: '财务打款', sub: '已完成', done: true, current: false, popping: false }
   } else if (status === REVIEW_STATUS.REJECTED) {
-    steps[1] = { label: '初审通过', sub: '已驳回', done: false, current: false, popping: false }
+    steps[1] = { label: '辅导员初审', sub: '已退回', done: false, current: false, popping: false }
   }
   return steps
 }
@@ -126,11 +124,21 @@ export default {
   name: 'GovernmentLoanReview',
   components: { SNavBar, SCard, SInfoRow, SBadge, SEmpty, SReviewProgress },
   data() {
-    return { uid: '', item: null, opinion: '资格复核通过，同意进入教师终审。', rejectReason: '', showPreview: false, showReject: false, submitting: false }
+    return { REVIEW_STATUS, uid: '', expectedStatus: '', item: null, opinion: '学院负责人复审通过，提交学工处审批。', rejectReason: '', showPreview: false, showReject: false, submitting: false }
   },
   computed: {
     canReview() {
-      return this.item && this.item.status === REVIEW_STATUS.FIRST_PASS
+      if (!this.item) return false
+      return this.expectedStatus === REVIEW_STATUS.FIRST_PASS
+    },
+    approveLabel() { return '复审通过' },
+    reviewTitle() { return '学院负责人复审' },
+    lockedMessage() {
+      if (!this.item) return ''
+      if (this.canReview) return ''
+      if (this.item.status === REVIEW_STATUS.REJECTED) return '申请已驳回，仅供查看。'
+      if ([REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(this.item.status)) return '流程已完结，仅供查看。'
+      return '当前阶段为学工处审批或后续流程，请等待其他角色处理。'
     },
     statusSteps() {
       return buildLoanSteps(this.item?.status)
@@ -138,11 +146,16 @@ export default {
   },
   onLoad(options) {
     this.uid = options.uid || ''
+    this.expectedStatus = options.status || ''
   },
   async onShow() {
     const localItem = this.uid ? getReviewItem('loans', this.uid) : null
+    if (localItem) {
+      this.item = localItem
+      return
+    }
     const res = this.uid ? await scholarshipApi.getLoanDetail(this.uid) : null
-    this.item = localItem || (res?.data?.code === 0 ? res.data.data : null)
+    this.item = res?.data?.code === 0 ? res.data.data : null
   },
   methods: {
     async onApprove() {
@@ -151,7 +164,7 @@ export default {
       this.showPreview = false
       this.showReject = false
       await scholarshipApi.approveLoan(this.uid, { opinion: this.opinion, targetStatus: REVIEW_STATUS.REVIEW_PASS })
-      updateReview('loans', this.uid, REVIEW_STATUS.REVIEW_PASS, { node: '政务复审', result: '复审通过', remark: this.opinion })
+      updateReview('loans', this.uid, REVIEW_STATUS.REVIEW_PASS, { node: '学院负责人复审', result: '复审通过', remark: this.opinion })
       this.item = getReviewItem('loans', this.uid) || { ...this.item, status: REVIEW_STATUS.REVIEW_PASS }
       uni.showToast({ title: '复审通过', icon: 'success' })
       setTimeout(() => uni.navigateBack(), 500)
@@ -161,9 +174,9 @@ export default {
       this.submitting = true
       this.showReject = false
       this.showPreview = false
-      const reason = this.rejectReason || '政务复审驳回'
+      const reason = this.rejectReason || '复审驳回'
       await scholarshipApi.rejectLoan(this.uid, { rejectReason: reason })
-      updateReview('loans', this.uid, REVIEW_STATUS.REJECTED, { node: '政务复审', result: '已驳回', remark: reason })
+      updateReview('loans', this.uid, REVIEW_STATUS.REJECTED, { node: '学院负责人复审', result: '已驳回', remark: reason })
       this.item = getReviewItem('loans', this.uid) || { ...this.item, status: REVIEW_STATUS.REJECTED }
       uni.showToast({ title: '已驳回', icon: 'none' })
       setTimeout(() => uni.navigateBack(), 500)

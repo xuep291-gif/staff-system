@@ -4,10 +4,10 @@
     <scroll-view scroll-y class="body" v-if="item">
       <!-- Student Info Card -->
       <view class="student-card">
-        <view class="avatar">{{ item.avatar }}</view>
+        <view class="avatar">{{ item.avatar || item.name.charAt(0) }}</view>
         <view class="info">
           <text class="name">{{ item.name }}</text>
-          <text class="meta">{{ item.id }} · {{ item.college }}</text>
+          <text class="meta">{{ item.sid }} · 计算机学院 2026级1班</text>
         </view>
         <SBadge :color="item.badgeColor">{{ item.statusLabel }}</SBadge>
       </view>
@@ -15,12 +15,7 @@
       <!-- Status Steps -->
       <SCard title="审核进度" :padding="16">
         <view class="steps">
-          <view
-            v-for="(step, idx) in statusSteps"
-            :key="idx"
-            class="step"
-            :class="stepClass(idx)"
-          >
+          <view v-for="(step, idx) in statusSteps" :key="idx" class="step" :class="stepClass(idx)">
             <view class="step-dot" :class="stepClass(idx)">
               <text v-if="step.done" class="step-check">✓</text>
               <text v-else class="step-num">{{ idx + 1 }}</text>
@@ -39,7 +34,7 @@
         <SInfoRow label="贷款金额">
           <text class="amount-red">¥{{ item.amount }}</text>
         </SInfoRow>
-        <SInfoRow label="贷款类型">生源地助学贷款</SInfoRow>
+        <SInfoRow label="贷款类型">{{ item.type || '生源地助学贷款' }}</SInfoRow>
         <SInfoRow label="贷款银行">国家开发银行</SInfoRow>
         <SInfoRow label="申请时间">2026-05-20 09:15</SInfoRow>
         <SInfoRow label="申请原因">
@@ -76,7 +71,6 @@
       <!-- Review Opinion -->
       <SCard title="审核意见" :padding="16" v-if="canReview">
         <view class="form-group">
-          <text class="form-label">审核意见</text>
           <textarea class="opinion-textarea" v-model="opinion" placeholder="请输入审核意见…" />
         </view>
       </SCard>
@@ -126,6 +120,18 @@ import SBadge from '@/components/shared/SBadge.vue'
 import { adaptReviewStatus, buildFundingReviewSteps, getReviewItem, updateReview, REVIEW_STATUS } from '@/utils/businessState.js'
 import { scholarshipApi } from '@/common/api/scholarship.js'
 
+const STORAGE_KEY = 'teacher_loan_list'
+
+function loadItem(uid) {
+  try {
+    const raw = uni.getStorageSync(STORAGE_KEY)
+    if (raw) {
+      return JSON.parse(raw).find(i => i.uid === uid) || null
+    }
+  } catch (e) { /* ignore */ }
+  return null
+}
+
 export default {
   name: 'TeacherLoanReview',
   components: { SNavBar, SCard, SInfoRow, SBadge },
@@ -143,31 +149,35 @@ export default {
   computed: {
     canReview() {
       if (!this.item) return false
-      return this.item.status === REVIEW_STATUS.PENDING || this.item.status === REVIEW_STATUS.REVIEW_PASS
+      return this.item.status === REVIEW_STATUS.PENDING
     },
     approveLabel() {
-      if (!this.item) return '审核通过'
-      return this.item.status === REVIEW_STATUS.REVIEW_PASS ? '终审通过' : '初审通过'
+      return '初审通过'
     },
     lockedMessage() {
       if (!this.item) return ''
       if (this.canReview) return ''
       if ([REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(this.item.status)) return '流程已完结，仅供查看。'
       if (this.item.status === REVIEW_STATUS.REJECTED) return '申请已驳回，仅供查看。'
-      return '当前阶段暂不可操作，请等待前置流程完成。'
+      return '当前阶段为学院复审或后续流程，请等待其他角色处理。'
     }
   },
   async onLoad(options) {
     const uid = options.uid
+    const localItem = uid ? getReviewItem('loans', uid) : null
+    if (uid) this.item = adaptReviewStatus(localItem || loadItem(uid) || { name: '孙文浩', sid: '2026010039', uid: 'loan-1', type: '生源地助学贷款', amount: '8,000', avatar: '孙', status: REVIEW_STATUS.PENDING })
     if (uid) {
-      const localItem = getReviewItem('loans', uid)
-      this.item = localItem ? adaptReviewStatus(localItem) : null
       const detailRes = await scholarshipApi.getLoanDetail(uid)
       if (!localItem && detailRes?.data?.code === 0 && detailRes.data.data) this.item = adaptReviewStatus(detailRes.data.data)
-      if (this.item) {
-        this.opinion = this.item.status === REVIEW_STATUS.REVIEW_PASS ? '终审复核通过，同意进入财务打款。' : '初审通过，同意进入政务复审。'
-        this.statusSteps = buildFundingReviewSteps(this.item)
+    }
+    if (this.item) {
+      if (this.item.status !== REVIEW_STATUS.PENDING) {
+        uni.showToast({ title: '该申请不在辅导员初审阶段', icon: 'none' })
+        setTimeout(() => uni.navigateBack(), 800)
+        return
       }
+      this.opinion = '辅导员初审通过，提交学院负责人复审。'
+      this.statusSteps = buildFundingReviewSteps(this.item)
     }
   },
   methods: {
@@ -180,14 +190,11 @@ export default {
       this.submitting = true
       this.showPreview = false
       this.showReject = false
-      const isFinal = this.item.status === REVIEW_STATUS.REVIEW_PASS
-      const targetStatus = isFinal ? REVIEW_STATUS.FINAL_PASS : REVIEW_STATUS.FIRST_PASS
-      const node = isFinal ? '教师终审' : '教师初审'
-      const result = isFinal ? '终审通过' : '初审通过'
+      const targetStatus = REVIEW_STATUS.FIRST_PASS
       await scholarshipApi.approveLoan(this.item.uid, { opinion: this.opinion, targetStatus })
-      updateReview('loans', this.item.uid, targetStatus, { node, result, remark: this.opinion })
+      updateReview('loans', this.item.uid, targetStatus, { node: '辅导员初审', result: '初审通过', remark: this.opinion })
       this.item = getReviewItem('loans', this.item.uid) || { ...this.item, status: targetStatus }
-      uni.showToast({ title: result, icon: 'success' })
+      uni.showToast({ title: '初审通过', icon: 'success' })
       setTimeout(() => uni.navigateBack(), 500)
     },
     async onReject() {
@@ -196,10 +203,8 @@ export default {
       this.showReject = false
       this.showPreview = false
       const reason = this.rejectReason || '审核不通过'
-      const isFinal = this.item.status === REVIEW_STATUS.REVIEW_PASS
-      const node = isFinal ? '教师终审' : '教师初审'
       await scholarshipApi.rejectLoan(this.item.uid, { rejectReason: reason })
-      updateReview('loans', this.item.uid, REVIEW_STATUS.REJECTED, { node, result: '已驳回', remark: reason })
+      updateReview('loans', this.item.uid, REVIEW_STATUS.REJECTED, { node: '辅导员初审', result: '已驳回', remark: reason })
       this.item = getReviewItem('loans', this.item.uid) || { ...this.item, status: REVIEW_STATUS.REJECTED }
       uni.showToast({ title: '已驳回', icon: 'none' })
       setTimeout(() => uni.navigateBack(), 500)

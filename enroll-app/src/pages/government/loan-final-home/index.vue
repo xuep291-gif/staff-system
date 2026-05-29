@@ -1,60 +1,56 @@
 <template>
   <view class="page">
-    <SNavBar title="助学贷款" :showBack="true" fallbackUrl="/pages/teacher/home/index" />
-    <StatusTabs tabGroup="teacherLoanHome" :tabs="tabs" @change="onTabClick" />
+    <SNavBar title="学工处贷款审批" :showBack="true" fallbackUrl="/pages/government/home/index" />
+    <StatusTabs tabGroup="govLoanFinalHome" :tabs="tabs" @change="onTabClick" />
     <scroll-view scroll-y class="body">
       <view class="sc">
-        <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="goDetail(item)">
+        <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="goReview(item)">
           <view class="card-bd">
             <view class="li">
               <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>
               <view class="li-info">
                 <text class="li-name">{{ item.name }}</text>
                 <text class="li-meta">{{ item.id }} · {{ item.college }}</text>
-                <text class="li-amount">申请金额：¥{{ item.amount }}</text>
+                <text class="li-amount">¥{{ item.amount }} · {{ item.type }}</text>
               </view>
               <SBadge :color="item.listBadgeColor">{{ item.listStatusLabel }}</SBadge>
               <text class="li-arrow">›</text>
             </view>
           </view>
         </view>
-        <SEmpty v-if="filteredList.length === 0" text="暂无贷款申请" />
+        <SEmpty v-if="filteredList.length === 0" text="暂无贷款记录" />
       </view>
     </scroll-view>
   </view>
 </template>
+
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
+import { getLastBusinessChange, getReviewList, REVIEW_STATUS, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
-const REVIEW_KEY_MAP = ['pending', 'processing', 'completed']
-
 export default {
-  name: 'TeacherLoanHome',
+  name: 'GovernmentLoanFinalHome',
   components: { SNavBar, StatusTabs, SBadge, SEmpty },
   data() {
-    return {
-      activeTab: 'pending',
-      filterVersion: 0,
-      list: [],
-      lastSyncedChange: ''
-    }
+    return { activeTab: 'pending', filterVersion: 0, list: [], lastSyncedChange: '' }
   },
   computed: {
     tabs() {
-      return buildReviewTabs(this.list, 'teacher').map((tab, i) => ({
-        ...tab,
-        key: REVIEW_KEY_MAP[i] || `tab-${i}`
-      }))
+      return [
+        { key: 'pending', label: '待审批', count: this.list.filter(i => i.status === REVIEW_STATUS.REVIEW_PASS).length },
+        { key: 'processing', label: '审批中', count: this.list.filter(i => i.status === REVIEW_STATUS.FINAL_PASS).length },
+        { key: 'completed', label: '已完结', count: this.list.filter(i => [REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED].includes(i.status)).length }
+      ]
     },
     filteredList() {
-      const idx = REVIEW_KEY_MAP.indexOf(this.activeTab)
-      return filterReviewByTab(this.list, 'teacher', idx >= 0 ? idx : 0)
+      if (this.activeTab === 'pending') return this.list.filter(i => i.status === REVIEW_STATUS.REVIEW_PASS)
+      if (this.activeTab === 'processing') return this.list.filter(i => i.status === REVIEW_STATUS.FINAL_PASS)
+      return this.list.filter(i => [REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED].includes(i.status))
     }
   },
   watch: {
@@ -73,13 +69,12 @@ export default {
     this.filterVersion++
     try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
-    this.activeTab = getActiveKey('teacherLoanHome', 'pending')
+    this.activeTab = getActiveKey('govLoanFinalHome', 'pending')
   },
   methods: {
     onTabClick(key) {
-      console.log('[loan-home] onTabClick key=', key)
       this.activeTab = key
-      setActiveKey('teacherLoanHome', key)
+      setActiveKey('govLoanFinalHome', key)
     },
     refresh(syncChangedTab = false) {
       const rows = getReviewList('loans')
@@ -97,16 +92,18 @@ export default {
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
-      const idx = getReviewTabIndex(item, 'teacher')
-      setActiveKey('teacherLoanHome', REVIEW_KEY_MAP[idx] || 'pending')
+      const key = item.status === REVIEW_STATUS.REVIEW_PASS ? 'pending' : item.status === REVIEW_STATUS.FINAL_PASS ? 'processing' : 'completed'
+      setActiveKey('govLoanFinalHome', key)
     },
-    goDetail(item) {
-      rememberStaffBackTarget('/pages/teacher/loan-home/index')
-      uni.navigateTo({ url: '/pages/teacher/loan-review/index?uid=' + item.uid + '&status=' + item.status })
+    goReview(item) {
+      rememberStaffBackTarget('/pages/government/loan-final-home/index')
+      if (this.activeTab === 'pending' && item.status !== REVIEW_STATUS.REVIEW_PASS) return
+      uni.navigateTo({ url: '/pages/government/loan-final-review/index?uid=' + item.uid + '&status=' + item.status })
     }
   }
 }
 </script>
+
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
 .body { height: 0; flex: 1; }

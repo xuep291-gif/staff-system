@@ -16,7 +16,7 @@
         <SInfoRow label="助学金类型">
           <view v-if="canReview" class="type-picker-wrap">
             <view class="picker-val" @click.stop="showTypePicker = !showTypePicker">
-              <text>{{ item.type || '国家助学金' }}</text>
+              <text>{{ item.type || '国家一等助学金' }}</text>
               <text class="picker-arrow" :class="{ open: showTypePicker }">▾</text>
             </view>
             <view class="type-dropdown" v-if="showTypePicker">
@@ -24,15 +24,16 @@
             </view>
             <view class="type-mask" v-if="showTypePicker" @click.stop="showTypePicker = false" />
           </view>
-          <text v-else>{{ item.type || '国家助学金' }}</text>
+          <text v-else>{{ item.type || '国家一等助学金' }}</text>
         </SInfoRow>
-        <SInfoRow label="申请金额">
-          <text class="amount-highlight">¥{{ item.amount || '4,000' }}</text>
-        </SInfoRow>
-        <SInfoRow label="家庭情况">{{ item.familySituation || '农村低保家庭' }}</SInfoRow>
+<SInfoRow label="家庭人口">{{ item.familySize || '4' }}人</SInfoRow>
+        <SInfoRow label="家庭成员与职业">{{ item.familyMembers || '父亲 务农，母亲 务农，姐姐 在读大学' }}</SInfoRow>
+        <SInfoRow label="家庭年收入">¥{{ item.familyIncome || '12,000' }}</SInfoRow>
+        <SInfoRow label="家庭困难等级">{{ item.difficultyLevel || '特别困难' }}</SInfoRow>
         <SInfoRow label="申请原因">
-          <text class="reason-text">{{ item.reason || '家庭经济困难，申请助学金以完成入学缴费。' }}</text>
+          {{ item.reason || '家庭经济困难，申请助学金以完成入学缴费。' }}
         </SInfoRow>
+        <SInfoRow label="申请日期">{{ item.applyDate || '2026-05-14' }}</SInfoRow>
       </SCard>
 
       <SCard title="佐证材料" :padding="16">
@@ -48,7 +49,6 @@
 
       <SCard :title="reviewTitle + '意见'" :padding="16">
         <view class="form-group">
-          <text class="form-label">复审意见</text>
           <textarea class="opinion-textarea" v-model="opinion" :placeholder="'请输入' + reviewTitle + '意见…'" />
         </view>
       </SCard>
@@ -136,7 +136,7 @@ export default {
   name: 'GovernmentAidReview',
   components: { SNavBar, SCard, SInfoRow, SBadge, SEmpty, SReviewProgress },
   data() {
-    return { REVIEW_STATUS, uid: '', expectedStatus: '', item: null, opinion: '学院负责人复审通过，提交学工处审批。', rejectReason: '', showPreview: false, showReject: false, submitting: false, aidTypes: ['国家助学金', '学校助学金', '社会助学金', '临时困难补助'], showTypePicker: false }
+    return { REVIEW_STATUS, uid: '', expectedStatus: '', item: null, opinion: '学院负责人复审通过，提交学工处审批。', rejectReason: '', showPreview: false, showReject: false, submitting: false, aidTypes: ['国家一等助学金', '国家二等助学金', '学校困难补助', '社会助学金'], showTypePicker: false }
   },
   computed: {
     canReview() {

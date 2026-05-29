@@ -134,30 +134,30 @@ export default {
 
     // 按子角色动态配置
     if (subRole === SUB_ROLES.STUDENT_AFFAIRS) {
-      this.gov = { avatar: '周', name: '周婷婷', subtitle: '政务处 · 学工处负责人' }
+      this.gov = { avatar: '李', name: '李明远', subtitle: '学工处 · 学工处负责人' }
       this.todos = [
-        { key: 'room-change', label: '换房审批', desc: '6 条待审批申请', barColor: 'var(--er)', badgeColor: 'er', count: 6 },
-        { key: 'aid-home', label: '助学金终审', desc: '3 条待终审申请', barColor: 'var(--wa)', badgeColor: 'wa', count: 3 },
-        { key: 'loan-home', label: '助学贷款终审', desc: '2 条待终审申请', barColor: 'var(--in)', badgeColor: 'in', count: 2 }
+        { key: 'room-change', label: '换房审批', desc: '待审批申请', barColor: 'var(--er)', badgeColor: 'er', count: 6 },
+        { key: 'aid-home', label: '助学金学工处审批', desc: '学院复审已通过，待学工处审批', barColor: 'var(--wa)', badgeColor: 'wa', count: 3 },
+        { key: 'loan-home', label: '助学贷款终审', desc: '待终审申请', barColor: 'var(--in)', badgeColor: 'in', count: 2 }
       ]
       this.quickFns = [
         { key: 'room-change', icon: '🏠', label: '换房审批' },
-        { key: 'aid-home', icon: '📄', label: '助学金审' },
+        { key: 'aid-home', icon: '📄', label: '助学金审批' },
         { key: 'loan-home', icon: '🏦', label: '贷款终审' },
         { key: 'checkin', icon: '✅', label: '报到统计' },
         { key: 'stats', icon: '📊', label: '统计概览' },
         { key: 'messages', icon: '🔔', label: '消息通知' }
       ]
     } else if (subRole === SUB_ROLES.COLLEGE_DEAN) {
-      this.gov = { avatar: '李', name: '李明远', subtitle: '计算机学院 · 学院负责人' }
+      this.gov = { avatar: '张', name: '张教授', subtitle: '计算机学院 · 学院负责人' }
       this.todos = [
-        { key: 'room-change', label: '换房审批(本院)', desc: '6 条待审批申请', barColor: 'var(--er)', badgeColor: 'er', count: 6 },
-        { key: 'aid-home', label: '助学金复审(本院)', desc: '3 条待复审申请', barColor: 'var(--wa)', badgeColor: 'wa', count: 3 },
-        { key: 'loan-home', label: '助学贷款复审(本院)', desc: '2 条待复审申请', barColor: 'var(--in)', badgeColor: 'in', count: 2 }
+        { key: 'room-change', label: '换房审批(本院)', desc: '待审批申请', barColor: 'var(--er)', badgeColor: 'er', count: 6 },
+        { key: 'aid-home', label: '助学金学院复审', desc: '辅导员初审已通过，待学院复审', barColor: 'var(--wa)', badgeColor: 'wa', count: 3 },
+        { key: 'loan-home', label: '助学贷款复审(本院)', desc: '待复审申请', barColor: 'var(--in)', badgeColor: 'in', count: 2 }
       ]
       this.quickFns = [
         { key: 'room-change', icon: '🏠', label: '换房审批' },
-        { key: 'aid-home', icon: '📄', label: '助学金审' },
+        { key: 'aid-home', icon: '📄', label: '助学金复审' },
         { key: 'loan-home', icon: '🏦', label: '贷款复审' },
         { key: 'checkin', icon: '✅', label: '报到统计' },
         { key: 'messages', icon: '🔔', label: '消息通知' }
@@ -179,9 +179,11 @@ export default {
     goMessages() { uni.navigateTo({ url: '/pages/government/messages/index' }) },
     goSettings() { uni.navigateTo({ url: '/pages/government/settings/index' }) },
     goTodo(key) {
+      const subRole = getSubRole()
+      const isSchool = subRole === SUB_ROLES.STUDENT_AFFAIRS
       const routes = {
         'room-change': '/pages/government/room-change/index',
-        'aid-home': '/pages/government/aid-home/index',
+        'aid-home': isSchool ? '/pages/government/aid-final-home/index' : '/pages/government/aid-home/index',
         'loan-home': '/pages/government/loan-home/index',
         checkin: '/pages/government/checkin/index',
         dorm: '/pages/government/dorm-home/index',
@@ -191,7 +193,9 @@ export default {
       if (routes[key]) { uni.navigateTo({ url: routes[key] }) }
     },
     onTabSwitch(idx) {
-      const routes = [null, '/pages/government/dorm-home/index', '/pages/government/aid-home/index', '/pages/government/checkin/index', '/pages/government/messages/index']
+      const subRole = getSubRole()
+      const isSchool = subRole === SUB_ROLES.STUDENT_AFFAIRS
+      const routes = [null, '/pages/government/dorm-home/index', isSchool ? '/pages/government/aid-final-home/index' : '/pages/government/aid-home/index', '/pages/government/checkin/index', '/pages/government/messages/index']
       if (idx > 0 && routes[idx]) { uni.navigateTo({ url: routes[idx] }) }
     }
   }

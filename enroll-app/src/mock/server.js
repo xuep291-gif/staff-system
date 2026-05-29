@@ -152,7 +152,9 @@ function seedState() {
       '2001': { userId: 'staff_finance_001', name: '陈美玲', workNo: 'F2026001', phone: '13800138001', roles: ['finance'], type: 3, typeList: [3], departmentName: '财务处' },
       '13800138001': { userId: 'staff_finance_001', name: '陈美玲', workNo: 'F2026001', phone: '13800138001', roles: ['finance'], type: 3, typeList: [3], departmentName: '财务处' },
       '3001': { userId: 'staff_gov_001', name: '李明远', workNo: 'G2026001', phone: '13800138002', roles: ['government'], type: 5, typeList: [5], departmentName: '学工处' },
-      '13800138002': { userId: 'staff_gov_001', name: '李明远', workNo: 'G2026001', phone: '13800138002', roles: ['government'], type: 5, typeList: [5], departmentName: '学工处' }
+      '13800138002': { userId: 'staff_gov_001', name: '李明远', workNo: 'G2026001', phone: '13800138002', roles: ['government'], type: 5, typeList: [5], departmentName: '学工处' },
+      '3002': { userId: 'staff_college_001', name: '张教授', workNo: 'C2026001', phone: '13800138003', roles: ['government'], type: 5, typeList: [5], departmentName: '计算机学院' },
+      '13800138003': { userId: 'staff_college_001', name: '张教授', workNo: 'C2026001', phone: '13800138003', roles: ['government'], type: 5, typeList: [5], departmentName: '计算机学院' }
     },
     currentUserId: 'staff_teacher_001',
     tokens: {},
@@ -513,7 +515,9 @@ function getPermissionsData(state, params) {
   const permissionsMap = {
     '1001': { subRole: 'head_teacher', permissions: ['teacher:overview','teacher:fee-list','teacher:student-detail','teacher:urge','teacher:aid-list','teacher:loan-list','teacher:doc-review','teacher:dorm-view','teacher:checkin'], dataScope: { type: 'class', classId: 'class-2026-1' } },
     '2001': { subRole: 'fee_collector', permissions: ['finance:overview','finance:collect','finance:refund','finance:diff','finance:receipt','finance:urge','finance:payout'], dataScope: { type: 'all' } },
-    '3001': { subRole: 'student_affairs', permissions: ['gov:overview','gov:aid-final','gov:loan-final','gov:dorm-review','gov:checkin-stats','gov:non-dorm','gov:stats-global'], dataScope: { type: 'all' } }
+    '3001': { subRole: 'student_affairs', permissions: ['gov:overview','gov:aid-final','gov:loan-final','gov:dorm-review','gov:checkin-stats','gov:non-dorm','gov:stats-global'], dataScope: { type: 'all' } },
+    '3002': { subRole: 'college_dean', permissions: ['gov:overview','gov:aid-review','gov:loan-review','gov:dorm-review','gov:checkin-stats','gov:non-dorm','gov:stats-college'], dataScope: { type: 'college', collegeId: 'cs' } },
+    'C2026001': { subRole: 'college_dean', permissions: ['gov:overview','gov:aid-review','gov:loan-review','gov:dorm-review','gov:checkin-stats','gov:non-dorm','gov:stats-college'], dataScope: { type: 'college', collegeId: 'cs' } }
   }
   const perm = permissionsMap[params.userId || user.workNo] || { subRole: '', permissions: [], dataScope: { type: 'all' } }
   return ok({ userId: user.userId, name: user.name, role: user.roles[0], ...perm })

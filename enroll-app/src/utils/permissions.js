@@ -156,12 +156,21 @@ export function getUserPermissions() {
 }
 
 export function getSubRole() {
+  // 优先读直接存储的 key，避免 $cache 格式兼容问题
+  try {
+    const direct = uni.getStorageSync('staff_sub_role')
+    if (direct) return direct
+  } catch (e) { /* ignore */ }
   const user = readUserInfo()
   if (!user) return ''
   return user.subRole || ''
 }
 
 export function getDataScope() {
+  try {
+    const direct = uni.getStorageSync('staff_data_scope')
+    if (direct) return JSON.parse(direct)
+  } catch (e) { /* ignore */ }
   const user = readUserInfo()
   if (!user) return { type: 'all' }
   return user.dataScope || { type: 'all' }

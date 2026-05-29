@@ -494,6 +494,8 @@ export default {
 
       uni.setStorageSync(globalConfig.tokenStorageKey, userInfo.accessToken)
       this.$cache('userInfo', query, 3600 * 24 * 2)
+      uni.setStorageSync('staff_sub_role', query.subRole || '')
+      uni.setStorageSync('staff_data_scope', JSON.stringify(query.dataScope || { type: 'all' }))
       uni.setStorageSync('currentRole', resolveRole(query))
       uni.setStorageSync('allRoles', resolveAllRoles(query))
       uni.setStorageSync('communityData', _.pick(query, ['communityId', 'orgId']))

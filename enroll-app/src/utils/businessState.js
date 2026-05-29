@@ -207,15 +207,19 @@ const seed = {
     { uid: 'doc-5', sid: '2026010030', status: MATERIAL_STATUS.FINAL_PASS, submittedAt: '05-14 14:55', tags: ['身份证', '录取通知书', '户口本', '证件照'], logs: [{ node: '班主任审核', time: '2026-05-14 14:55', result: '审核通过' }] },
     { uid: 'doc-6', sid: '2026010039', status: MATERIAL_STATUS.REJECTED, submittedAt: '05-15 09:30', tags: ['身份证', '录取通知书', '户口本', '证件照'], reason: '身份证照片模糊', logs: [{ node: '班主任审核', time: '2026-05-15 09:30', result: '已退回', remark: '身份证照片模糊' }] }
   ],
-  aids: [
-    { uid: 'aid-1', sid: '2026010039', amount: '4,000', type: '特殊困难助学金', status: REVIEW_STATUS.PENDING, date: '05-14', logs: [{ node: '学生申请', time: '2026-05-14 16:22', result: '已提交' }] },
-    { uid: 'aid-2', sid: '2026010015', amount: '3,000', type: '普通困难助学金', status: REVIEW_STATUS.PENDING, date: '05-15', logs: [{ node: '学生申请', time: '2026-05-15 10:02', result: '已提交' }] },
-    { uid: 'aid-3', sid: '2026010027', name: '吴静雯', amount: '2,000', type: '普通困难助学金', status: REVIEW_STATUS.PENDING, date: '05-16', logs: [{ node: '学生申请', time: '2026-05-16 09:18', result: '已提交' }] },
-    { uid: 'aid-4', sid: '2026010033', name: '马晓东', amount: '3,500', type: '国家助学金', status: REVIEW_STATUS.REVIEW_PASS, date: '05-13', logs: [{ node: '政务复审', time: '2026-05-13 11:20', result: '复审通过' }] },
-    { uid: 'aid-5', sid: '2026010002', amount: '3,000', type: '国家助学金', status: REVIEW_STATUS.PAYMENT_PENDING, date: '05-12', logs: [{ node: '教师终审', time: '2026-05-12 14:10', result: '终审通过，待财务打款' }] },
-    { uid: 'aid-6', sid: '2026010008', amount: '2,500', type: '普通困难助学金', status: REVIEW_STATUS.COMPLETED, date: '05-10', logs: [{ node: '财务打款', time: '2026-05-10 16:30', result: '已完成' }] }
-  ],
-  loans: [
+        aids: [
+        { uid: 'aid-1', sid: '2026010039', name: '孙文浩', amount: '4,000', type: '国家助学金', status: REVIEW_STATUS.PENDING, date: '05-14', logs: [{ node: '学生申请', time: '2026-05-14 16:22', result: '已提交' }] },
+        { uid: 'aid-2', sid: '2026010015', name: '陈晓琳', amount: '3,000', type: '学校助学金', status: REVIEW_STATUS.PENDING, date: '05-15', logs: [{ node: '学生申请', time: '2026-05-15 10:02', result: '已提交' }] },
+        { uid: 'aid-3', sid: '2026010027', name: '吴静雯', amount: '2,000', type: '社会助学金', status: REVIEW_STATUS.PENDING, date: '05-16', logs: [{ node: '学生申请', time: '2026-05-16 09:18', result: '已提交' }] },
+        { uid: 'aid-4', sid: '2026010001', name: '王明辉', amount: '5,000', type: '临时困难补助', status: REVIEW_STATUS.PENDING, date: '05-17', logs: [{ node: '学生申请', time: '2026-05-17 08:30', result: '已提交' }] },
+        { uid: 'aid-5', sid: '2026010002', name: '李雪梅', amount: '3,000', type: '国家助学金', status: REVIEW_STATUS.PENDING, date: '05-18', logs: [{ node: '学生申请', time: '2026-05-18 09:00', result: '已提交' }] },
+        { uid: 'aid-6', sid: '2026010033', name: '马晓东', amount: '3,500', type: '国家助学金', status: REVIEW_STATUS.REVIEW_PASS, date: '05-13', logs: [{ node: '学院负责人复审', time: '2026-05-13 11:20', result: '复审通过' }] },
+        { uid: 'aid-7', sid: '2026010008', name: '张宇轩', amount: '2,500', type: '学校助学金', status: REVIEW_STATUS.FINAL_PASS, date: '05-12', logs: [{ node: '学工处审批', time: '2026-05-12 14:10', result: '学工处审批通过' }] },
+        { uid: 'aid-8', sid: '2026010030', name: '赵明', amount: '3,000', type: '临时困难补助', status: REVIEW_STATUS.PAYMENT_PENDING, date: '05-11', logs: [{ node: '学工处审批', time: '2026-05-11 10:00', result: '审批通过，待财务打款' }] },
+        { uid: 'aid-9', sid: '2026010035', name: '孙丽', amount: '2,000', type: '国家助学金', status: REVIEW_STATUS.COMPLETED, date: '05-10', logs: [{ node: '财务打款', time: '2026-05-10 16:30', result: '已完成' }] },
+        { uid: 'aid-10', sid: '2026010022', name: '刘佳慧', amount: '3,500', type: '社会助学金', status: REVIEW_STATUS.REJECTED, date: '05-09', logs: [{ node: '辅导员初审', time: '2026-05-09 10:00', result: '已驳回', remark: '材料不完整' }] }
+      ],
+      loans: [
     { uid: 'loan-1', sid: '2026010015', amount: '8,000', status: REVIEW_STATUS.PENDING, type: '生源地助学贷款', logs: [{ node: '学生提交', time: '2026-05-20 09:15', result: '已提交' }] },
     { uid: 'loan-2', sid: '2026010022', amount: '6,000', status: REVIEW_STATUS.PENDING, type: '生源地助学贷款', logs: [{ node: '学生提交', time: '2026-05-20 10:42', result: '已提交' }] },
     { uid: 'loan-3', sid: '2026010030', amount: '10,000', status: REVIEW_STATUS.FIRST_PASS, type: '校园地助学贷款', logs: [{ node: '班主任初审', time: '2026-05-19 16:20', result: '初审通过' }] },
@@ -456,10 +460,10 @@ export function buildFundingReviewSteps(item = {}) {
   const record = adaptReviewStatus(item)
   const submittedAt = record.logs?.find(log => /学生/.test(log.node))?.time?.slice(0, 10) || '已提交'
   const steps = [
-    { label: '学生提交', sub: submittedAt, done: true, current: false, popping: false },
-    { label: '初审', sub: '待进行', done: false, current: false, popping: false },
-    { label: '政务复审', sub: '待进行', done: false, current: false, popping: false },
-    { label: '教师终审', sub: '待进行', done: false, current: false, popping: false },
+    { label: '学生提交申请', sub: submittedAt, done: true, current: false, popping: false },
+    { label: '辅导员初审', sub: '待进行', done: false, current: false, popping: false },
+    { label: '学院负责人复审', sub: '待进行', done: false, current: false, popping: false },
+    { label: '学工处审批', sub: '待进行', done: false, current: false, popping: false },
     { label: '财务打款', sub: '待进行', done: false, current: false, popping: false }
   ]
   const complete = (index, sub = '已通过') => {

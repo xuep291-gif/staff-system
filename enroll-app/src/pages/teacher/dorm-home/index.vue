@@ -10,11 +10,11 @@
         </view>
         <view class="stat-item">
           <text class="stat-num ok">{{ stats.assigned }}</text>
-          <text class="stat-lbl">已分配</text>
+          <text class="stat-lbl">已选宿</text>
         </view>
         <view class="stat-item">
           <text class="stat-num wa">{{ stats.unassigned }}</text>
-          <text class="stat-lbl">未分配</text>
+          <text class="stat-lbl">未选宿</text>
         </view>
       </view>
 
@@ -34,7 +34,7 @@
           <view class="info">
             <view class="name-row">
               <text class="name">{{ item.name }}</text>
-              <SBadge :color="item.dorm ? 'ok' : 'wa'">{{ item.dorm ? '已分配' : '未分配' }}</SBadge>
+              <SBadge :color="item.dorm ? 'ok' : 'wa'">{{ item.dorm ? '已选宿' : '未选宿' }}</SBadge>
             </view>
             <text class="meta">{{ item.sid }} · {{ item.className }}</text>
             <view class="dorm-grid">
@@ -71,7 +71,7 @@ function parseDorm(dorm) {
   const text = dorm || ''
   const parts = text.split(/\s+/).filter(Boolean)
   return {
-    building: parts[0] || '未分配',
+    building: parts[0] || '未选宿',
     room: parts[1] || '-',
     bed: parts[2] || '-'
   }

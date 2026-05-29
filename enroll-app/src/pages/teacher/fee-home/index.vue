@@ -83,14 +83,12 @@
 
       <!-- §6.10 操作按钮（仅未缴费/部分未缴费可见） -->
       <view class="btn-area" v-if="activeTab === 'unpaid' || activeTab === 'partial'">
-        <SButton variant="secondary" block size="md" :disabled="sending" @click="confirmSendSelected">
+        <SButton variant="primary" block size="md" :disabled="sending" @click="confirmSendSelected">
           确认发送（{{ selectedIds.length }}人）
         </SButton>
-        <view style="margin-top: 20rpx;">
-          <SButton variant="primary" block size="md" :disabled="sending" @click="confirmSendAll">
-            一键催缴（{{ urgeCount }}人）
-          </SButton>
-        </view>
+        <SButton variant="primary" block size="md" :disabled="sending" @click="confirmSendAll">
+          一键催缴（{{ urgeCount }}人）
+        </SButton>
       </view>
     </scroll-view>
   </view>
@@ -372,5 +370,5 @@ export default {
 }
 
 /* ── 按钮区 ── */
-.btn-area { padding: 8rpx 28rpx 40rpx; }
+.btn-area { padding: 8rpx 28rpx 40rpx; display: flex; flex-direction: column; gap: 20rpx; }
 </style>

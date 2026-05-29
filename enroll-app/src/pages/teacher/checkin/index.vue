@@ -14,6 +14,10 @@
             <text class="stat-label">未报到</text>
           </view>
           <view class="stat-item">
+            <text class="stat-num stat-num--in">{{ deferredCount }}</text>
+            <text class="stat-label">已延期</text>
+          </view>
+          <view class="stat-item">
             <text class="stat-num stat-num--N500">{{ stats.total }}</text>
             <text class="stat-label">全班</text>
           </view>
@@ -71,6 +75,25 @@
         </view>
       </SCard>
 
+      <!-- Deferred Students Card -->
+      <SCard title="已延期学生" :padding="16" v-if="deferredStudents.length > 0">
+        <view class="student-list">
+          <view class="student-row" v-for="student in deferredStudents" :key="student.id" @click="goDetail(student)">
+            <view class="student-avatar">
+              <text>{{ student.name.charAt(0) }}</text>
+            </view>
+            <view class="student-info">
+              <view class="student-info-top">
+                <text class="student-name">{{ student.name }}</text>
+                <text class="student-id">{{ student.studentId }}</text>
+              </view>
+              <text class="student-reason">{{ student.reason }}</text>
+            </view>
+            <SBadge color="in">{{ student.badge }}</SBadge>
+          </view>
+        </view>
+      </SCard>
+
       <!-- QR Code Scan Entry -->
       <view class="qr-section">
         <view class="qr-card" @click="scanQR">
@@ -93,7 +116,7 @@ import SProgressBar from '@/components/shared/SProgressBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import { checkinApi } from '@/common/api/checkin.js'
 import { reminderApi } from '@/common/api/reminder.js'
-import { getClassSummary, getStudents, updateStudentCheckin } from '@/utils/businessState.js'
+import { getClassSummary, getStudents, updateStudentCheckin, updateStudentDelay } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 export default {
@@ -113,7 +136,9 @@ export default {
         { name: '报到完成', done: 35, total: 42, status: 'ok' }
       ],
       uncheckedStudents: [],
-      remainingCount: 0
+      deferredStudents: [],
+      remainingCount: 0,
+      deferredCount: 0
     }
   },
   async onShow() {
@@ -138,8 +163,8 @@ export default {
                 : summary.totalStudents
         return { ...step, done, total: summary.totalStudents, status: done === summary.totalStudents ? 'ok' : 'wa' }
       })
-      this.uncheckedStudents = students
-        .filter(item => !item.checkedIn)
+      const unchecked = students.filter(item => !item.checkedIn && !item.deferred)
+      this.uncheckedStudents = unchecked
         .map(item => ({
           id: item.sid,
           name: item.name,
@@ -149,7 +174,18 @@ export default {
           badgeColor: 'wa'
         }))
         .slice(0, 5)
-      this.remainingCount = Math.max(0, this.stats.unchecked - this.uncheckedStudents.length)
+      this.deferredStudents = students
+        .filter(item => !item.checkedIn && item.deferred)
+        .map(item => ({
+          id: item.sid,
+          name: item.name,
+          studentId: item.sid,
+          reason: '已申请延期报到',
+          badge: '已延期',
+          badgeColor: 'in'
+        }))
+      this.deferredCount = students.filter(item => item.deferred).length
+      this.remainingCount = Math.max(0, unchecked.length - this.uncheckedStudents.length)
     },
     goDetail(student) {
       rememberStaffBackTarget('/pages/teacher/checkin/index')
@@ -166,10 +202,11 @@ export default {
         success: async (res) => {
           if (res.confirm) {
             const expectedCheckinDate = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
-            await checkinApi.delay(student.studentId, {
+            checkinApi.delay(student.studentId, {
               reason: '学生申请延期报到',
               expectedCheckinDate
-            })
+            }).catch(() => {})
+            updateStudentDelay(student.studentId, true)
             await this.refresh()
             uni.showToast({ title: '已办理延期报到', icon: 'success' })
           }
@@ -220,6 +257,7 @@ export default {
 .stat-num { font-size: 56rpx; font-weight: 700; line-height: 1.2; }
 .stat-num--brand { color: var(--brand); }
 .stat-num--wa { color: var(--wa); }
+.stat-num--in { color: var(--in); }
 .stat-num--N500 { color: var(--N500); }
 .stat-label { font-size: var(--fs-12); color: var(--N500); margin-top: 8rpx; }
 .stats-progress { margin-top: 28rpx; }

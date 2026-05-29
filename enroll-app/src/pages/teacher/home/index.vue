@@ -89,7 +89,7 @@ export default {
       teacher: {
         avatar: '刘',
         name: '刘晓华',
-        subtitle: '计算机学院 · 2026级1班 班主任'
+        subtitle: '工号 T2026001 · 计算机学院 · 2026级1班 班主任'
       },
       checkinStats: {
         checkedIn: 0,
@@ -108,10 +108,8 @@ export default {
         { key: 'loan-home', icon: '🏦', label: '助学贷款' },
         { key: 'dorm-home', icon: '🏠', label: '宿舍查看' },
         { key: 'room-change', icon: '🔁', label: '换宿审核' },
-        { key: 'dorm-withdraw', icon: '↩', label: '退宿审核' },
         { key: 'aid-home', icon: '⭐', label: '助学金审' },
         { key: 'uniform', icon: '👕', label: '军训尺码' },
-        { key: 'uniform-stats', icon: '📊', label: '尺码统计' },
         { key: 'checkin', icon: '✅', label: '报到统计' },
         { key: 'messages', icon: '🔔', label: '消息通知' }
       ],
@@ -166,9 +164,7 @@ export default {
         'loan-home': '/pages/teacher/loan-home/index',
         'dorm-home': '/pages/teacher/dorm-home/index',
         'room-change': '/pages/teacher/room-change/index',
-        'dorm-withdraw': '/pages/teacher/dorm-withdraw/index',
         uniform: '/pages/teacher/uniform/index',
-        'uniform-stats': '/pages/teacher/uniform/stats',
         checkin: '/pages/teacher/checkin/index',
         messages: '/pages/teacher/messages/index'
       }

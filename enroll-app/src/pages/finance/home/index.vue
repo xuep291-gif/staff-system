@@ -64,7 +64,7 @@ export default {
     return {
       activeTab: 0,
       unreadCount: 0,
-      finance: { avatar: '陈', name: '陈美玲', subtitle: '财务处 · 收费专员' },
+      finance: { avatar: '陈', name: '陈美玲', subtitle: '工号 F2026001 · 财务处 · 收费专员' },
       financeStats: { receivedAmount: '0', paid: 0, unpaid: 0, refundPending: 0 },
       todos: [],
       tabItems: [

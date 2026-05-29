@@ -96,7 +96,7 @@ export default {
       gov: {
         avatar: '李',
         name: '李明远',
-        subtitle: '政务处 · 学工处负责人'
+        subtitle: '工号 G2026001 · 政务处 · 学工处负责人'
       },
       checkinStats: { total: 0, checkedIn: 0, unchecked: 0, rate: 0 },
       todos: [
@@ -140,7 +140,7 @@ export default {
 
     // 按子角色动态配置
     if (subRole === SUB_ROLES.STUDENT_AFFAIRS) {
-      this.gov = { avatar: '李', name: '李明远', subtitle: '学工处 · 学工处负责人' }
+      this.gov = { avatar: '李', name: '李明远', subtitle: '工号 G2026001 · 学工处 · 学工处负责人' }
       this.todos = [
         { key: 'room-change', label: '换房审批', desc: '待审批申请', barColor: 'var(--er)', badgeColor: 'er', count: 6 },
         { key: 'aid-home', label: '助学金学工处审批', desc: '学院复审已通过，待学工处审批', barColor: 'var(--wa)', badgeColor: 'wa', count: 3 },
@@ -155,7 +155,7 @@ export default {
         { key: 'messages', icon: '🔔', label: '消息通知' }
       ]
     } else if (subRole === SUB_ROLES.COLLEGE_DEAN) {
-      this.gov = { avatar: '张', name: '张教授', subtitle: '计算机学院 · 学院负责人' }
+      this.gov = { avatar: '张', name: '张教授', subtitle: '工号 C2026001 · 计算机学院 · 学院负责人' }
       this.todos = [
         { key: 'room-change', label: '换房审批(本院)', desc: '待审批申请', barColor: 'var(--er)', badgeColor: 'er', count: 6 },
         { key: 'aid-home', label: '助学金学院复审', desc: '辅导员初审已通过，待学院复审', barColor: 'var(--wa)', badgeColor: 'wa', count: 3 },

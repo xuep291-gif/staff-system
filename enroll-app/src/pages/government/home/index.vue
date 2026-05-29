@@ -92,6 +92,7 @@ export default {
     return {
       activeTab: 0,
       unreadCount: 0,
+      isSchool: false,
       gov: {
         avatar: '李',
         name: '李明远',
@@ -123,6 +124,7 @@ export default {
   onShow() {
     const subRole = getSubRole()
     const scope = getDataScope()
+    this.isSchool = subRole === SUB_ROLES.STUDENT_AFFAIRS
     const summary = getClassSummary()
     const pending = {
       'room-change': summary.roomChanges.tabs[0].count,
@@ -179,11 +181,9 @@ export default {
     goMessages() { uni.navigateTo({ url: '/pages/government/messages/index' }) },
     goSettings() { uni.navigateTo({ url: '/pages/government/settings/index' }) },
     goTodo(key) {
-      const subRole = getSubRole()
-      const isSchool = subRole === SUB_ROLES.STUDENT_AFFAIRS
       const routes = {
         'room-change': '/pages/government/room-change/index',
-        'aid-home': isSchool ? '/pages/government/aid-final-home/index' : '/pages/government/aid-home/index',
+        'aid-home': this.isSchool ? '/pages/government/aid-final-home/index' : '/pages/government/aid-home/index',
         'loan-home': '/pages/government/loan-home/index',
         checkin: '/pages/government/checkin/index',
         dorm: '/pages/government/dorm-home/index',
@@ -193,9 +193,7 @@ export default {
       if (routes[key]) { uni.navigateTo({ url: routes[key] }) }
     },
     onTabSwitch(idx) {
-      const subRole = getSubRole()
-      const isSchool = subRole === SUB_ROLES.STUDENT_AFFAIRS
-      const routes = [null, '/pages/government/dorm-home/index', isSchool ? '/pages/government/aid-final-home/index' : '/pages/government/aid-home/index', '/pages/government/checkin/index', '/pages/government/messages/index']
+      const routes = [null, '/pages/government/dorm-home/index', this.isSchool ? '/pages/government/aid-final-home/index' : '/pages/government/aid-home/index', '/pages/government/checkin/index', '/pages/government/messages/index']
       if (idx > 0 && routes[idx]) { uni.navigateTo({ url: routes[idx] }) }
     }
   }

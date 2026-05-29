@@ -1,0 +1,193 @@
+
+
+################# 工作流实例######################
+
+#工作流实例
+
+
+#返回
+#{
+#	"code": 200,
+#	"data": {
+#		"current": "1",
+#		"hitCount": false,
+#		"optimizeCountSql": true,
+#		"orders": [],
+#		"pages": "3",
+#		"records": [
+#			{
+#				"autoCode": "21",
+#				"code": "2025年4月24日-21",
+#				"createTime": "2025-04-24 11:10:38",
+#				"creator": "Admin User",
+#				"creatorId": "1",
+#				"currentStepId": "1912773527836311553",
+#				"currentStepName": "发起申请",
+#				"currentUserId": "4",
+#				"currentUserName": "Guest User",
+#				"executor": null,
+#				"executorId": null,
+#				"formGroup": null,
+#				"formId": "33",
+#				"formType": "1",
+#				"handledSteps": null,
+#				"handledUsers": null,
+#				"id": "6026",
+#				"name": "张三的请病假申请",
+#				"orgId": "1",
+#				"processId": "4001",
+#				"status": "VERIFYING"
+#			},
+#			{
+#				"autoCode": "19",
+#				"code": "2025年4月23日-19",
+#				"createTime": "2025-04-23 16:29:11",
+#				"creator": "Admin User",
+#				"creatorId": "1",
+#				"currentStepId": "1912773527836311553",
+#				"currentStepName": "发起申请",
+#				"currentUserId": "4",
+#				"currentUserName": "Guest User",
+#				"executor": null,
+#				"executorId": null,
+#				"formGroup": null,
+#				"formId": "31",
+#				"formType": "1",
+#				"handledSteps": "[1912773527836311553,1912773527836311553,1912773527836311553,1912773527836311553]",
+#				"handledUsers": "[1,1,1,1]",
+#				"id": "6024",
+#				"name": "张三的请病假申请",
+#				"orgId": "1",
+#				"processId": "4001",
+#				"status": "VERIFYING"
+#			},
+#		],
+#		"searchCount": true,
+#		"size": "10",
+#		"total": "22"
+#	},
+#	"message": "Success"
+#}
+### 查询全部工作实例  根据type 参数不同返回不同列表
+#申请人：CREATOR || 审核人：CURRENT
+GET {{endpoint}}/api/pub/wf/instances?type=
+
+
+### 查询工作流
+#{
+#		"autoCode": "2", #自动增加的code
+#		"code": "2025年4月17日-2", #根据定义生成的code
+#		"createTime": "2025-04-17 11:27:50",
+#		"creator": "Admin User",  #创建者名字
+#		"creatorId": "1",  #创建者id
+#		"currentStepId": "5001", #当前步骤ID
+#		"currentStepName": "部门审批", #当前步骤名字
+#		"currentUserId": "10002",  #当前处理人ID
+#		"currentUserName": "李四经理",
+#		"executor": "李四经理", #执行人名字
+#		"executorId": "10002", 执行人ID
+#		"formGroup": null,
+#		"formId": null,
+#		"formType": "1",
+#		"handledSteps": null,
+#		"handledUsers": null,
+#		"id": "6003",
+#		"name": "张三的入职审批流程",
+#         下个步骤的信息
+#		"nextSteps": [
+#			{
+#				"currentUserId": "1001",
+#				"name": "HR处理",
+#				"id": "1912776376196546561"
+#			}
+#		],
+#		"orgId": "1",
+#		"processId": "4001",
+#		"status": "INITED"  初始：INITED,#处理：HANDLING,#同意：HANDLED_APPROVED,#拒绝：HANDLED_REJECTED,#退回HANDLED_ROLLBACK
+#	}
+###id:工作实例id
+GET {{endpoint}}/api/pub/wf/instances/{{id}}
+
+
+
+###创建工作实例
+POST {{endpoint}}/api/pub/wf/instances
+Accept: application/json
+Authorization: {{token}}
+
+{
+      "processId": 4001,
+      "formGroup": "HR",
+      "formType": "LEAVE_APPLY",
+      "formId": 5001,
+      "name": "张三的请假申请",
+      "creatorId": 1001,
+      "creator": "张三",
+      "executorId": 2001,
+      "executor": "李四(部门经理)",
+      "currentStepId": 1912773527836311553,
+      "currentUserId": 2001,
+      "currentUserName": "李四",
+      "currentStepName": "部门审批",
+      "handledSteps": "1",
+      "handledUsers": "1001"
+}
+
+
+###用户申请驳回后 重写提交
+###id:工作实例id
+PUT {{endpoint}}/api/pub/wf/instances/{{id}}/submit
+Accept: application/json
+Authorization: {{token}}
+
+{
+      "processId": 4001,
+      "formGroup": "HR",
+      "formType": "LEAVE_APPLY",
+      "formId": 5001,
+      "name": "张三的请假申请",
+      "creatorId": 1001,
+      "creator": "张三",
+      "executorId": 2001,
+      "executor": "李四(部门经理)",
+      "currentStepId": 1912773527836311553,
+      "currentUserId": 2001,
+      "currentUserName": "李四",
+      "currentStepName": "部门审批",
+      "handledSteps": "1",
+      "handledUsers": "1001"
+    }
+
+
+### 删除工作实例
+###id:工作实例id
+DELETE {{endpoint}}/api/pub/wf/instances/{{id}}
+
+
+
+
+### 驳回 可以重新提交
+###id:工作实例id
+PUT {{endpoint}}/api/pub/wf/instances/{{id}}/rollback
+Accept: application/json
+Authorization: {{token}}
+
+{ "note": "补充材料" }
+
+
+###  同意
+###id:工作实例id
+PUT {{endpoint}}/api/pub/wf/instances/{{id}}/approve
+Accept: application/json
+Authorization: {{token}}
+
+{ "note": "同意" }
+
+
+###  拒绝 拒绝后不可以重新提交
+###id:工作实例id
+PUT {{endpoint}}/api/pub/wf/instances/{{id}}/reject
+Accept: application/json
+Authorization: {{token}}
+
+{ "note": "材料不通过" }

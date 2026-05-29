@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.workflow.services.persistence.dao.HistoryMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.jfeat.am.module.workflow.services.persistence.model.History">
+		<id column="id" property="id" />
+		<result column="process_id" property="processId" />
+		<result column="process_instance_id" property="processInstanceId" />
+		<result column="process_instance_name" property="processInstanceName" />
+		<result column="previous_step_id" property="previousStepId" />
+		<result column="previous_step_name" property="previousStepName" />
+		<result column="step_id" property="stepId" />
+		<result column="step_name" property="stepName" />
+		<result column="form_id" property="formId" />
+		<result column="form_type" property="formType" />
+		<result column="user_id" property="userId" />
+		<result column="user_name" property="userName" />
+		<result column="result" property="result" />
+		<result column="comment" property="comment" />
+		<result column="handle_time" property="handleTime" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, process_id AS processId, process_instance_id AS processInstanceId, process_instance_name AS processInstanceName,
+		previous_step_id AS previousStepId, previous_step_name AS previousStepName,
+		step_id AS stepId, step_name AS stepName, form_id AS formId, form_type AS formType, user_id AS userId, user_name AS userName,
+		result, comment, handle_time AS handleTime
+    </sql>
+
+</mapper>

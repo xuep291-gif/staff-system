@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.workflow.services.domain.dao.QueryProcessInstanceStepDao">
+    <sql id="Base_Column_List">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                wf_process_instance_step.id, wf_process_instance_step.step_id AS stepId, wf_process_instance_step.instance_id AS instanceId, wf_process_instance_step.entity_id AS entityId, wf_process_instance_step.row_id AS rowId, wf_process_instance_step.virtual_form_code AS virtualFormCode
+    </sql>
+
+
+    <select id="queryMasterModel" resultType="ProcessInstanceStepModel">
+       SELECT wf_process_instance_step.*
+       FROM wf_process_instance_step
+       WHERE wf_process_instance_step.id=#{id}
+       GROUP BY wf_process_instance_step.id
+    </select>
+
+
+    <select id="findProcessInstanceStepPage" resultType="ProcessInstanceStepRecord"
+            parameterType="ProcessInstanceStepRecord">
+        SELECT
+        <include refid="Base_Column_List"/>
+
+
+        FROM wf_process_instance_step
+
+
+        WHERE 1=1
+
+
+        <if test="record.id != null and record.id>0 ">
+            AND wf_process_instance_step.id LIKE CONCAT('%',#{record.id},'%')
+        </if>
+
+
+        <if test="record.stepId != null and record.stepId>0 ">
+            AND wf_process_instance_step.step_id LIKE CONCAT('%',#{record.stepId},'%')
+        </if>
+
+
+        <if test="record.instanceId != null and record.instanceId>0 ">
+            AND wf_process_instance_step.instance_id LIKE CONCAT('%',#{record.instanceId},'%')
+        </if>
+
+
+        <if test="record.entityId != null and record.entityId>0 ">
+            AND wf_process_instance_step.entity_id LIKE CONCAT('%',#{record.entityId},'%')
+        </if>
+
+
+        <if test="record.rowId != null and record.rowId>0 ">
+            AND wf_process_instance_step.row_id LIKE CONCAT('%',#{record.rowId},'%')
+        </if>
+
+
+        <if test="record.virtualFormCode != null and record.virtualFormCode!= ''">
+            AND wf_process_instance_step.virtual_form_code LIKE CONCAT('%',#{record.virtualFormCode},'%')
+        </if>
+
+        <if test="startTime != null">
+            <![CDATA[AND wf_process_instance_step.start_time >= DATE(#{startTime})]]>
+        </if>
+        <if test="endTime != null">
+            <![CDATA[AND wf_process_instance_step.end_time <= DATE(#{endTime}]]>
+        </if>
+        <!--
+    <if test="search != null and search != ''">
+        OR wf_process_instance_step.name LIKE CONCAT('%',#{search},'%')
+    </if>
+    -->
+    </select>
+
+
+    <select id="getStartStep" resultType="ProcessInstanceStepModel">
+        SELECT
+        	wf_process_instance_step.*,t_virtual_form.design_data as designData
+        FROM
+        	wf_process_instance_step
+        LEFT JOIN wf_process_step ON wf_process_instance_step.step_id = wf_process_step.id
+        left join wf_process_instance on wf_process_instance.id = wf_process_instance_step.instance_id
+        left join t_virtual_form on t_virtual_form.`code` = wf_process_step.virtual_form_code
+        where wf_process_instance.id = #{instanceId} and wf_process_step.type = 'start'
+    </select>
+
+    <select id="getByFormCodeAndInstanceId" resultType="ProcessInstanceStepModel">
+        SELECT
+        	wf_process_instance_step.*,t_virtual_form.design_data as designData
+        FROM
+        	wf_process_instance
+        LEFT JOIN wf_process_step ON wf_process_instance.process_id = wf_process_step.process_id
+        LEFT JOIN wf_process_instance_step ON wf_process_instance_step.instance_id = wf_process_instance.id
+       left join t_virtual_form on t_virtual_form.`code` = wf_process_instance_step.virtual_form_code
+       AND wf_process_instance_step.step_id = wf_process_step.id
+        WHERE
+        	wf_process_instance.id = #{instanceId}
+        AND wf_process_step.virtual_form_code = #{code}
+        LIMIT 0,1
+    </select>
+
+
+    <select id="getByCurrentStep" resultType="ProcessInstanceStepModel">
+        SELECT
+        	wf_process_instance_step.*,t_virtual_form.design_data as designData
+        FROM wf_process_instance
+        left join wf_process_instance_step on wf_process_instance.id = wf_process_instance_step.instance_id and wf_process_instance_step.step_id = wf_process_instance.current_step_id
+        left join t_virtual_form on t_virtual_form.`code` = wf_process_instance_step.virtual_form_code
+        where wf_process_instance.id = #{instanceId}
+    </select>
+
+    <select id="getInstanceStepByStepId"  resultType="ProcessInstanceStepModel">
+        SELECT
+        	*
+        FROM
+        	wf_process_instance_step
+        WHERE
+        	wf_process_instance_step.step_id = #{stepId}
+        and wf_process_instance_step.instance_id = #{instanceId}
+    </select>
+
+
+
+    <select id="getStartInstanceStepByInstanceId" resultType="ProcessInstanceStepModel">
+        SELECT
+        	instancStep.*
+        FROM
+        	wf_process_instance instance
+        left join wf_process process  on process.id = instance.process_id
+        left join wf_process_step step on step.process_id = process.id
+        left join wf_process_instance_step instancStep on instancStep.step_id = step.id
+        WHERE
+        	instancStep.instance_id = #{instanceId}
+          and step.type = 'START'
+        LIMIT 0,1
+    </select>
+
+</mapper>

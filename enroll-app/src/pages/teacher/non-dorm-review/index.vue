@@ -237,6 +237,13 @@ export default {
     confirmReject() {
       this.showReject = false
       if (this.item) saveItemStatus(this.item.uid, '已驳回', 'er')
+      this.submitDone = true
+      this.statusSteps = [
+        { label: '学生提交', sub: this.statusSteps[0].sub, done: true, current: false, popping: false },
+        { label: '班主任审核', sub: '已驳回', done: false, current: true, popping: false },
+        { label: '政务处审批', sub: '待进行', done: false, current: false, popping: false },
+        { label: '备案完成', sub: '待进行', done: false, current: false, popping: false }
+      ]
       uni.showToast({ title: '已退回', icon: 'none' })
       setTimeout(() => { uni.navigateBack() }, 800)
     }

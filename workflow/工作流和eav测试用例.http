@@ -1,0 +1,281 @@
+@endpoint = http://localhost:8083
+
+#每天token都不同 使用前请更新此处token
+@token = Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJvcmdJZCI6IjEiLCJ1c2VySWQiOiIxIiwidGVuYW50T3JnSWQiOjEsImFjY291bnQiOiJhZG1pbiIsInVzZXJUeXBlIjoxLCJkZXZVc2VyVHlwZSI6MCwiYlVzZXJUeXBlIjoiU1lTVEVNIiwiYXBwaWQiOiJzbWFydHNCaWdTY3JlZW4iLCJwYXJ0eU9yZ2FuaXphdGlvbklkIjoxLCJpYXQiOjE3NDQ4NjA3NTAsImp0aSI6IjEiLCJzdWIiOiJhZG1pbiIsImV4cCI6MTc0NTQ2NTU1MH0.tq_pa_ng7ULf-6xlakJUglVM8YSvMPxsjNhxxbl4h4nWWAQ1cDtqgP8mexFSV40Mli0orNnPXyRLKxoAO7kqyg
+
+####获取申请详情
+#layoutJson：在虚拟表单上配置结构如下
+#schema properties componentType这个三个字段是固定的
+#nextSteps：下一步骤列表
+#status：START,VERIFYING,CLOSE_REJECTED,CLOSE_APPROVED 分别是开始 验证 拒绝 和同意
+#{"schema":{"properties":{"test":{“componentType”:"input"},"test2":{“componentType”:"radio"}}}}
+#返回结果
+#{
+#  "code": 200,
+#  "data": {
+#    "code": "2025年4月24日-20",
+#    "stepType": "START",
+#    "autoCode": "20",
+#    "creatorId": "1",
+#    "orgId": "1",
+#    "currentStepId": "1912773527836311553",
+#    "formGroup": null,
+#    "nextSteps": [
+#      {
+#        "currentUserId": "3",
+#        "name": "部门审批",
+#        "id": "5001"
+#      }
+#    ],
+#    "auditInfo": "APPROVE",
+#    "currentUserId": "4",
+#    "handledUsers": null,
+#    "processId": "4001",
+#    "executor": null,
+#    "handledSteps": null,
+#    "id": "6025",
+#    "formId": "32",
+#    "creator": "Admin User",
+#    "formType": "1",
+#    "currentUserName": "Guest User",
+#    "currentStepName": "发起申请",
+#    "formInfo": {
+#      "layoutJson": [
+#        {
+#          "title": "申请信息",
+#          "items": [
+#            {
+#              "field": "test",
+#              "type": "plain"
+#            },
+#            {
+#              "field": "test2",
+#              "type": "plain"
+#            }
+#          ]
+#        }
+#      ]
+#    },
+#    "executorId": null,
+#    "createTime": "2025-04-24 09:11:37",
+#    "name": "张三的请病假申请",
+#    "status": "VERIFYING"
+#  },
+#  "message": "Success"
+#}
+#processInstanceId:工作实例id
+GET {{endpoint}}/api/wf/instanceAndForm/byTableJSON/{{processInstanceId}}}
+
+
+###添加数据 发起流程
+#processId：工作流id
+#currentStepId:当前步骤id
+#其他字段是eav 实体属性对应的字段 即eav_atribute
+#eav是通过工作流步骤的虚拟表单code 和 虚拟表单code， 虚拟表单再和eav关联
+POST {{endpoint}}/api/wf/instances/instanceAndForm
+Accept: application/json
+Authorization: {{token}}
+
+{
+      "currentStepId": 1912773527836311553
+      "processId": 4001,
+	  "price":100,
+      "name": "张三的请病假申请",
+	  "category":"请假",
+     "stock":100,
+
+ }
+
+###推荐流程
+#id就是需要推进当前步骤实例id，必填项
+#其他字段是下个步骤对应eav 属性字段
+POST {{endpoint}}/api/wf/instances/instanceAndForm/push
+Accept: application/json
+Authorization: {{token}}
+
+{
+    "id":6024,
+	  "level":10011111111,
+      "fullName": "张三的请病假申请11111111111",
+	  "address":"请假111",
+    "phone":1001111111111111111
+    }
+
+###获取表单数据
+#返回结果 就是上面提交表单数据字段值
+#{
+#	"code": 200,
+#	"data": {
+#		"price": "100",
+#		"name": "张三的请病假申请",
+#		"stock": "100",
+#		"category": "请假"
+#	},
+#	"message": "Success"
+#}
+#processInstanceId:工作实例id
+GET {{endpoint}}/api/wf/instanceAndForm/value/{{processInstanceId}}}
+
+
+###########虚拟表单
+####获取虚拟表单详情
+#返回结果
+#{
+#  "code": 200,
+#  "data": {
+#    "appDesignData": null,
+#    "code": "FORM_ONBOARDING",
+#    "createTime": "2025-04-16 12:00:46",
+#    "deleteFlag": false,
+#    "designData": "{\"schema\":{\"properties\":{\"test\":{“componentType”:\"input\"},\"test2\":{“componentType”:\"radio\"}}}}",
+#    "docId": null,
+#    "docName": null,
+#    "entityId": "1",
+#    "formId": null,
+#    "formName": "员工入职表",
+#    "hasDocument": false,
+#    "htmlUrl": null,
+#    "id": "3001",
+#    "note": null,
+#    "orgId": null,
+#    "type": "SINGLE_FORM",
+#    "updateTime": "2025-04-17 14:58:29"
+#  },
+#  "message": "Success"
+#}
+#virtualId：虚拟表单id
+GET {{endpoint}}/api/doc/form/{{virtualId}}
+
+
+###获取虚拟表单绑定的属性
+#返回结果
+#records 表单字段列表
+#{
+#  "code": 200,
+#  "data": {
+#    "current": "1",
+#    "hitCount": false,
+#    "optimizeCountSql": true,
+#    "orders": [],
+#    "pages": "1",
+#    "records": [
+#      {
+#        "attributeName": "name",
+#        "attributeValue": null,
+#        "componentType": "input",
+#        "defaultValue": null,
+#        "entityId": "3",
+#        "fieldName": "姓名",
+#        "fieldType": "string",
+#        "id": "12",
+#        "orgId": "1",
+#        "placeholder": "请输入员工姓名",
+#        "required": true
+#      },
+#      {
+#        "attributeName": "employee_id",
+#        "attributeValue": null,
+#        "componentType": "input",
+#        "defaultValue": null,
+#        "entityId": "3",
+#        "fieldName": "工号",
+#        "fieldType": "string",
+#        "id": "13",
+#        "orgId": "1",
+#        "placeholder": "请输入员工工号",
+#        "required": true
+#      },
+#      {
+#        "attributeName": "department",
+#        "attributeValue": null,
+#        "componentType": "select",
+#        "defaultValue": null,
+#        "entityId": "3",
+#        "fieldName": "部门",
+#        "fieldType": "string",
+#        "id": "14",
+#        "orgId": "1",
+#        "placeholder": "请选择部门",
+#        "required": true
+#      },
+#      {
+#        "attributeName": "position",
+#        "attributeValue": null,
+#        "componentType": "input",
+#        "defaultValue": null,
+#        "entityId": "3",
+#        "fieldName": "职位",
+#        "fieldType": "string",
+#        "id": "15",
+#        "orgId": "1",
+#        "placeholder": "请输入职位",
+#        "required": true
+#      },
+#      {
+#        "attributeName": "hire_date",
+#        "attributeValue": null,
+#        "componentType": "date-picker",
+#        "defaultValue": null,
+#        "entityId": "3",
+#        "fieldName": "入职日期",
+#        "fieldType": "date",
+#        "id": "16",
+#        "orgId": "1",
+#        "placeholder": "请选择入职日期",
+#        "required": true
+#      }
+#    ],
+#    "searchCount": true,
+#    "size": "10",
+#    "total": "5"
+#  },
+#  "message": "Success"
+#}
+#virtualId：虚拟表单id
+GET {{endpoint}}/api/doc/attributes/{{virtualId}}
+
+
+###添加虚拟表单
+#entityName:对应的实体name
+POST {{endpoint}}/api/crud/virtualForm/virtualForms
+Accept: application/json
+Authorization: {{token}}
+
+{
+		"code": "FORM_Test",
+		"entityName":"employee",
+		"formName": "员工入职表",
+		"note": null,
+		"orgId": null,
+		"type": "SINGLE_FORM",
+		"updateTime": "2025-04-17 14:58:29"
+	}
+
+###修改虚拟表单
+#id 是必须的
+PUT {{endpoint}}/api/doc/editFormDoc
+Accept: application/json
+Authorization: {{token}}
+
+{
+		"appDesignData": "{\"schema\":{\"properties\":{\"filed\":{“componentType”:\"input\"},\"name\":{“componentType”:\"radio\"}}}}",
+		"code": "202542410-0",
+		"createTime": "2025-04-24 10:39:23",
+		"deleteFlag": false,
+		"designData": null,
+		"docId": null,
+		"docName": null,
+		"entityId": "19",
+		"formId": null,
+		"formName": "员工入职表",
+		"hasDocument": false,
+		"htmlUrl": null,
+		"id": "3003",
+		"note": null,
+		"orgId": "1",
+		"type": "SINGLE_FORM"
+	}
+
+
+
+

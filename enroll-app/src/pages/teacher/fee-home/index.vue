@@ -243,7 +243,7 @@ export default {
     goDetail(stu) {
       console.log('[fee-home] goDetail navigateTo student-detail')
       rememberStaffBackTarget('/pages/teacher/fee-home/index')
-      uni.navigateTo({ url: `/pages/teacher/student-detail/index?id=${stu.studentId}&sid=${stu.studentNo}` })
+      uni.navigateTo({ url: `/pages/teacher/student-detail/index?sid=${stu.studentNo}` })
     },
     refresh() {
       const yearKey = this.activeYear.replace('学年', '')

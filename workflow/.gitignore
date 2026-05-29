@@ -1,0 +1,15 @@
+target/
+build/
+.idea/
+.gradle/
+.svn/
+*.iml
+*.swp
+*.log
+*.db
+logs/
+LOG_*
+.settings/
+.classpath
+.project
+.vscode/

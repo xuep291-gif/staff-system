@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.virtualForm.services.domain.dao.QueryVirtualFormDao">
+    <sql id="Base_Column_List">
+         t_virtual_form.id, t_virtual_form.code, t_virtual_form.design_data AS designData,
+         t_virtual_form.entity_id AS entityId, t_virtual_form.type, t_virtual_form.org_id AS orgId,
+         t_virtual_form.create_time AS createTime, t_virtual_form.update_time AS updateTime,
+         t_virtual_form.form_name As formName,t_virtual_form.note As note,t_virtual_form.doc_id As  docId
+         ,doc_document.`name` as docName,t_virtual_form.html_url as htmlUrl
+         ,t_virtual_form.app_design_data as appDesignData
+    </sql>
+
+    <sql id="orderBy">
+       order by t_virtual_form.sort_num
+    </sql>
+
+    <sql id="QueryOwnedOrgIds">
+         SELECT children.id FROM t_sys_org, t_sys_org as children WHERE t_sys_org.left_num &lt;= children.left_num AND
+         t_sys_org.right_num >= children.left_num and t_sys_org.id=#{record.orgId} order by t_sys_org.node_level ASC
+    </sql>
+
+
+    <select id="queryMasterModel" resultType="VirtualFormModel">
+       SELECT t_virtual_form.*
+       FROM t_virtual_form
+       WHERE t_virtual_form.id=#{id}
+       GROUP BY t_virtual_form.id
+    </select>
+
+
+    <select id="findVirtualFormPage" resultType="VirtualFormRecord" parameterType="VirtualFormRecord">
+        SELECT
+        <include refid="Base_Column_List"/>
+        ,if(t_virtual_form.doc_id is null ,false,true ) as hasDocument
+        FROM t_virtual_form
+        LEFT JOIN doc_document  on doc_document.id = t_virtual_form.doc_id
+        left join t_eav_entity e on e.id = t_virtual_form.entity_id
+        <if test="record.orgId > 0">
+            ,(<include refid="QueryOwnedOrgIds"></include>) AS ownedOrgIds
+        </if>
+
+        WHERE 1=1
+        <if test="record.orgId > 0">
+            AND t_virtual_form.org_id = ownedOrgIds.id
+        </if>
+
+
+        <if test="record.id != null and record.id>0 ">
+            AND t_virtual_form.id LIKE CONCAT('%',#{record.id},'%')
+        </if>
+        <if test="record.code != null and record.code!= ''">
+            AND t_virtual_form.code LIKE CONCAT('%',#{record.code},'%')
+        </if>
+
+
+        <if test="record.designData != null and record.designData!= ''">
+            AND t_virtual_form.design_data LIKE CONCAT('%',#{record.designData},'%')
+        </if>
+
+
+        <if test="record.entityId != null and record.entityId>0 ">
+            AND t_virtual_form.entity_id LIKE CONCAT('%',#{record.entityId},'%')
+        </if>
+        <if test="record.type != null and record.type!= ''">
+            AND t_virtual_form.type LIKE CONCAT('%',#{record.type},'%')
+        </if>
+
+
+        <if test="record.orgId != null and record.orgId>0 ">
+            AND t_virtual_form.org_id IN (<include refid="QueryOwnedOrgIds"/>)
+        </if>
+
+
+        <if test="record.createTime != null and record.createTime>0 ">
+            AND t_virtual_form.create_time LIKE CONCAT('%',#{record.createTime},'%')
+        </if>
+
+
+        <if test="record.updateTime != null and record.updateTime>0 ">
+            AND t_virtual_form.update_time LIKE CONCAT('%',#{record.updateTime},'%')
+        </if>
+
+        <if test="startTime != null">
+            <![CDATA[AND t_virtual_form.start_time >= DATE(#{startTime})]]>
+        </if>
+        <if test="endTime != null">
+            <![CDATA[AND t_virtual_form.end_time <= DATE(#{endTime}]]>
+        </if>
+
+        <if test="typeId != null  and typeId != ''">
+           AND e.type_id = #{typeId}
+        </if>
+              <!--
+          <if test="search != null and search != ''">
+              OR t_virtual_form.name LIKE CONCAT('%',#{search},'%')
+          </if>
+          -->
+        And  t_virtual_form.delete_flag = 0
+
+          <include refid="orderBy"></include>
+
+
+    </select>
+
+    <select id="queryMasterRecord" resultType="com.jfeat.am.module.virtualForm.services.domain.model.VirtualFormRecord">
+        SELECT
+          t_virtual_form.*,d.`name` as 'docName',if(doc_id is not null,true,false) as 'hasDocument'
+        FROM
+        	t_virtual_form left join doc_document d on d.id = t_virtual_form.doc_id
+        where t_virtual_form.id = #{id}
+    </select>
+
+    <select id="queryVirtualFormByCode" resultType="com.jfeat.am.module.virtualForm.services.domain.model.VirtualFormRecord">
+        select  t_virtual_form.*
+        from  t_virtual_form
+        where t_virtual_form.code = #{code}
+    </select>
+
+</mapper>

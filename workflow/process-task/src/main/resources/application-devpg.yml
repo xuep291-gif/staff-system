@@ -1,0 +1,120 @@
+##########################################################
+###################  PostgreSQL 开发环境 profile  ###################
+##########################################################
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/task?currentSchema=public&stringtype=unspecified
+    username: postgres
+    password: 123456
+    driver-class-name: org.postgresql.Driver
+    filters: log4j,wall,mergeStat
+    sql-script-encoding: UTF-8
+    schema: classpath*:sql/**/*-schema.sql
+    data: classpath*:sql/**/*-data.sql
+    initialize: false
+  kafka:
+    bootstrap-servers: kuncts35.jzymcs.cn:9092
+    producer:
+      retries: 0
+      acks: -1
+      batch-size: 16384
+      buffer-memory: 33554432
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: kafka-test
+      enable-auto-commit: true
+      auto-commit-interval: 100
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  mail:
+    host: smtp.126.com
+    port: 25
+    username: jiajiajia5000@126.com
+    password: CFERNTQPRZYHBRXO
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+  redis:
+    database: 0
+    port: 6379
+    host: 202.189.7.191
+    password: jfeat.com.24
+
+valid-code:
+  expiration-time: 300000
+  length: 6
+
+temporary-id:
+  ttl: 3000000
+
+mqtt:
+  ep: ws://0.0.0.0:8084
+  usr: admin
+  pw: admin
+  tp: /room-controller-exchange
+  mqtt-topic:
+    Login-kick-out: login-kick-out-
+  mqtt-cmd-config:
+    user-login-kick-out-cmd: USER_LOGIN_KICK_OUT
+
+mqtt-publish:
+  brk: ws://202.63.172.178:8883
+  usr: admin
+  pw: admin
+  tp: /room-controller-exchange-
+  subs:
+    - message-center-server
+
+io:
+  fileUploadPath: /webapps/images/avatar
+  file-host: images/avatar
+  file-icon-upload-path: icon
+  file-icon-host: icon
+  minio:
+    export-endpoint: "http://202.189.7.191:9000"
+    endpoint: "http://202.189.7.191:9000"
+    access-key: "admin"
+    secret-key: "jfeat.com.24"
+
+sms:
+  enable-develop-code: false
+  nameless:
+    base-url: http://47.104.197.138:8001/sms
+    username: 960031
+    password: J4YswRt91ali
+    apis:
+      oneOnOne:
+        url: /api/sendMessageOne
+      mass:
+        url: /api/sendMessageMass
+    templates:
+      alterPw:
+        name: 修改密码验证码
+        code: SMS_138535094
+        content: 【新质数创】尊敬的 ${name}${role}：您正在修改新质智慧党建系统录密码，验证码为${code}。为保护账号安全，请勿泄漏或转发他人。
+      register:
+        name: 用户注册验证码
+        code: SMS_138535095
+        content: 【新质数创】尊敬的用户：您正在注册新质智慧党建系统账号，验证码为${code}。该验证码5分钟内有效，为保护账号安全，请勿泄漏或转发他人。
+      loginUnusual:
+        name: 登录异常验证码
+        code: SMS_138535096
+        content: 【新质数创】尊敬的 ${name}${role}：您的新质智慧党建系统账号正在一个新设备上登录。验证码为${code}。如非本人登录，请尽快修改密码。
+      loginCheck:
+        name: 登录确认验证码
+        code: SMS_138535097
+        content: 【新质数创】尊敬的 ${name}${role}：您正在登录新质智慧党建系统。验证码为${code}。该验证码5分钟内有效，为保护账号安全，请勿泄漏或转发他人。
+      authentication:
+        name: 身份验证验证码
+        code: SMS_138535098
+        content: 【新质数创】尊敬的 ${name}${role}：您正在进行新质智慧党建系统身份验证。验证码为${code}。为保护账号安全，请勿泄漏或转发他人。
+      infoUpdate:
+        name: 信息变更验证码
+        code: SMS_138535093
+        content: 【新质数创】尊敬的 ${name}${role}：您正在进行新质智慧党建系统账号信息变更操作，验证码为${code}。为保护账号安全，请勿泄漏或转发他人。

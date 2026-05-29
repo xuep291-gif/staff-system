@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.workflow.services.domain.dao.QueryProcessStepDao">
+    <sql id="Base_Column_List">
+        wf_process_step.*
+    </sql>
+    <select id="findProcessSteps" resultType="ProcessStep">
+        SELECT wf_process_step.*
+        FROM wf_process_step
+        WHERE 1=1
+        <if test="processId != null and processId != ''">
+            AND wf_process_step.process_id = #{processId}
+        </if>
+
+        <if test="status != null and status != ''">
+            AND wf_process_step.status = #{status}
+        </if>
+    </select>
+
+    <select id="findProcessStepsByCurrent" resultType="com.jfeat.am.module.workflow.services.persistence.model.ProcessStep">
+        SELECT
+        	wf_process_step.*
+        FROM
+        	wf_process_step
+        Left join wf_process_instance on wf_process_instance.current_step_id = wf_process_step.id
+
+        WHERE
+        	wf_process_instance.id = #{instanceId}
+    </select>
+
+</mapper>

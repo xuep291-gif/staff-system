@@ -249,10 +249,10 @@
       }
     },
     {
-      "path": "pages/finance/uniform/index",
+      "path": "pages/finance/records/index",
       "style": {
         "navigationStyle": "custom",
-        "navigationBarTitleText": "军训服尺码"
+        "navigationBarTitleText": "收款记录查询"
       }
     },
     {

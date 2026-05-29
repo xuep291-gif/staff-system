@@ -1,0 +1,137 @@
+
+##########################################################
+###################  开发环境的profile  ###################
+##########################################################
+spring:
+  profiles: dev
+  datasource:
+#    url: jdbc:mysql://sh-cynosdbmysql-grp-mlyunquo.sql.tencentcdb.com:25133/study_power?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull
+    #    url: jdbc:mysql://sh-cdb-q5vnc0iy.sql.tencentcdb.com:59449/nft_prod?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull
+#    username: root
+#    password: zb2014@8888
+    #    password: root
+    url: jdbc:mysql://localhost:3306/task?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+    filters: log4j,wall,mergeStat
+    sql-script-encoding: UTF-8
+    schema: classpath*:sql/**/*-schema.sql
+    data: classpath*:sql/**/*-data.sql
+    initialize: false
+  kafka:
+    bootstrap-servers: kuncts35.jzymcs.cn:9092
+    producer: # producer 生产者
+      retries: 0 # 重试次数
+      acks: -1 # 应答级别:多少个分区副本备份完成时向生产者发送ack确认(可选0、1、all/-1)
+      batch-size: 16384 # 批量大小
+      buffer-memory: 33554432 # 生产端缓冲区大小
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer: # consumer消费者
+      group-id: kafka-test # 默认的消费组ID
+      enable-auto-commit: true # 是否自动提交offset
+      auto-commit-interval: 100  # 提交offset延时(接收到消息后多久提交offset)
+      # earliest:当各分区下有已提交的offset时，从提交的offset开始消费；无提交的offset时，从头开始消费
+      # latest:当各分区下有已提交的offset时，从提交的offset开始消费；无提交的offset时，消费新产生的该分区下的数据
+      # none:topic各分区都存在已提交的offset时，从offset后开始消费；只要有一个分区不存在已提交的offset，则抛出异常
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  mail:
+    host: smtp.126.com
+    port: 25
+    username: jiajiajia5000@126.com
+    password: CFERNTQPRZYHBRXO
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+  # redis配置
+  redis:
+    database: 0
+    port: 6379
+    host: 202.189.7.191
+    password: jfeat.com.24
+
+  # 验证码配置
+valid-code:
+  expiration-time: 300000 # 单位毫秒
+  length: 6 # 验证码的长度
+
+# 临时id配置
+temporary-id:
+  ttl: 3000000 # 毫秒
+
+# mqtt配置
+mqtt:
+  ep: ws://0.0.0.0:8084 # 端口
+  usr: admin # 用户名
+  pw: admin # 密码
+  tp: /room-controller-exchange
+  mqtt-topic: # 多主题定义
+    Login-kick-out: login-kick-out-
+  mqtt-cmd-config:
+    user-login-kick-out-cmd: USER_LOGIN_KICK_OUT # 用户登录踢出命令
+
+# mqtt发布消息配置
+mqtt-publish:
+  brk: ws://202.63.172.178:8883 # 端口
+  usr: admin # 用户名
+  pw: admin # 密码
+  tp: /room-controller-exchange- # 主题
+  subs: # 订阅的主题列表
+    - message-center-server # 消息中心服务主题
+#    - user-meeting-heartbeat # 用户心跳主题
+
+io:
+  fileUploadPath: /webapps/images/avatar
+  file-host: images/avatar
+  file-icon-upload-path: icon
+  file-icon-host: icon
+  minio:
+    export-endpoint: "http://202.189.7.191:9000"
+    endpoint: "http://202.189.7.191:9000"
+    access-key: "admin"
+    secret-key: "jfeat.com.24"
+
+# 短信配置
+sms:
+  enable-develop-code: false
+  nameless:
+    base-url: http://47.104.197.138:8001/sms # 根路径
+    username: 960031
+    password: J4YswRt91ali
+    apis:
+      oneOnOne:
+        url: /api/sendMessageOne
+      mass:
+        url: /api/sendMessageMass
+    templates: # 模版列表
+      alterPw: # 模版key
+        name: 修改密码验证码
+        code: SMS_138535094
+        content: 【新质数创】尊敬的 ${name}${role}：您正在修改新质智慧党建系统录密码，验证码为${code}。为保护账号安全，请勿泄漏或转发他人。
+      register:
+        name: 用户注册验证码
+        code: SMS_138535095
+        content: 【新质数创】尊敬的用户：您正在注册新质智慧党建系统账号，验证码为${code}。该验证码5分钟内有效，为保护账号安全，请勿泄漏或转发他人。
+      loginUnusual:
+        name: 登录异常验证码
+        code: SMS_138535096
+        content: 【新质数创】尊敬的 ${name}${role}：您的新质智慧党建系统账号正在一个新设备上登录。验证码为${code}。如非本人登录，请尽快修改密码。
+      loginCheck:
+        name: 登录确认验证码
+        code: SMS_138535097
+        content: 【新质数创】尊敬的 ${name}${role}：您正在登录新质智慧党建系统。验证码为${code}。该验证码5分钟内有效，为保护账号安全，请勿泄漏或转发他人。
+      authentication:
+        name: 身份验证验证码
+        code: SMS_138535098
+        content: 【新质数创】尊敬的 ${name}${role}：您正在进行新质智慧党建系统身份验证。验证码为${code}。为保护账号安全，请勿泄漏或转发他人。
+      infoUpdate:
+        name: 信息变更验证码
+        code: SMS_138535093
+        content: 【新质数创】尊敬的 ${name}${role}：您正在进行新质智慧党建系统账号信息变更操作，验证码为${code}。为保护账号安全，请勿泄漏或转发他人。

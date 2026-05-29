@@ -1,0 +1,583 @@
+@endpoint = http://localhost:8080
+
+#每天token都不同 使用前请更新此处token
+@token = Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJvcmdJZCI6IjEiLCJ1c2VySWQiOiIxIiwidGVuYW50T3JnSWQiOjEsImFjY291bnQiOiJhZG1pbiIsInVzZXJUeXBlIjoxMDAsImRldlVzZXJUeXBlIjowLCJiVXNlclR5cGUiOiJTWVNURU0iLCJpYXQiOjE2NTA4NzMyMTUsImp0aSI6IjEiLCJzdWIiOiJhZG1pbiIsImV4cCI6MTY1MTEzMjQxNX0.7yeGl8_zmiLk-qcXQa1yC1TDaH6d2nvPtReFoCqdplpc3rhkuDbfYLli2tS3sPC8ZXfaDlQPIE9Tavf8Rj0Ckg
+
+
+# 工作流分类
+###获取工作流分类 树状列表
+#{
+#    "data": [
+#        {
+#            "cover": "/images/mgmt.jpg",
+#            "code": "MGMT",
+#            "children": [
+#                {
+#                    "cover": "/images/hr.jpg",
+#                    "code": "HR",
+#                    "name": "人力资源部",
+#                    "pid": 13,
+#                    "sortorder": 1,
+#                    "typeId": 4,
+#                    "id": 14,
+#                    "orgId": 0
+#                }
+#            ],
+#            "name": "管理部门",
+#            "sortorder": 1,
+#            "typeId": 4,
+#            "id": 13,
+#            "orgId": 0
+#        },
+#        {
+#            "cover": "/images/tech_dept.jpg",
+#            "code": "TECH",
+#            "children": [
+#                {
+#                    "cover": "/images/rnd.jpg",
+#                    "code": "RND",
+#                    "name": "研发部",
+#                    "pid": 16,
+#                    "sortorder": 1,
+#                    "typeId": 4,
+#                    "id": 17,
+#                    "orgId": 0
+#                },
+#            ],
+#            "name": "技术部门",
+#            "sortorder": 2,
+#            "typeId": 4,
+#            "id": 16,
+#            "orgId": 0
+#        }
+#    ]
+#}
+#param参数  identifier:类别名称
+GET {{endpoint}}/api/categories/all/tree
+
+### 获取工作流分类列表
+#param参数  identifier:类别名称
+GET {{endpoint}}/api/categories/all
+
+###获取详情
+#id:分类id
+GET {{endpoint}}/api/categories/{{id}}
+
+### 添加分类
+POST {{endpoint}}/api/categories
+Accept: application/json
+Authorization: {{token}}
+
+{
+        "name": "家电",
+        "pid": null,
+        "sortorder": 2,
+        "code": "HOME",
+        "cover": "/images/home.jpg",
+        "orgId": 0,
+        "pName": null,
+        "identifier":"product"
+    }
+
+### 修改分类
+PUT {{endpoint}}/api/categories/{{id}}
+Accept: application/json
+Authorization: {{token}}
+
+{
+        "name": "家电1",
+        "pid": null,
+        "sortorder": 2,
+        "code": "HOME",
+        "cover": "/images/home.jpg",
+        "orgId": 0,
+        "pName": null,
+        "identifier":"product"
+    }
+
+###删除分类
+DELETE {{endpoint}}/api/categories/{{id}}
+
+
+
+
+# end工作流分类
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#工作流
+########################################工作流###########################################
+
+#返回值
+#{
+#	"code": 200,
+#	"data": [
+#
+#		{
+#			"allowDelete": true,
+#			"categoryId": "20",
+#			"categoryName": null,
+#			"code": "PROC-002",
+#			"codeRule": "FIN-{YYYYMMDD}-{SEQ}",
+#			"currentUserId": "1002",
+#			"currentUserName": null,
+#			"formGroup": "FINANCE",
+#			"formName": null,
+#			"formType": "EXPENSE_REPORT",
+#			"id": "2",
+#			"name": "费用报销流程",
+#			"openTo": "USER",
+#			"openToIds": "1001,1002,1003",
+#			"orgId": "1",
+#			"status": "ENABLED",
+#			"steps": null
+#		},
+#
+#		{
+#			"allowDelete": false,
+#			"categoryId": "0",
+#			"categoryName": null,
+#			"code": "A",
+#			"codeRule": "",
+#			"currentUserId": null,
+#			"currentUserName": null,
+#			"formGroup": "",
+#			"formName": null,
+#			"formType": "",
+#			"id": "5",
+#			"name": "最短名称",
+#			"openTo": "ALL",
+#			"openToIds": "",
+#			"orgId": null,
+#			"status": "DISABLED",
+#			"steps": null
+#		},
+#
+#	],
+#	"message": "Success"
+#}
+######获取工作流列表
+GET {{endpoint}}/api/adm/wf/processes
+
+### 添加工作流程
+### 流程管理接口字段说明
+#| 字段名        | 类型    | 必填 | 说明                                                                 |
+#|---------------|---------|------|----------------------------------------------------------------------|
+#| **code**      | string  | 是   | 流程编码（唯一标识）                                                 |
+#| **name**      | string  | 是   | 流程名称                                                             |
+#| **categoryId**| number  | 是   | 流程分类ID                                                           |
+#| **status**    | string  | 是   | 流程状态：`ENABLED`（启用）/`DISABLED`（禁用）                       |
+#| formGroup     | string  | 否   | 表单分组                                                             |
+#| formType      | string  | 否   | 表单类型                                                             |
+#| currentUserId | number  | 否   | 当前处理人ID                                                         |
+#| openTo        | string  | 否   | 开放范围：`ALL`（所有人）/`DEPARTMENT`（指定部门）/`USER`（指定用户）<br>默认值：`ALL` |
+#| openToIds     | string  | 否   | 开放对象ID列表（逗号分隔，配合openTo使用）                           |
+#| orgId         | number  | 否   | 组织/租户ID                                                          |
+#| codeRule      | string  | 否   | 自动编号规则（如：`HR-{YYYYMMDD}-{SEQ}`）                            |
+#| allowDelete   | boolean | 否   | 是否允许删除<br>默认值：`true`                                       |
+POST {{endpoint}}/api/adm/wf/processes
+Accept: application/json
+Authorization: {{token}}
+
+{
+    "code": "PROC-001",
+    "formGroup": "HR",
+    "formType": "LEAVE_APPLY",
+    "name": "员工请假流程",
+    "categoryId": 10,
+    "status": "ENABLED",
+    "openTo": "DEPARTMENT",
+    "openToIds": "1,2,3",
+    "orgId": 1,
+    "codeRule": "HR-{YYYYMMDD}-{SEQ}",
+    "allowDelete": true
+ }
+
+###根据id查询工作流
+#返回结果 json
+#{
+#		"nextSteps": [
+#			{
+#				"currentUserId": "1001",
+#				"currentUserName": null,
+#				"formName": null,
+#				"handlerIds": "101,102",
+#				"handlerSelectRule": "ROLE:manager",
+#				"hasCurrentUser": true,
+#				"id": "1912776376196546561",
+#				"name": "HR处理",
+#				"nextStepString": null,
+#				"nextSteps": "[\"5003\"]",
+#				"processId": "4001",
+#				"stepType": "FORM",
+#				"type": "MIDDLE",
+#				"virtualFormCode": "form_leave_apply"
+#			}
+#		],
+#		"allowDelete": true,
+#		"code": "PROC_ONBOARDING",
+#		"formInfo": {
+#			"layoutJson": [
+#				{
+#					"title": "申请信息",
+#                   需要工作流步骤状态为start且在 t_virtual_form表 design_data配置json  {"schema":{"properties":{"test":{“componentType”:"input"},"test2":{“componentType”:"radio"}}}}
+#					"items": [
+#						{
+#							"field": "test",
+#							"type": "input"
+#						},
+#						{
+#							"field": "test2",
+#							"type": "input"
+#						}
+#					]
+#				}
+#			]
+#		},
+#		"openTo": "ALL",
+#		"name": "员工入职审批",
+#		"id": 4001,
+#		"categoryId": 1,
+#		"status": "ENABLED"
+#	}
+#processId：工作流id
+GET {{endpoint}}/api/adm/wf/processes/{{processId}}
+
+
+###根据id修改工作流状态 启用：ENABLED 停用：DISABLED
+#processId：工作流id
+PUT {{endpoint}}/api/adm/wf/processes/status/{{processId}}
+
+
+### 修改工作流信息
+#processId：工作流id
+PUT {{endpoint}}/api/adm/wf/processes/{{processId}}
+Accept: application/json
+Authorization: {{token}}
+
+{
+    "currentUserId": 1,
+    "code": "PROC-001",
+    "formGroup": "HR-r",
+    "formType": "LEAVE_APPLY",
+    "name": "员工请假流程",
+    "categoryId": 10,
+    "status": "ENABLED",
+    "openTo": "DEPARTMENT",
+    "openToIds": "1,2,3",
+    "orgId": 1,
+    "codeRule": "HR-{YYYYMMDD}-{SEQ}",
+    "allowDelete": true
+}
+
+###根据id删除工作流
+#processId：工作流id
+DELETE {{endpoint}}/api/adm/wf/processes/{{processId}}
+
+
+
+#end工作流
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#工作流步骤
+
+#################工作流步骤#####################
+
+#返回  Data列表是工作流的具体步骤
+
+#{
+#	"code": 200,
+#	"data": [
+#		{
+#			"currentUserId": "3",
+#			"handlerIds": null,
+#			"handlerSelectRule": null,
+#			"id": "5001",
+#			"name": "部门审批",
+#			"nextSteps": "[\"1912776376196546561\"]",
+#			"processId": "4001",
+#			"stepType": "START",
+#			"type": "START",
+#			"virtualFormCode": "FORM_ONBOARDING"
+#		},
+#		{
+#			"currentUserId": "1",
+#			"handlerIds": null,
+#			"handlerSelectRule": null,
+#			"id": "5003",
+#			"name": "CEO终审",
+#			"nextSteps": null,
+#			"processId": "4001",
+#			"stepType": "START",
+#			"type": "END",
+#			"virtualFormCode": "FORM_ONBOARDING"
+#		},
+#		{
+#			"currentUserId": "4",
+#			"handlerIds": "101,102",
+#			"handlerSelectRule": "ROLE:manager",
+#			"id": "1912773527836311553",
+#			"name": "发起申请",
+#			"nextSteps": "[\"5001\"]",
+#			"processId": "4001",
+#			"stepType": "FORM",
+#			"type": "START",
+#			"virtualFormCode": "form_leave_apply"
+#		},
+#		{
+#			"currentUserId": "1001",
+#			"handlerIds": "101,102",
+#			"handlerSelectRule": "ROLE:manager",
+#			"id": "1912776376196546561",
+#			"name": "HR处理",
+#			"nextSteps": "[\"5003\"]",
+#			"processId": "4001",
+#			"stepType": "FORM",
+#			"type": "MIDDLE",
+#			"virtualFormCode": "form_leave_apply"
+#		}
+#	],
+#	"message": "Success"
+#}
+###获取某一个工作流的步骤 根据工作流id
+#processId：工作流id
+GET {{endpoint}}/api/adm/wf/processes/{{processId}}/steps
+
+### 根据工作流步骤id 获取下个步骤（排除自身）
+
+#返回
+#{
+#	"code": 200,
+#	"data": [
+#		{
+#			"currentUserId": "1001",
+#			"handlerIds": "101,102",
+#			"handlerSelectRule": "ROLE:manager",
+#			"id": "1912776376196546561",
+#			"name": "HR处理",
+#			"nextSteps": "[\"5003\"]",
+#			"processId": "4001",
+#			"stepType": "FORM",
+#			"type": "MIDDLE",
+#			"virtualFormCode": "form_leave_apply"
+#		},
+#		{
+#			"currentUserId": "1",
+#			"handlerIds": null,
+#			"handlerSelectRule": null,
+#			"id": "5003",
+#			"name": "CEO终审",
+#			"nextSteps": null,
+#			"processId": "4001",
+#			"stepType": "START",
+#			"type": "END",
+#			"virtualFormCode": "FORM_ONBOARDING"
+#		},
+#		{
+#			"currentUserId": "4",
+#			"handlerIds": "101,102",
+#			"handlerSelectRule": "ROLE:manager",
+#			"id": "1912773527836311553",
+#			"name": "发起申请",
+#			"nextSteps": "[\"5001\"]",
+#			"processId": "4001",
+#			"stepType": "FORM",
+#			"type": "START",
+#			"virtualFormCode": "form_leave_apply"
+#		}
+#	],
+#	"message": "Success"
+#}
+
+#id：工作步骤id
+GET {{endpoint}}/api/adm/wf/processes/{{id}}/steps/nextStepsByStepId
+
+### 根据工作流步骤id 获取工作步骤详情
+#返回json
+#{
+#	"code": 200,
+#	"data": {
+#		"currentUserId": "3",
+#		"currentUserName": "Jane Smith",
+#		"formName": "员工入职表",
+#		"handlerIds": null,
+#		"handlerSelectRule": null,
+#		"hasCurrentUser": null,
+#		"id": "5001",
+#		"name": "部门审批",
+#		"nextStepString": [
+#			{
+#				"nextSteps": "[\"5003\"]",
+#				"handlerSelectRule": "ROLE:manager",
+#				"currentUserId": 1001,
+#				"stepType": "FORM",
+#				"processId": 4001,
+#				"virtualFormCode": "form_leave_apply",
+#				"name": "HR处理",
+#				"handlerIds": "101,102",
+#				"id": "1912776376196546561",
+#				"type": "MIDDLE"
+#			}
+#		],
+#		"nextSteps": "[\"1912776376196546561\"]",
+#		"processId": "4001",
+#		"stepType": "START",
+#		"type": "START",
+#		"virtualFormCode": "FORM_ONBOARDING"
+#	},
+#	"message": "Success"
+#}
+#id：工作步骤id
+GET {{endpoint}}/api/adm/wf/processes/steps/{{id}}
+
+### 添加工作流步骤
+#processId：工作流id
+POST {{endpoint}}/api/adm/wf/processes/{{processId}}/steps
+Accept: application/json
+Authorization: {{token}}
+
+{
+      "name": "HR处理",
+      "type": "MIDDLE",#类型：START, MIDDLE, END
+      "stepType": "approval", #步骤类型：审核步骤approval，填写步骤content
+      "nextSteps": "[5001]", #下一步骤列表，逗号分隔
+      "handlerSelectRule": "ROLE:manager",
+      "handlerIds": "101,102", #经办人ID列表
+      "currentUserId": 1001,#执行人id
+      "virtualFormCode": "form_leave_apply" #虚拟表单的code
+}
+
+### 修改工作流步骤信息
+#id：工作步骤id
+PUT {{endpoint}}/api/adm/wf/processes/steps/{{id}}
+Accept: application/json
+Authorization: {{token}}
+
+{
+      "name": "发起申请",
+      "type": "START",
+      "stepType": "content",
+      "nextSteps": [5001],
+      "handlerSelectRule": "ROLE:manager",
+      "handlerIds": "101,102",
+      "currentUserId": 4,
+      "processId":4001,
+      "virtualFormCode": "form_leave_apply"
+}
+
+### 删除工作流步骤
+#processId：工作流id
+#id：工作步骤id
+DELETE {{endpoint}}/api/adm/wf/processes/{{processId}}/steps/{{id}}
+
+
+### 删除工作流步骤
+#id：工作步骤id
+DELETE {{endpoint}}/api/adm/wf/processes//steps/{{id}}
+
+
+#end工作流步骤
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##############任务 ######################
+#### 获取任务列表
+#GET {{endpoint}}/api/adm/wf/tasks
+#
+#### 获取任务详情
+#GET {{endpoint}}/api/adm/wf/tasks/{{id}}
+#
+#### 添加任务
+##status HANDLING, HANDLED
+#POST {{endpoint}}/api/adm/wf/tasks
+#Accept: application/json
+#Authorization: {{token}}
+#
+#{
+#		"formId": "3001",
+#		"formType": "LEAVE_FORM",
+#		"handleTime": null,
+#		"name": "请假审批-张三",
+#		"processInstanceId": "2001",
+#		"status": "HANDLING",
+#		"stepId": "6001",
+#		"userId": "3"
+#}
+#
+####修改任务
+#### stauts:INITED,HANDLING,HANDLED_APPROVED,HANDLED_REJECTED,HANDLED_ROLLBACK
+##如果任务通过 HANDLED_APPROVED 判断流程步骤是否是最后一个，如果是就直接通过，不是创建下一个任务步骤
+##其他状态 则拒绝
+#PUT {{endpoint}}/api/adm/wf/tasks/1914155981007806465
+#Accept: application/json
+#Authorization: {{token}}
+#
+#{
+#		"formId": "3001",
+#		"formType": "LEAVE_FORM",
+#		"handleTime": "2025-04-21 11:21:53",
+#		"name": "请病假审批-张三",
+#		"processInstanceId": "6003",
+#		"status": "HANDLED_APPROVED",
+#		"stepId": "5002",
+#		"userId": "1"
+#	}

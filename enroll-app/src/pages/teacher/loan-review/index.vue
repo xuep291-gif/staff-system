@@ -194,6 +194,7 @@ export default {
       await scholarshipApi.approveLoan(this.item.uid, { opinion: this.opinion, targetStatus })
       updateReview('loans', this.item.uid, targetStatus, { node: '辅导员初审', result: '初审通过', remark: this.opinion })
       this.item = getReviewItem('loans', this.item.uid) || { ...this.item, status: targetStatus }
+      this.statusSteps = buildFundingReviewSteps(this.item)
       uni.showToast({ title: '初审通过', icon: 'success' })
       setTimeout(() => uni.navigateBack(), 500)
     },
@@ -206,6 +207,7 @@ export default {
       await scholarshipApi.rejectLoan(this.item.uid, { rejectReason: reason })
       updateReview('loans', this.item.uid, REVIEW_STATUS.REJECTED, { node: '辅导员初审', result: '已驳回', remark: reason })
       this.item = getReviewItem('loans', this.item.uid) || { ...this.item, status: REVIEW_STATUS.REJECTED }
+      this.statusSteps = buildFundingReviewSteps(this.item)
       uni.showToast({ title: '已驳回', icon: 'none' })
       setTimeout(() => uni.navigateBack(), 500)
     }

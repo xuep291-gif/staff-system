@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.processTask.mapper.ProcessTaskMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="taskResultMap" type="com.jfeat.processTask.dao.model.ProcessTask">
+        <id property="taskId" column="task_id"/>
+        <result property="title" column="title"/>
+        <result property="attachment" column="attachment"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="priority" column="priority"/>
+        <result property="startTime" column="start_time"/>
+        <result property="deadline" column="deadline"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="assigneeType" column="assignee_type"/>
+        <result property="assigneeId" column="assignee_id"/>
+        <result property="assigneeRole" column="assignee_role"/>
+    </resultMap>
+
+    <!-- 插入任务 -->
+    <!-- 插入任务并返回ID -->
+    <insert id="insertProcessTask" parameterType="com.jfeat.processTask.dao.model.ProcessTask"
+            useGeneratedKeys="true" keyProperty="taskId" keyColumn="task_id">
+        INSERT INTO t_tasks (
+            title,
+            attachment,
+            image_url,
+            description,
+            status,
+            priority,
+            start_time,
+            deadline,
+            created_by,
+            assignee_type,
+            assignee_id,
+            assignee_role
+        ) VALUES (
+                     #{title},
+                     #{attachment},
+                     #{imageUrl},
+                     #{description},
+                     #{status},
+                     #{priority},
+                     #{startTime},
+                     #{deadline},
+                     #{createdBy},
+                     #{assigneeType},
+                     #{assigneeId},
+                     #{assigneeRole}
+                 )
+    </insert>
+
+    <!-- 根据ID查询任务 -->
+    <select id="selectById" parameterType="Long" resultMap="taskResultMap">
+        SELECT * FROM t_tasks WHERE task_id = #{taskId}
+    </select>
+
+    <!-- 查询所有任务 -->
+    <select id="selectAll" resultMap="taskResultMap">
+        SELECT * FROM t_tasks
+    </select>
+
+    <!-- 更新任务 -->
+    <update id="update" parameterType="com.jfeat.processTask.dao.model.ProcessTask">
+        UPDATE t_tasks SET
+                           title = #{title},
+                           attachment = #{attachment},
+                           image_url = #{imageUrl},
+                           description = #{description},
+                           status = #{status},
+                           priority = #{priority},
+                           start_time = #{startTime},
+                           deadline = #{deadline},
+                           assignee_type = #{assigneeType},
+                           assignee_id = #{assigneeId},
+                           assignee_role = #{assigneeRole}
+        WHERE task_id = #{taskId}
+    </update>
+
+    <!-- 删除任务 -->
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM t_tasks WHERE task_id = #{taskId}
+    </delete>
+
+    <!-- 根据状态查询任务 -->
+    <select id="selectByStatus" parameterType="String" resultMap="taskResultMap">
+        SELECT * FROM t_tasks WHERE status = #{status}
+    </select>
+
+    <!-- 根据创建人查询任务 -->
+    <select id="selectByCreator" parameterType="Long" resultMap="taskResultMap">
+        SELECT * FROM t_tasks WHERE created_by = #{createdBy}
+    </select>
+
+    <!-- 根据负责人查询任务 -->
+    <select id="findTaskPage" resultMap="taskResultMap">
+        SELECT * FROM t_tasks
+        <where>
+            <!-- 使用Task对象中的属性作为条件 -->
+            <if test="record.title != null and record.title != ''">
+                AND title LIKE CONCAT('%', #{record.title}, '%')
+            </if>
+            <if test="record.status != null and record.status != ''">
+                AND status = #{record.status}
+            </if>
+            <if test="record.priority != null and record.priority != ''">
+                AND priority = #{record.priority}
+            </if>
+            <if test="record.assigneeId != null">
+                AND assignee_id = #{record.assigneeId}
+            </if>
+            <if test="record.assigneeType != null and record.assigneeType != ''">
+                AND assignee_type = #{record.assigneeType}
+            </if>
+            <if test="record.startTime != null">
+                AND start_time >= #{record.startTime}
+            </if>
+            <if test="record.deadline != null">
+                AND deadline &lt;= #{record.deadline}
+            </if>
+
+            <!-- 全局搜索条件 -->
+            <if test="search != null and search != ''">
+                AND (
+                title LIKE CONCAT('%', #{search}, '%')
+                OR description LIKE CONCAT('%', #{search}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY updated_at DESC
+    </select>
+
+
+    <!-- 权限任务查询（带分页扩展） -->
+    <select id="selectUserTasks" resultMap="taskResultMap">
+        SELECT
+        t.task_id,
+        t.title,
+        t.attachment,
+        t.image_url,
+        t.description,
+        t.status,
+        t.priority,
+        t.start_time,
+        t.deadline,
+        t.created_by,
+        t.created_at,
+        t.updated_at,
+        t.assignee_type,
+        t.assignee_id,
+        t.assignee_role
+        FROM t_tasks t
+        LEFT JOIN t_team_user tu
+        ON t.assignee_type = 'ORGANIZATION'
+        AND t.assignee_id = tu.teamId
+        AND tu.user_id = #{userId}
+        LEFT JOIN t_end_user_role_relation ur
+        ON t.assignee_type = 'ROLE'
+        AND t.assignee_id = ur.role_id
+        AND ur.user_id = #{userId}
+        WHERE
+        (t.assignee_type = 'USER' AND t.assignee_id = #{userId})  <!-- 直接分配 -->
+        OR tu.teamId IS NOT NULL  <!-- 组织成员 -->
+        OR ur.role_id IS NOT NULL <!-- 角色成员 -->
+        <!-- 扩展排序和分页 -->
+        <if test="orderBy != null">
+            ORDER BY ${orderBy}
+        </if>
+<!--        <if test="pageSize != null and offset != null">-->
+<!--            LIMIT #{offset}, #{pageSize}-->
+<!--        </if>-->
+    </select>
+
+</mapper>

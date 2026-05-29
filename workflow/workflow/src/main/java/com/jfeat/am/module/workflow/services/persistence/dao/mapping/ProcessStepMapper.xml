@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.workflow.services.persistence.dao.ProcessStepMapper">
+
+
+<!--	<resultMap id="BaseResultMap" type="com.jfeat.am.module.workflow.services.persistence.model.ProcessStep">-->
+<!--		<id column="id" property="id" jdbcType="BIGINT"/>-->
+<!--		<result column="process_id" property="processId" jdbcType="BIGINT"/>-->
+<!--		<result column="name" property="name" jdbcType="VARCHAR"/>-->
+<!--		<result column="step_type" property="stepType" jdbcType="VARCHAR"/>-->
+<!--		<result column="pid" property="pid" jdbcType="BIGINT"/>-->
+<!--		<result column="next_steps" property="nextSteps" jdbcType="VARCHAR"/>-->
+<!--		<result column="current_user_id" property="currentUserId" jdbcType="BIGINT"/>-->
+<!--		<result column="virtual_form_code" property="virtualFormCode" jdbcType="VARCHAR"/>-->
+<!--		<result column="design_data" property="designData" jdbcType="VARCHAR"/>-->
+<!--		<result column="form_data" property="formData" jdbcType="VARCHAR"/>-->
+<!--		<result column="app_design_data" property="appDesignData" jdbcType="VARCHAR"/>-->
+<!--		<result column="next_id" property="nextId" jdbcType="BIGINT"/>-->
+<!--	</resultMap>-->
+
+<!--	<sql id="Base_Column_List">-->
+<!--		id, process_id, name, step_type, pid, next_steps, current_user_id, virtual_form_code, design_data, form_data, app_design_data, next_id-->
+<!--	</sql>-->
+
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.jfeat.am.module.workflow.services.persistence.model.ProcessStep">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="process_id" property="processId" />
+		<result column="type" property="type" />
+		<result column="next_steps" property="nextSteps" />
+		<result column="handler_select_rule" property="handlerSelectRule" />
+		<result column="handler_ids" property="handlerIds" />
+		<result column="current_user_id" property="currentUserId" />
+		<result column="virtual_form_code" property="virtualFormCode" />
+		<result column="step_type" property="stepType" />
+		<result column="next_id" property="nextId" jdbcType="BIGINT"/>
+		<result column="pid" property="pid" jdbcType="BIGINT"/>
+	</resultMap>
+
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		id, name, process_id AS processId, type, next_steps AS nextSteps, handler_select_rule AS handlerSelectRule, handler_ids AS handlerIds
+        ,current_user_id As currentUserId,virtual_form_code AS virtualFormCode,step_type As stepType,pid,next_id as nextId
+	</sql>
+
+
+	<update id="updateBatchById" parameterType="java.util.List">
+		<foreach collection="steps" item="item" separator=";">
+			update wf_process_step
+			<set>
+				<if test="item.name != null">name = #{item.name},</if>
+				<if test="item.processId != null">process_id = #{item.processId},</if>
+				<if test="item.type != null">type = #{item.type},</if>
+				<if test="item.nextSteps != null">next_steps = #{item.nextSteps},</if>
+				<if test="item.handlerSelectRule != null">handler_select_rule = #{item.handlerSelectRule},</if>
+				<if test="item.handlerIds != null">handler_ids = #{item.handlerIds},</if>
+				<if test="item.currentUserId != null">current_user_id = #{item.currentUserId},</if>
+				<if test="item.virtualFormCode != null">virtual_form_code = #{item.virtualFormCode},</if>
+				<if test="item.stepType != null">step_type = #{item.stepType},</if>
+				<if test="item.nextId != null">next_id = #{item.nextId},</if>
+				<if test="item.pid != null">pid = #{item.pid},</if>
+			</set>
+			where id = #{item.id}
+		</foreach>
+	</update>
+
+
+
+	<select id="selectNextSteps"	resultType="com.jfeat.am.module.workflow.services.persistence.model.ProcessStep">
+		select * from wf_process_step step
+		where step.process_id = #{processId}
+		<if test="search != null and search != ''">
+			AND
+			wf_process_step.name LIKE CONCAT('%',#{search},'%')
+		</if>
+	</select>
+
+	<select id="selectStartStepByProcessId" resultType="com.jfeat.am.module.workflow.services.domain.model.ProcessStepModel">
+		SELECT
+			wf_process_step.*,t_sys_user.name as currentUserName
+		FROM
+			 wf_process_step left join t_sys_user on t_sys_user.id = wf_process_step.current_user_id
+		WHERE
+			wf_process_step.process_id =  #{processId} and type = 'START';
+	</select>
+
+	<select id="selectStartStepNextStep" resultType="com.jfeat.am.module.workflow.services.domain.model.ProcessStepModel">
+		SELECT
+			wf_process_step.*,t_sys_user.name as currentUserName
+			,if(wf_process_step.current_user_id is not null , true ,false) as 'hasCurrentUser'
+		FROM
+			 wf_process_step left join t_sys_user on t_sys_user.id = wf_process_step.current_user_id
+		WHERE
+			wf_process_step.process_id =  #{processId} and type != 'START'
+		Limit 0,1;
+	</select>
+
+
+	<select id="selectNextStepsById" resultType="com.jfeat.am.module.workflow.services.domain.model.ProcessStepModel">
+		SELECT
+			wf_process_step.*,t_sys_user.name as currentUserName
+		,if(wf_process_step.current_user_id is not null , true ,false) as 'hasCurrentUser'
+		FROM
+			 wf_process_step left join t_sys_user on t_sys_user.id = wf_process_step.current_user_id
+		WHERE
+			wf_process_step.id in
+			<foreach collection="ids" open="(" close=")" separator="," item="index" >
+				#{index}
+			</foreach>
+
+	</select>
+
+
+	<select id="selectStepsInIds" resultType="com.jfeat.am.module.workflow.services.persistence.model.ProcessStep">
+		select *
+		FROM
+			 wf_process_step
+		WHERE
+			wf_process_step.id in
+			<foreach collection="ids" item="ids" open="(" close=")" separator="," >
+				#{ids}
+			</foreach>
+	</select>
+
+	<select id="selectModel" resultType="com.jfeat.am.module.workflow.services.domain.model.ProcessStepModel">
+		SELECT
+			wf_process_step.*,t_sys_user.name as currentUserName,t_virtual_form.form_name as formName
+		FROM
+			 wf_process_step
+			 left join t_sys_user
+			 on t_sys_user.id = wf_process_step.current_user_id
+			 left join t_virtual_form on t_virtual_form.`code` = wf_process_step.virtual_form_code
+		WHERE
+			wf_process_step.id = #{id}
+	</select>
+
+
+
+	<select id="selectStartStepFormJson" resultType="String">
+		SELECT
+			t_virtual_form.design_data
+		FROM
+			 wf_process_step left join t_virtual_form on t_virtual_form.`code` = wf_process_step.virtual_form_code
+		WHERE
+			wf_process_step.process_id =  #{processId} and wf_process_step.type = 'START'
+		Limit 0,1;
+	</select>
+
+	<select id="selectStartStepDesignJson" resultType="String">
+		SELECT
+			t_virtual_form.app_design_data
+		FROM
+			 wf_process_step left join t_virtual_form on t_virtual_form.`code` = wf_process_step.virtual_form_code
+		WHERE
+			wf_process_step.process_id =  #{processId} and wf_process_step.type = 'START'
+		Limit 0,1;
+	</select>
+
+
+	<select id="getEntityIdByStepId" resultType="Long">
+		SELECT
+			t_virtual_form.entity_id
+		FROM
+			wf_process_step LEFT JOIN t_virtual_form on t_virtual_form.`code` = wf_process_step.virtual_form_code
+		where wf_process_step.id=#{stepId};
+	</select>
+
+	<select id="getDesignJsonByStepId" resultType="String">
+		SELECT
+			t_virtual_form.design_data
+		FROM
+			wf_process_step LEFT JOIN t_virtual_form on t_virtual_form.`code` = wf_process_step.virtual_form_code
+		WHERE
+			wf_process_step.id = #{stepId}
+	</select>
+
+    <insert id="insertAndReturnId" parameterType="com.jfeat.am.module.workflow.services.persistence.model.ProcessStep" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO wf_process_step (
+            name, process_id, type, next_steps, handler_select_rule, handler_ids,
+            current_user_id, virtual_form_code, step_type, pid, next_id,entity_name,approver_type,multi_approver,multi_approve_mode,allow_self_approval
+        ) VALUES (
+            #{name}, #{processId}, #{type}, #{nextSteps}, #{handlerSelectRule}, #{handlerIds},
+            #{currentUserId}, #{virtualFormCode}, #{stepType}, #{pid}, #{nextId},#{entityName},#{approverType},#{multiApprover},#{multiApproveMode},#{allowSelfApproval}
+        )
+    </insert>
+
+</mapper>

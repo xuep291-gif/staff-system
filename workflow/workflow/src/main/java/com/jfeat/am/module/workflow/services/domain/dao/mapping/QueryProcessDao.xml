@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.workflow.services.domain.dao.QueryProcessDao">
+    <sql id="Base_Column_List">
+        wf_process.*
+    </sql>
+    <select id="findProcesses" resultType="com.jfeat.am.module.workflow.services.domain.model.ProcessModel">
+        SELECT wf_process.*, t_eav_entity.`name` as formName,t_category.name as categoryName
+        FROM wf_process
+        LEFT JOIN t_eav_entity ON t_eav_entity.id = wf_process.form_type
+        LEFT JOIN t_category ON t_category.id = wf_process.category_id
+        WHERE 1=1
+        <if test="name != null and name != ''">
+            AND wf_process.name LIKE CONCAT('%',#{name},'%')
+        </if>
+
+        <if test="search != null and search != ''">
+            AND
+            (wf_process.name LIKE CONCAT('%',#{search},'%') or
+            t_eav_entity.`name` LIKE CONCAT('%',#{search},'%') )
+
+        </if>
+
+        <if test="status != null and status != ''">
+            AND wf_process.status = #{status}
+        </if>
+
+        <if test="formType != null and formType != ''">
+            AND wf_process.form_type = #{formType}
+        </if>
+
+        <if test="orgId !=null">
+            And wf_process.org_id = #{orgId}
+        </if>
+
+        ORDER BY wf_process.id ASC
+    </select>
+
+    <select id="findProcess" resultType="com.jfeat.am.module.workflow.services.domain.model.ProcessModel">
+        SELECT wf_process.*, t_eav_entity.`name` as formName,t_category.`name` as categoryName
+        FROM wf_process
+        LEFT JOIN t_eav_entity ON t_eav_entity.id = wf_process.form_type
+        left join t_category on t_category.id = wf_process.category_id
+        WHERE wf_process.id = #{id}
+    </select>
+
+
+    <select id="getEntityIdByProcess" resultType="Long">
+        select t_eav_entity.id
+        from wf_process
+        left join wf_process_step on wf_process_step.process_id = wf_process.id
+                        and wf_process_step.type = 'start'
+        left join t_virtual_form on t_virtual_form.`code` = wf_process_step.virtual_form_code
+        left join t_eav_entity on t_eav_entity.id = t_virtual_form.entity_id
+        where wf_process.id = #{processId}
+        LIMIT 0,1
+    </select>
+
+    <select id="getVirtualFormByProcess" resultType="virtualForm">
+        select t_virtual_form.*
+        from wf_process
+        left join wf_process_step on wf_process_step.process_id = wf_process.id
+                        and wf_process_step.type = 'start'
+        left join t_virtual_form on t_virtual_form.`code` = wf_process_step.virtual_form_code
+        where wf_process.id = #{processId}
+        LIMIT 0,1
+    </select>
+
+    <select id="selectInstanceByProcess" resultType="ProcessInstance">
+        select * from wf_process_instance where wf_process_instance.process_id = #{processId}
+    </select>
+
+</mapper>

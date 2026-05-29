@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.processTask.mapper.TaskNoteMapper">
+
+
+    <resultMap id="taskNoteResultMap" type="com.jfeat.processTask.dao.model.TaskNote">
+        <!-- 主键映射 -->
+        <id column="id" property="id" jdbcType="BIGINT"/>
+
+        <!-- 普通字段映射 -->
+        <result column="transfer_id" property="transferId" jdbcType="BIGINT"/>
+        <result column="handler_id" property="handlerId" jdbcType="BIGINT"/>
+        <result column="handler_name" property="handlerName" jdbcType="VARCHAR"/>
+        <result column="from_status" property="fromStatus" jdbcType="VARCHAR"/>
+        <result column="to_status" property="toStatus" jdbcType="VARCHAR"/>
+        <result column="note" property="note" jdbcType="VARCHAR"/>
+        <result column="image_url" property="imageUrl" jdbcType="VARCHAR"/>
+        <result column="attachment" property="attachment" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- TaskNoteMapper.xml -->
+    <select id="selectNoteByLatestTransfer" resultMap="taskNoteResultMap">
+        SELECT
+        tn.*
+        FROM t_task_notes tn
+        WHERE tn.transfer_id = (
+        <!-- 子查询：获取符合条件的最近一次流转记录ID -->
+        SELECT
+        t.transfer_id
+        FROM t_task_transfers t
+        WHERE
+        t.task_id = #{taskId}
+        AND t.to_assignee_type = #{fromAssigneeType}
+        AND t.to_assignee_id = #{fromAssigneeId}
+        ORDER BY t.transferred_at DESC
+        LIMIT 1  -- 取时间倒序第一条
+        )
+    </select>
+
+</mapper>

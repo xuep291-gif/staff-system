@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.processTask.mapper.TaskTransferMapper">
+
+    <!-- 新增处理结果映射 -->
+    <resultMap id="taskNoteResult" type="com.jfeat.processTask.dao.vo.TaskNoteVO">
+        <!--        <result column="from_status" property="fromStatus"/>-->
+        <!--        <result column="to_status" property="toStatus"/>-->
+        <result column="handler_name" property="handlerName"/>
+        <result column="note" property="note"/>
+        <result column="image_url" property="imageUrl"/>
+        <result column="attachment" property="attachment"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 增强后的流转记录VO -->
+    <resultMap id="transferVOMap" type="com.jfeat.processTask.dao.vo.TaskTransferVO">
+        <id column="transfer_id" property="transferId"/>
+        <result column="task_id" property="taskId"/>
+        <result column="from_assignee_type" property="fromAssigneeType"/>
+        <result column="from_assignee_name" property="fromAssigneeName"/>
+        <result column="to_assignee_type" property="toAssigneeType"/>
+        <result column="to_assignee_name" property="toAssigneeName"/>
+        <result column="operator" property="operator"/>
+        <result column="transferred_at" property="transferredAt"/>
+        <result column="notes" property="notes"/>
+        <!-- 新增处理结果集合 -->
+        <association property="processResults" resultMap="taskNoteResult"/>
+    </resultMap>
+
+    <!-- 查询流转历史及处理结果 -->
+    <select id="selectTaskTransferHistory" resultMap="transferVOMap">
+        SELECT
+        t.transfer_id,
+        t.task_id,
+        t.from_assignee_type,
+        CASE
+        WHEN t.from_assignee_type = 'USER' THEN u_from.account
+        WHEN t.from_assignee_type = 'ORGANIZATION' THEN team_from.team_name
+        WHEN t.from_assignee_type = 'ROLE' THEN role_from.role_name
+        ELSE '未知'
+        END AS from_assignee_name,
+        t.to_assignee_type,
+        CASE
+        WHEN t.to_assignee_type = 'USER' THEN u_to.account
+        WHEN t.to_assignee_type = 'ORGANIZATION' THEN team_to.team_name
+        WHEN t.to_assignee_type = 'ROLE' THEN role_to.role_name
+        ELSE '未知'
+        END AS to_assignee_name,
+        u_operator.account AS operator,
+        t.transferred_at,
+        t.notes,
+
+        tn.from_status,
+        tn.to_status,
+        tn.handler_name,
+        tn.note,
+        tn.image_url,
+        tn.attachment,
+        tn.create_time
+        FROM
+        t_task_transfers t
+        LEFT JOIN t_end_user u_from ON t.from_assignee_type = 'USER' AND t.from_assignee_id = u_from.id
+        LEFT JOIN t_team team_from ON t.from_assignee_type = 'ORGANIZATION' AND t.from_assignee_id = team_from.id
+        LEFT JOIN t_end_user_role role_from ON t.from_assignee_type = 'ROLE' AND t.from_assignee_id = role_from.role_id
+        LEFT JOIN t_end_user u_to ON t.to_assignee_type = 'USER' AND t.to_assignee_id = u_to.id
+        LEFT JOIN t_team team_to ON t.to_assignee_type = 'ORGANIZATION' AND t.to_assignee_id = team_to.id
+        LEFT JOIN t_end_user_role role_to ON t.to_assignee_type = 'ROLE' AND t.to_assignee_id = role_to.role_id
+        LEFT JOIN t_end_user u_operator ON t.transferred_by = u_operator.id
+        LEFT JOIN t_task_notes tn ON t.transfer_id = tn.transfer_id
+        WHERE
+        t.task_id = #{taskId}
+        ORDER BY
+        t.transferred_at ASC,
+        tn.create_time ASC
+    </select>
+
+
+    <insert id="insertTransfer" parameterType="TaskTransfer" useGeneratedKeys="true" keyProperty="transferId">
+        INSERT INTO t_task_transfers (task_id,
+                                      from_assignee_type,
+                                      from_assignee_id,
+                                      to_assignee_type,
+                                      to_assignee_id,
+                                      transferred_by,
+                                      transferred_at,
+                                      notes)
+        VALUES (#{taskId},
+                #{fromAssigneeType},
+                #{fromAssigneeId},
+                #{toAssigneeType},
+                #{toAssigneeId},
+                #{transferredBy},
+                #{transferredAt},
+                #{notes})
+    </insert>
+
+</mapper>

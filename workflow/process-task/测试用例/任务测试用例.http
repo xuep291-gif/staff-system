@@ -1,0 +1,164 @@
+@endpoint = http://localhost:8080
+
+#每天token都不同 使用前请更新此处token
+@token = Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJvcmdJZCI6IjEiLCJ1c2VySWQiOiIxIiwidGVuYW50T3JnSWQiOjEsImFjY291bnQiOiJhZG1pbiIsInVzZXJUeXBlIjoxMDAsImRldlVzZXJUeXBlIjowLCJiVXNlclR5cGUiOiJTWVNURU0iLCJpYXQiOjE2NTA4NzMyMTUsImp0aSI6IjEiLCJzdWIiOiJhZG1pbiIsImV4cCI6MTY1MTEzMjQxNX0.7yeGl8_zmiLk-qcXQa1yC1TDaH6d2nvPtReFoCqdplpc3rhkuDbfYLli2tS3sPC8ZXfaDlQPIE9Tavf8Rj0Ckg
+
+###创建一个任务
+#attachmentFile 上传附件 |attachment 直接给附件url  二选一如果都用了系统有限上传附件
+#imageFile 上传图片|imageUrl 直接给图片路径 二选一如果都用了系统有限上传图片文件
+#priority:LOW("低"),MEDIUM("中"),HIGH("高");  优先级
+#startTime 开始时间
+#deadline  结束时间
+
+#下面两个参数可以不再创建时选择
+#assigneeType：ROLE角色 USER:用户 ORGANIZATION：组织
+#assigneeId：分配id，如果是用户就是用户id 如果是组织就是组织id....
+POST {{endpoint}}/api/task
+Accept: application/json
+Authorization: {{token}}
+
+{
+  "title": "第四季度市场推广计划",
+  "attachment": "https://oss.example.com/attachments/Q4_marketing.pptx",
+  "imageUrl": null,
+  "description": "制定第四季度产品市场推广计划，预算50万",
+  "priority": "MEDIUM",
+  "startTime": "2025-11-01T00:00:00",
+  "deadline": "2025-11-15T23:59:59"
+}
+
+####指派任务
+#taskId：任务id
+#assigneeType：ROLE角色 USER:用户 ORGANIZATION：组织
+#assigneeId：分配id，如果是用户就是用户id 如果是组织就是组织id....
+POST {{endpoint}}/api/task/{{taskId}}/assign?assigneeType={{assigneeType}}&assigneeId={{assigneeId}}
+
+
+
+###被指派的人处理任务
+#note：说明情况
+#attachmentFile 上传附件 |attachment 直接给附件url  二选一如果都用了系统有限上传附件
+#imageFile 上传图片|imageUrl 直接给图片路径 二选一如果都用了系统有限上传图片文件
+POST {{endpoint}}/api/task/{{taskId}}/taskNote
+Accept: application/json
+Authorization: {{token}}
+
+{
+    "note":"处理完成",
+    "attachment":"/file.txt",
+    "imageUrl":"/image.jpg"
+}
+
+
+###任务流转
+POST {{endpoint}}/api/pub/taskTransfer
+Accept: application/json
+Authorization: {{token}}
+
+{
+  "taskId": 19,
+  "fromAssigneeType": "ROLE",
+  "fromAssigneeId": 1,
+  "toAssigneeType": "USER",
+  "toAssigneeId": 2725,
+  "transferredBy": 1,
+  "notes": "转交白浩"
+}
+
+
+###查询整个轮流转过程和处理结果
+#返回结果
+#{
+#	"code": 200,
+#	"data": [
+#		{
+#			"fromAssigneeName": null,
+#			"fromAssigneeType": "USER",
+#			"notes": null,
+#			"operator": null,
+#			"processResults": {
+#				"attachment": null,
+#				"createTime": "2025-04-29 14:31:01",
+#				"handlerName": null,
+#				"imageUrl": null,
+#				"note": null
+#			},
+#			"taskId": "19",
+#			"toAssigneeName": "运维",
+#			"toAssigneeType": "ROLE",
+#			"transferId": "13",
+#			"transferredAt": "2025-04-29 14:31:01"
+#		},
+#		{
+#			"fromAssigneeName": "运维",
+#			"fromAssigneeType": "ROLE",
+#			"notes": "转交运维",
+#			"operator": null,
+#			"processResults": {
+#				"attachment": "/file.txt",
+#				"createTime": "2025-04-29 14:40:57",
+#				"handlerName": null,
+#				"imageUrl": "/image.jpg",
+#				"note": "处理完成"
+#			},
+#			"taskId": "19",
+#			"toAssigneeName": "f0d6f38ba4d042fa86518275e0e38985",
+#			"toAssigneeType": "USER",
+#			"transferId": "16",
+#			"transferredAt": "2025-04-29 14:40:58"
+#		},
+#		{
+#			"fromAssigneeName": "f0d6f38ba4d042fa86518275e0e38985",
+#			"fromAssigneeType": "USER",
+#			"notes": "转交给管理员",
+#			"operator": null,
+#			"processResults": {
+#				"attachment": null,
+#				"createTime": "2025-04-29 14:53:53",
+#				"handlerName": null,
+#				"imageUrl": null,
+#				"note": null
+#			},
+#			"taskId": "19",
+#			"toAssigneeName": "超级管理员",
+#			"toAssigneeType": "ROLE",
+#			"transferId": "17",
+#			"transferredAt": "2025-04-29 14:53:53"
+#		}
+#	],
+#	"message": "Success"
+#}
+#taskId 任务id
+GET {{endpoint}}/api/pub/taskTransfer/{{taskId}}/timeline
+Authorization: {{token}}
+
+###任务完成或者取消，任务不再流转
+PUT {{endpoint}}/api/task/{{taskId}}/taskStatus
+Authorization: {{token}}
+
+###查看自己的任务列表,如果流转出去是无法查看的
+#{
+#	"code": 200,
+#	"data": [
+#		{
+#			"assigneeId": "1",
+#			"assigneeRole": null,
+#			"assigneeType": "ROLE",
+#			"attachment": "https://oss.example.com/attachments/Q4_marketing.pptx",
+#			"createdAt": "2025-04-29 14:23:28",
+#			"createdBy": "1",
+#			"deadline": "2025-11-15 23:59:59",
+#			"description": "制定第四季度产品市场推广计划，预算50万",
+#			"imageUrl": null,
+#			"priority": "MEDIUM",
+#			"startTime": "2025-11-01 00:00:00",
+#			"status": "COMPLETED",
+#			"taskId": "19",
+#			"title": "第四季度市场推广计划",
+#			"updatedAt": "2025-04-29 14:23:28"
+#		}
+#	],
+#	"message": "Success"
+#}
+GET {{endpoint}}/api/task
+Authorization: {{token}}

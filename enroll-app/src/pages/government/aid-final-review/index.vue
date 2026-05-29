@@ -141,7 +141,7 @@ export default {
   computed: {
     canReview() {
       if (!this.item) return false
-      return this.expectedStatus === REVIEW_STATUS.REVIEW_PASS
+      return this.expectedStatus === REVIEW_STATUS.REVIEW_PASS && this.item.status === this.expectedStatus
     },
     approveLabel() { return '审批通过' },
     reviewTitle() { return '学工处审批' },

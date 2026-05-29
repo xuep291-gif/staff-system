@@ -23,7 +23,7 @@
     </scroll-view>
 
     <SBottomSheet v-model="showSheet" title="退费审核">
-      <view v-if="currentItem" class="sheet-info">
+      <view class="sheet-info" v-if="currentItem">
         <SInfoRow label="学生姓名">{{ currentItem.name }}</SInfoRow>
         <SInfoRow label="学号">{{ currentItem.sid }}</SInfoRow>
         <SInfoRow label="班级">{{ currentItem.className }}</SInfoRow>
@@ -32,6 +32,11 @@
         <SInfoRow label="退费原因"><text class="reason">{{ currentItem.reason }}</text></SInfoRow>
         <SInfoRow label="提交时间">{{ currentItem.applyTime }}</SInfoRow>
         <SInfoRow label="审核状态"><SBadge :color="currentItem.badgeColor">{{ currentItem.statusLabel }}</SBadge></SInfoRow>
+        <!-- 退款失败详情 — 仅财务端可见 (§D-05) -->
+        <view class="fail-box" v-if="isFailed && currentItem.failReason">
+          <text class="fail-label">🔒 失败原因（仅财务可见）</text>
+          <text class="fail-text">{{ currentItem.failReason }}</text>
+        </view>
         <view class="preview-entry" @click="showPreview = true">
           <view class="preview-main">
             <text class="preview-title">佐证材料预览</text>
@@ -55,10 +60,13 @@
       <template #footer>
         <view class="sheet-actions" v-if="canAudit">
           <SButton variant="danger" @click="onReject">驳回</SButton>
-          <SButton variant="primary" @click="onApprove">同意退费</SButton>
+          <SButton variant="primary" @click="onApprove">确认退费</SButton>
         </view>
-        <view class="sheet-actions single" v-else-if="canPay">
-          <SButton variant="primary" block @click="onConfirmPayment">确认打款</SButton>
+        <view class="sheet-actions single" v-else-if="canRetry">
+          <SButton variant="primary" block @click="onRetry">重新发起退款</SButton>
+        </view>
+        <view class="sheet-actions single" v-else-if="isProcessing">
+          <text class="processing-hint">退款处理中，请耐心等待回调结果</text>
         </view>
       </template>
     </SBottomSheet>
@@ -87,7 +95,7 @@ import SEmpty from '@/components/shared/SEmpty.vue'
 import { buildRefundTabs, filterRefundByTab, getLastBusinessChange, getRefundItem, getRefundList, getRefundTabIndex, refundStatusMeta, updateRefund, REFUND_STATUS } from '@/utils/businessState.js'
 import { refundApi } from '@/common/api/refund.js'
 
-const REFUND_KEY_MAP = ['pending', 'approved', 'completed']
+const REFUND_KEY_MAP = ['pending', 'processing', 'completed']
 
 export default {
   name: 'FinanceRefund',
@@ -102,7 +110,7 @@ export default {
       showSheet: false,
       showPreview: false,
       currentItem: null,
-      opinion: '审核通过，转入财务打款。',
+      opinion: '确认退款，提交第三方处理。',
       lastSyncedChange: '',
       submitting: false
     }
@@ -122,7 +130,16 @@ export default {
       return this.currentItem && this.currentItem.status === REFUND_STATUS.PENDING
     },
     canPay() {
-      return this.currentItem && this.currentItem.status === REFUND_STATUS.APPROVED
+      return false
+    },
+    canRetry() {
+      return this.currentItem && this.currentItem.status === REFUND_STATUS.FAILED
+    },
+    isProcessing() {
+      return this.currentItem && this.currentItem.status === REFUND_STATUS.PROCESSING
+    },
+    isFailed() {
+      return this.currentItem && this.currentItem.status === REFUND_STATUS.FAILED
     }
   },
   onLoad() {
@@ -171,7 +188,7 @@ export default {
     },
     openSheet(item) {
       this.currentItem = item
-      this.opinion = item.status === REFUND_STATUS.PENDING ? '审核通过，转入财务打款。' : ''
+      this.opinion = item.status === REFUND_STATUS.PENDING ? '确认退费，提交第三方处理。' : ''
       this.showSheet = true
     },
     async onApprove() {
@@ -181,37 +198,39 @@ export default {
         opinion: this.opinion,
         approvedAmount: this.currentItem.amount
       })
-      updateRefund(this.currentItem.uid, REFUND_STATUS.APPROVED, {
-        node: '财务退费审核',
-        result: '审核通过，待财务确认打款',
+      // 财务确认 → 进入"处理中"状态
+      updateRefund(this.currentItem.uid, REFUND_STATUS.PROCESSING, {
+        node: '财务确认退款',
+        result: '已提交第三方退款接口，处理中',
         remark: this.opinion
       })
       this.refresh(true)
       this.currentItem = getRefundItem(this.currentItem.uid)
       this.submitting = false
-      uni.showToast({ title: '已进入待打款', icon: 'success' })
+      uni.showToast({ title: '已提交退款处理', icon: 'success' })
     },
-    async onConfirmPayment() {
+    async onRetry() {
       if (this.submitting || !this.currentItem) return
       this.submitting = true
-      await refundApi.executeRefund(this.currentItem.uid || this.currentItem.refundId)
-      updateRefund(this.currentItem.uid, REFUND_STATUS.REFUNDED, {
-        node: '财务确认打款',
-        result: '退费已完结'
+      // 重新发起退款
+      updateRefund(this.currentItem.uid, REFUND_STATUS.PROCESSING, {
+        node: '财务重新发起退款',
+        result: '重新提交第三方退款接口，处理中'
       })
+      this.refresh(true)
+      this.currentItem = getRefundItem(this.currentItem.uid)
       this.showSheet = false
       this.currentItem = null
-      this.refresh(true)
       this.submitting = false
-      uni.showToast({ title: '退费已完成', icon: 'success' })
+      uni.showToast({ title: '已重新发起退款', icon: 'success' })
     },
     async onReject() {
       if (this.submitting || !this.currentItem) return
       this.submitting = true
       await refundApi.rejectRefund(this.currentItem.uid || this.currentItem.refundId, { rejectReason: this.opinion || '财务审核驳回' })
-      updateRefund(this.currentItem.uid, REFUND_STATUS.REJECTED, {
+      updateRefund(this.currentItem.uid, REFUND_STATUS.FAILED, {
         node: '财务退费审核',
-        result: '已驳回',
+        result: '退款失败',
         remark: this.opinion || '财务审核驳回'
       })
       this.showSheet = false
@@ -261,4 +280,36 @@ export default {
 .preview-message { display: block; font-size: var(--fs-12); color: var(--N500); line-height: 1.6; }
 .material-file { margin-top: 24rpx; padding: 20rpx 24rpx; border-radius: var(--r-12); background: var(--N25); display: flex; align-items: center; justify-content: space-between; }
 .material-name { font-size: var(--fs-13); font-weight: 600; color: var(--N900); }
+
+/* 退款失败详情 */
+.fail-box {
+  margin-top: 16rpx;
+  padding: 20rpx 24rpx;
+  border-radius: var(--r-12);
+  background: var(--er-bg);
+  border: 1px solid var(--er-bd);
+}
+.fail-label {
+  display: block;
+  font-size: var(--fs-11);
+  font-weight: 600;
+  color: var(--er);
+  margin-bottom: 8rpx;
+}
+.fail-text {
+  font-size: var(--fs-12);
+  color: var(--er);
+  line-height: 1.5;
+  display: block;
+}
+
+/* 处理中提示 */
+.processing-hint {
+  display: block;
+  text-align: center;
+  width: 100%;
+  padding: 20rpx 0;
+  font-size: var(--fs-12);
+  color: var(--N500);
+}
 </style>

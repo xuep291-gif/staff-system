@@ -25,8 +25,24 @@
           <text class="fc-lbl">未缴人数</text>
         </view>
         <view class="fc-stat">
+          <text class="fc-num">{{ financeStats.todayCount }}</text>
+          <text class="fc-lbl">当日笔数</text>
+        </view>
+        <view class="fc-stat">
           <text class="fc-num er">{{ financeStats.refundPending }}</text>
           <text class="fc-lbl">退费待办</text>
+        </view>
+      </view>
+      <view class="fc-methods" v-if="financeStats.methodBreakdown.length">
+        <text class="fc-methods-title">各支付方式占比</text>
+        <view class="fc-method-list">
+          <view class="fc-method-item" v-for="m in financeStats.methodBreakdown" :key="m.name">
+            <text class="fc-method-name">{{ m.name }}</text>
+            <view class="fc-method-bar">
+              <view class="fc-method-fill" :style="{ width: m.pct + '%' }" />
+            </view>
+            <text class="fc-method-pct">{{ m.pct }}%</text>
+          </view>
         </view>
       </view>
     </SFloatCard>
@@ -55,7 +71,7 @@ import SFloatCard from '@/components/shared/SFloatCard.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import STabBar from '@/components/shared/STabBar.vue'
-import { getClassSummary, getDifferenceRefundList, getFeeList, getOfflineCollectionList, getReceiptList, getRefundList, getUnreadCount, getUrgeTasks, REFUND_STATUS } from '@/utils/businessState.js'
+import { getClassSummary, getDifferenceRefundList, getFeeList, getOfflineCollectionList, getPaymentRecordList, getReceiptList, getRefundList, getUnreadCount, getUrgeTasks, REFUND_STATUS } from '@/utils/businessState.js'
 
 export default {
   name: 'FinanceHome',
@@ -65,7 +81,7 @@ export default {
       activeTab: 0,
       unreadCount: 0,
       finance: { avatar: '陈', name: '陈美玲', subtitle: '工号 F2026001 · 财务处 · 收费专员' },
-      financeStats: { receivedAmount: '0', paid: 0, unpaid: 0, refundPending: 0 },
+      financeStats: { receivedAmount: '0', paid: 0, unpaid: 0, refundPending: 0, todayCount: 0, methodBreakdown: [] },
       todos: [],
       tabItems: [
         { text: '首页', icon: '🏠' },
@@ -85,21 +101,38 @@ export default {
     const refunds = getRefundList()
     const diffs = getDifferenceRefundList()
     const receipts = getReceiptList()
+    const records = getPaymentRecordList()
 
     const pendingCollection = collections.filter(i => i.status === 'pending').length
     const pendingRefund = refunds.filter(i => i.status === REFUND_STATUS.PENDING).length
     const pendingDiff = diffs.filter(i => i.status === 'pending').length
     const pendingReceipt = receipts.filter(i => i.status === 'pending').length
 
+    // 各支付方式占比
+    const methods = {}
+    records.forEach(r => {
+      const key = r.method || '其他'
+      methods[key] = (methods[key] || 0) + Number(r.amount || 0)
+    })
+    const totalMethodAmount = Object.values(methods).reduce((s, v) => s + v, 0) || 1
+    const methodBreakdown = Object.entries(methods).map(([name, amount]) => ({
+      name,
+      amount: amount.toLocaleString(),
+      pct: Math.round((amount / totalMethodAmount) * 100)
+    }))
+
     this.financeStats = {
       receivedAmount: fees.filter(i => i.payStatus === 'paid').reduce((sum, i) => sum + Number(String(i.amount).replace(/,/g, '')), 0).toLocaleString(),
       paid: summary.fees.tabs[2]?.count || 0,
       unpaid: (summary.fees.tabs[0]?.count || 0) + (summary.fees.tabs[1]?.count || 0),
-      refundPending: pendingRefund
+      todayCount: records.length,
+      refundPending: pendingRefund,
+      methodBreakdown
     }
 
     this.todos = [
       { key: 'collect', label: '线下收款待确认', desc: pendingCollection + ' 笔待确认到账', icon: '💵', bg: 'var(--brand-t)', badgeColor: 'wa', count: pendingCollection, url: '/pages/finance/collect/index' },
+      { key: 'records', label: '收款记录查询',   desc: records.length + ' 笔收款记录',     icon: '📋', bg: 'var(--in-bg)',   badgeColor: 'in', count: records.length,    url: '/pages/finance/records/index' },
       { key: 'refund',  label: '退费审批',      desc: pendingRefund + ' 笔待审核',     icon: '↩️', bg: 'var(--er-bg)',   badgeColor: 'er', count: pendingRefund,  url: '/pages/finance/refund/index' },
       { key: 'diff',    label: '宿舍补差退款',  desc: pendingDiff + ' 笔待处理',       icon: '🔄', bg: 'var(--pu-bg)',   badgeColor: 'wa', count: pendingDiff,    url: '/pages/finance/diff/index' },
       { key: 'receipt', label: '票据补打申请',  desc: pendingReceipt + ' 笔待处理',     icon: '🧾', bg: 'var(--in-bg)',   badgeColor: 'wa', count: pendingReceipt, url: '/pages/finance/receipt/index' }
@@ -145,6 +178,15 @@ export default {
 .fc-num.wa { color: var(--wa); }
 .fc-num.er { color: var(--er); }
 .fc-lbl { font-size: var(--fs-10); color: var(--N400); margin-top: 4rpx; }
+
+.fc-methods { margin-top: 20rpx; padding-top: 20rpx; border-top: 1px solid var(--N50); }
+.fc-methods-title { font-size: var(--fs-11); font-weight: 600; color: var(--N600); margin-bottom: 12rpx; display: block; }
+.fc-method-list { display: flex; flex-direction: column; gap: 10rpx; }
+.fc-method-item { display: flex; align-items: center; gap: 12rpx; }
+.fc-method-name { font-size: var(--fs-11); color: var(--N600); min-width: 100rpx; flex-shrink: 0; }
+.fc-method-bar { flex: 1; height: 12rpx; background: var(--N100); border-radius: 6rpx; overflow: hidden; }
+.fc-method-fill { height: 100%; background: var(--brand); border-radius: 6rpx; transition: width 0.6s; min-width: 4rpx; }
+.fc-method-pct { font-size: var(--fs-10); color: var(--N500); min-width: 48rpx; text-align: right; flex-shrink: 0; }
 
 .sc { padding: 28rpx; margin-top: 20rpx; }
 

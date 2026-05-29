@@ -117,17 +117,8 @@
         </view>
 
         <view class="form-item">
-          <text class="fi-label">上传凭证 <text class="optional">(可选)</text></text>
-          <view class="upload-area" @click="onUpload" v-if="!form.voucherPath">
-            <text class="upload-icon">📷</text>
-            <text class="upload-text">点击拍照或选择收款凭证</text>
-          </view>
-          <view class="preview-row" v-if="form.voucherPath">
-            <image class="preview-img" :src="form.voucherPath" mode="aspectFill" />
-            <view class="preview-del" @click="form.voucherPath = ''">
-              <text>✕</text>
-            </view>
-          </view>
+          <text class="fi-label">上传凭证 <text class="optional">(可选，最多3张)</text></text>
+          <SUploadGrid v-model="voucherFiles" :maxCount="3" :removable="true" />
         </view>
 
         <view class="form-item">
@@ -176,11 +167,12 @@ import SNavBar from '@/components/shared/SNavBar.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import SStatusTag from '@/components/shared/SStatusTag.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
+import SUploadGrid from '@/components/shared/SUploadGrid.vue'
 import { getStudentBill, searchStudentBill, getFeeList, getOfflineCollectionList, generateReceiptNumber } from '@/utils/businessState.js'
 
 export default {
   name: 'FinanceOnsite',
-  components: { SNavBar, SEmpty, SStatusTag, SInfoRow },
+  components: { SNavBar, SEmpty, SStatusTag, SInfoRow, SUploadGrid },
   data() {
     return {
       keyword: '',
@@ -195,6 +187,7 @@ export default {
         voucherPath: '',
         remark: ''
       },
+      voucherFiles: [],
       payMethods: [
         { key: 'wechat', label: '微信' },
         { key: 'alipay', label: '支付宝' },
@@ -418,6 +411,7 @@ export default {
       this.lookedUp = false
       this.feeInfo = { billId: '', schoolYear: '', chargeItem: '', receivableAmount: 0, paidAmount: 0, unpaidAmount: 0, statusLabel: '—', statusColor: 'wa' }
       this.form = { amount: '', payMethod: 'wechat', voucherPath: '', remark: '' }
+      this.voucherFiles = []
       this.amountError = ''
     },
 

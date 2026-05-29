@@ -141,7 +141,7 @@ export default {
   computed: {
     canReview() {
       if (!this.item) return false
-      return this.expectedStatus === REVIEW_STATUS.FIRST_PASS
+      return this.expectedStatus === REVIEW_STATUS.FIRST_PASS && this.item.status === this.expectedStatus
     },
     approveLabel() { return '复审通过' },
     reviewTitle() { return '学院负责人复审' },

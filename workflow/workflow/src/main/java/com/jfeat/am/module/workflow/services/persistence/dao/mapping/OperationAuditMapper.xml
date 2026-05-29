@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.workflow.services.persistence.dao.OperationAuditMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.jfeat.am.module.workflow.services.persistence.model.OperationAudit">
+        <id column="id" property="id"/>
+        <result column="operation_type" property="operationType"/>
+        <result column="operator_id" property="operatorId"/>
+        <result column="operator_name" property="operatorName"/>
+        <result column="target_type" property="targetType"/>
+        <result column="target_id" property="targetId"/>
+        <result column="request_data" property="requestData"/>
+        <result column="response_data" property="responseData"/>
+        <result column="ip_address" property="ipAddress"/>
+        <result column="user_agent" property="userAgent"/>
+        <result column="execution_time_ms" property="executionTimeMs"/>
+        <result column="success" property="success"/>
+        <result column="error_message" property="errorMessage"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, operation_type, operator_id, operator_name, target_type, target_id,
+        request_data, response_data, ip_address, user_agent, execution_time_ms,
+        success, error_message, create_time
+    </sql>
+
+    <!-- 查询指定时间范围内的审计日志 -->
+    <select id="findByDateRange" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM wf_operation_audit
+        WHERE create_time BETWEEN #{startDate} AND #{endDate}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询指定操作人的审计日志 -->
+    <select id="findByOperator" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM wf_operation_audit
+        WHERE operator_id = #{operatorId}
+        <if test="startDate != null">
+            AND create_time >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND create_time &lt;= #{endDate}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询指定操作类型的审计日志 -->
+    <select id="findByOperationType" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM wf_operation_audit
+        WHERE operation_type = #{operationType}
+        <if test="startDate != null">
+            AND create_time >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND create_time &lt;= #{endDate}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询指定目标的审计日志 -->
+    <select id="findByTarget" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM wf_operation_audit
+        WHERE target_type = #{targetType}
+        AND target_id = #{targetId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 统计操作类型分布 -->
+    <select id="statsByOperationType" resultType="com.jfeat.am.module.workflow.services.persistence.dao.OperationAuditMapper$OperationTypeStats">
+        SELECT
+        operation_type AS operationType,
+        COUNT(*) AS count,
+        AVG(execution_time_ms) AS avgExecutionTime
+        FROM wf_operation_audit
+        WHERE 1=1
+        <if test="startDate != null">
+            AND create_time >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND create_time &lt;= #{endDate}
+        </if>
+        GROUP BY operation_type
+        ORDER BY count DESC
+    </select>
+
+</mapper>

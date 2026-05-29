@@ -2,6 +2,27 @@
   <view class="page">
     <SNavBar title="报到统计" :showBack="true" />
     <scroll-view scroll-y class="scroll-body">
+
+      <!-- Dimension Switch -->
+      <view class="dimension-bar">
+        <view
+          v-for="dim in dimensions"
+          :key="dim.key"
+          class="dim-chip"
+          :class="{ 'dim-chip--on': dimKey === dim.key }"
+          @click="switchDim(dim.key)"
+        >
+          <text>{{ dim.label }}</text>
+        </view>
+      </view>
+
+      <picker v-if="dimKey !== 'class'" :range="dimOptions" :value="dimIdx" @change="onDimChange">
+        <view class="dim-picker">
+          <text>{{ dimOptions[dimIdx] || '全部' }}</text>
+          <text class="dim-arrow">▾</text>
+        </view>
+      </picker>
+
       <!-- Stats Card -->
       <view class="stats-card">
         <view class="stats-row">
@@ -109,8 +130,21 @@ export default {
   name: 'FinanceCheckin',
   components: { SNavBar, SBadge, SProgressBar, SCard, SEmpty },
   data() {
+    const students = getStudents()
+    const colleges = [...new Set(students.map(s => s.college).filter(Boolean))]
+    const majors = [...new Set(students.map(s => s.major).filter(Boolean))]
     return {
       stats: { checkedIn: 0, unchecked: 0, total: 0 },
+      dimKey: 'class',
+      dimIdx: 0,
+      dimensions: [
+        { key: 'class', label: '班级' },
+        { key: 'college', label: '学院' },
+        { key: 'major', label: '专业' }
+      ],
+      dimOptions: ['全部'],
+      allColleges: colleges,
+      allMajors: majors,
       className: '',
       checkinRate: 0,
       currentFilter: 'all',
@@ -225,6 +259,23 @@ export default {
           uni.showToast({ title: '扫码失败，请重试', icon: 'none' })
         }
       })
+    },
+
+    switchDim(key) {
+      this.dimKey = key
+      this.dimIdx = 0
+      const students = getStudents()
+      if (key === 'college') {
+        this.dimOptions = ['全部', ...this.allColleges]
+      } else if (key === 'major') {
+        this.dimOptions = ['全部', ...this.allMajors]
+      }
+      this.refresh()
+    },
+
+    onDimChange(e) {
+      this.dimIdx = Number(e.detail.value)
+      this.refresh()
     }
   }
 }
@@ -233,6 +284,43 @@ export default {
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); padding-bottom: 40rpx; display: flex; flex-direction: column; }
 .scroll-body { height: 0; flex: 1; }
+
+/* ── Dimension ── */
+.dimension-bar {
+  display: flex;
+  margin: 20rpx 28rpx 0;
+  background: var(--N100);
+  border-radius: var(--r-20);
+  padding: 6rpx;
+}
+.dim-chip {
+  flex: 1;
+  text-align: center;
+  padding: 12rpx 0;
+  border-radius: var(--r-20);
+  font-size: var(--fs-12);
+  color: var(--N500);
+  transition: all 0.2s;
+}
+.dim-chip--on {
+  background: var(--white);
+  color: var(--brand);
+  font-weight: 600;
+  box-shadow: var(--card-shadow-low);
+}
+.dim-picker {
+  margin: 12rpx 28rpx 0;
+  padding: 16rpx 24rpx;
+  background: var(--white);
+  border-radius: var(--r-8);
+  font-size: var(--fs-13);
+  color: var(--N700);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--card-shadow-low);
+}
+.dim-arrow { font-size: 24rpx; color: var(--N400); }
 
 /* ── Stats Card ── */
 .stats-card {

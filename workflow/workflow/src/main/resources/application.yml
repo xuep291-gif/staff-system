@@ -1,0 +1,233 @@
+###################  项目启动配置  ###################
+server:
+  port: 8085
+
+###################  jwt配置  ###################
+jwt:
+  encoded-key: L7A/6zARSkK1j7Vd5SDD9pSSqZlqF7mAhiOgRbgv9Smce6tf4cJnvKOjtKPxNNnWQj+2lQEScm3XIUjhW+YVZg==
+  normal-encoded-key: bm9ybWFsLWVuY29kZWQta2V5
+  ttl-millis: 604800000
+  #enable-attempt-login: true
+  #non-shiro-permission-check: false
+
+am:
+  file-upload-path: E:\work-power\uploadfile
+  fileHost: http://127.0.0.1:8080/static
+
+###################  spring配置  ###################
+spring:
+  profiles:
+    active: dev
+  datasource:
+#    url: jdbc:mysql://sh-cynosdbmysql-grp-mlyunquo.sql.tencentcdb.com:25133/study_power?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull
+#    username: root
+#    password: zb2014@8888
+#  datasource:
+#          url: jdbc:mysql://localhost:3306/workflow?autoReconnect=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=UTC
+#          url: jdbc:mysql://192.168.3.239:3306/eav?autoReconnect=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/company?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull
+    username: root
+    password: 123456
+
+    filters: log4j,wall,mergeStat
+    initialize: false
+    schema: classpath*:sql/*-schema.sql
+    data: classpath*:sql/*-data.sql
+  mvc:
+    static-path-pattern: /static/**
+    view:
+      prefix: /WEB-INF/view/
+      suffix: .html
+  http:
+    encoding:
+      force: true
+      charset: UTF-8
+      enabled: true
+    converters:
+      preferred-json-mapper: fastjson
+  # rabbitMQ配置
+  rabbitmq:
+    host: 202.63.172.178
+    port: 5672
+    username: guest
+    password: guest
+    connection-timeout: 5000
+#  jackson:
+#    date-format: yyyy-MM-dd HH:mm:ss
+
+
+
+
+###################  mybatis-plus配置  ###################
+mybatis-plus:
+  mapper-locations: classpath*:com/jfeat/**/mapping/*.xml
+  typeAliasesPackage: com.jfeat.**.model
+  global-config:
+    id-type: 2  #0:数据库ID自增   1:用户输入id   2:全局唯一id(IdWorker)   3:全局唯一ID(uuid)  4: 该类型为未设置主键类型(none)
+    db-column-underline: true
+    refresh-mapper: true
+    logic-delete-value: -1
+    logic-not-delete-value: 0
+  #    sql-injector: com.baomidou.mybatisplus.mapper.LogicSqlInjector
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true #配置的缓存的全局开关
+    lazyLoadingEnabled: true #延时加载的开关
+    multipleResultSetsEnabled: true #开启的话，延时加载一个属性时会加载该对象全部属性，否则按需加载属性
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #打印sql语句,调试用
+
+################### sms config ##################
+io:
+  excel-template-dir: "templates"
+  ################### file upload config ##################
+  file-upload-path: /webapps/images
+  file-host: /images
+  ################### sms config ##################
+  sms:
+    # environement: dev  #dev: not send real message, only log [dev, development, prod, production]
+    enableVendor: weiwebs
+    captchaRequiredOperations:
+      - login
+      - register
+      - findPassword
+      - changeAccount
+      - matchSucceed
+      - successful
+    vendors:
+      weiwebs:
+        debugMode: 1
+        captchaCount: 5
+        captchaTtlSeconds: 120
+        sendMessageInterval: 60
+        templates:
+          - operation: login
+            templateContent: '【元咕咕】您的短信验证码是：{code}，2分钟内有效'
+            templateParam: '{"code": "%s"}'
+          - operation: register
+            templateContent: '【元咕咕】您的短信验证码是：{code}，2分钟内有效'
+            templateParam: '{"code": "%s"}'
+          - operation: findPassword
+            templateContent: '【元咕咕】您的短信验证码是：{code}，2分钟内有效'
+            templateParam: '{"code": "%s"}'
+          - operation: changeAccount
+            templateContent: '【元咕咕】您正在修改信息，短信验证码是：{code}，2分钟内有效'
+            templateParam: '{"code": "%s"}'
+          - operation: matchSucceed
+            templateContent: '【元咕咕】恭喜您匹配成功，请在2小时内登录进行处理'
+          - operation: successful
+            templateContent: '【元咕咕】恭喜您对方已经完成处理，请您即刻登录核实'
+        account: MXT801633
+        pswd: Mxt801636
+        url: http://www.weiwebs.cn/msg/HttpBatchSendSM
+      venus:
+        captchaCount: 5
+        captchaTtlSeconds: 120
+        sendMessageInterval: 60  # 限制10分钟内发送一次有效
+        templates:
+          - operation: login
+            templateContent: '【元咕咕】您的短信验证码是：{code}，2分钟内有效'
+            templateParam: '{"code": "%s"}'
+          - operation: register
+            templateContent: '【元咕咕】您的短信验证码是：{code}，2分钟内有效'
+            templateParam: '{"code": "%s"}'
+          - operation: changeAccount
+            templateContent: '【元咕咕】您正在修改信息，短信验证码是：{code}，2分钟内有效'
+            templateParam: '{"code": "%s"}'
+          - operation: matchSucceed
+            templateContent: '【元咕咕】恭喜您匹配成功，请在2小时内登录进行处理'
+          - operation: successful
+            templateContent: '【元咕咕】恭喜您对方已经完成处理，请您即刻登录核实'
+        account: VIP322
+        password: 322223
+        userId: 33346
+        url: http://123.57.51.191:8888/sms.aspx
+      aliyun:
+        captchaCount: 5
+        captchaTtlSeconds: 120
+        templates:
+          - operation: login
+            signName: aliyun
+            templateContent: 'aliyun not use this field'
+            templateParam: '{"code": "%s"}'
+            templateCode: T1
+        accessKeyId: keyid
+        accessSecret: secret
+# 短信配置
+sms:
+  ###################  找回密码配置  ###################
+  email:
+    project: Zero Crud
+    outTime: 30
+    resetUrlEnd: http://127.0.0.1:8080/api/pub/password/normal/resetPassword
+    resetUrlFront: http://127.0.0.1:8080/#/resetPwd
+    loginUrl: http://console.smallsaas.cn/login
+
+kafka-email:
+  template:
+    list:
+      -  templateName: userRegister
+         templateContent: 【新用户注册】{userName}在{createTime}注册了{appid}
+
+###################  日志配置  ###################
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.jfeat: DEBUG
+    WORKFLOW_LISTENER_FAILURE: ERROR
+  file:
+    name: logs/workflow-listener-failure.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+
+account:
+  password:
+    policy: MEDIUM  # [LOW, MEDIUM, STRONG]
+    policies:
+      LOW:
+        length: 6
+        digit-char-count: 0
+        mixed-case-count: 0
+        special-char-count: 0
+        capitalize: 0
+      MEDIUM:
+        length: 6
+        digit-char-count: 2
+        mixed-case-count: 0
+        special-char-count: 0
+        capitalize: 0
+      STRONG:
+        length: 8
+        digit-char-count: 2
+        mixed-case-count: 1
+        special-char-count: 1
+        capitalize: 1
+
+github:
+  normalClient:
+    clientId: ddc4feb9525f1f27d602
+    clientSecret: ca833653ffab989ee3651775fbdfdd09cc3ef3de
+    accessTokenUri: https://github.com/login/oauth/access_token
+    userAuthorizationUri: https://github.com/login/oauth/authorize
+    authSuccessUrl: http://console.smallsaas.cn/login/oauth
+    authFailureUrl: http://console.smallsaas.cn/login/oauthErr
+  normalResource:
+    userInfoUri: https://api.github.com/user
+
+etcd:
+  #  etcdEndpoints: http://192.168.2.122:2379
+  etcdEndpoints: http://127.0.0.1:2379
+  serviceName: normal-account
+  serviceEndpoint: http://127.0.0.1:8080
+  provideService: false
+
+# 头像配置
+avatar:
+  file-path: images/avatar/ # 弃用
+  export-endpoint: "http://202.189.9.147:9000" # 弃用
+  default-avatar-path: /images/avatar/default-avatar.png
+
+feign:
+  client:
+    party-member-url: http://spbs.xinzhisc.com/portal

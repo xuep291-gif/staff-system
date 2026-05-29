@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.workflow.services.domain.dao.QueryProcessInstanceDao">
+    <sql id="Base_Column_List">
+        wf_process_instance.*
+    </sql>
+    <select id="findProcessInstances" resultType="ProcessInstance">
+        SELECT wf_process_instance.*
+        FROM wf_process_instance
+        JOIN wf_history ON wf_process_instance.id = wf_history.process_instance_id
+        WHERE 1=1
+
+        <if test="userId != null">
+            AND (
+                wf_process_instance.creator_id = #{userId} OR
+                wf_process_instance.current_user_id = #{userId} OR
+                wf_history.user_id = #{userId} OR
+                wf_process_instance.executor_id = #{userId}
+            )
+        </if>
+
+        <if test="creatorId != null">
+            AND wf_process_instance.creator_id = #{creatorId}
+        </if>
+
+        <if test="processId != null and processId != ''">
+            AND wf_process_instance.process_id = #{processId}
+        </if>
+
+        <if test="formId != null and formId != ''">
+            AND wf_process_instance.form_id = #{formId}
+        </if>
+
+        <if test="formGroup != null and formGroup != ''">
+            AND wf_process_instance.form_group = #{formGroup}
+        </if>
+
+        <if test="formType != null and formType != ''">
+            AND wf_process_instance.form_type = #{formType}
+        </if>
+
+        <if test="status != null and status != ''">
+            AND wf_process_instance.status = #{status}
+        </if>
+
+        <if test="name != null and name != ''">
+            AND wf_process_instance.name like concat('%', #{name}, '%')
+        </if>
+
+        <if test="creator != null and creator != ''">
+            AND wf_process_instance.creator like concat('%', #{creator}, '%')
+        </if>
+
+        <if test="executor != null and executor != ''">
+            AND wf_process_instance.executor like concat('%', #{executor}, '%')
+        </if>
+
+        <if test="currentUserName != null and currentUserName != ''">
+            AND wf_process_instance.current_user_name like concat('%', #{currentUserName}, '%')
+        </if>
+
+        <if test="currentId !=null">
+            AND wf_process_instance.current_user_id = #{currentId}
+        </if>
+
+        <if test="orgId !=null">
+            And wf_process_instance.org_id = #{orgId}
+        </if>
+
+        GROUP BY wf_process_instance.id
+        ORDER BY wf_process_instance.id DESC
+
+    </select>
+
+
+    <select id="findSelfProcessInstances" resultType="ProcessInstance">
+        SELECT wf_process_instance.*
+        FROM wf_process_instance
+        WHERE 1=1
+
+        <if test="userId != null">
+            AND (
+            wf_process_instance.`status` NOT IN ("CLOSE_REJECTED", "CLOSE_APPROVED")
+            AND wf_process_instance.current_step_id IN (
+            SELECT step_id
+            FROM wf_process_step_approval
+            WHERE user_id = #{userId}
+            )
+            AND wf_process_instance.id NOT IN (
+            SELECT instance_id
+            FROM wf_process_instance_step
+            WHERE user_id = #{userId}
+            )
+            )
+        </if>
+        <if test="creatorId != null">
+            AND wf_process_instance.creator_id = #{creatorId}
+        </if>
+        <if test="processId != null and processId != ''">
+            AND wf_process_instance.process_id = #{processId}
+        </if>
+
+        <if test="formId != null and formId != ''">
+            AND wf_process_instance.form_id = #{formId}
+        </if>
+
+        <if test="formGroup != null and formGroup != ''">
+            AND wf_process_instance.form_group = #{formGroup}
+        </if>
+
+        <if test="formType != null and formType != ''">
+            AND wf_process_instance.form_type = #{formType}
+        </if>
+
+        <if test="status != null and status != ''">
+            AND wf_process_instance.status = #{status}
+        </if>
+
+        <if test="name != null and name != ''">
+            AND wf_process_instance.name like concat('%', #{name}, '%')
+        </if>
+
+        <if test="creator != null and creator != ''">
+            AND wf_process_instance.creator like concat('%', #{creator}, '%')
+        </if>
+
+        <if test="executor != null and executor != ''">
+            AND wf_process_instance.executor like concat('%', #{executor}, '%')
+        </if>
+
+
+        <if test="orgId !=null">
+            And wf_process_instance.org_id = #{orgId}
+        </if>
+
+        GROUP BY wf_process_instance.id
+        ORDER BY wf_process_instance.id DESC
+
+    </select>
+
+    <select id="getRoleNameByUserId" resultType="String">
+       select role.`name` from sys_user_role user_role LEFT JOIN sys_role as role on role.id=user_role.role_id
+       where user_role.user_id=#{userId}
+    </select>
+
+    <select id="getMaxFormId" resultType="Long">
+        select MAX(wf_process_instance.form_id) from wf_process_instance
+    </select>
+
+    <select id="getUserNameById" resultType="String">
+       select `name` from t_sys_user where id =#{id}
+    </select>
+
+    <select id="getMaxAutoCode" resultType="Long">
+        select ifnull(MAX(wf_process_instance.auto_code),0) from wf_process_instance;
+    </select>
+
+    <select id="getEntityIdByCurrentId" resultType="Long">
+        select t_virtual_form.entity_id from  wf_process_step
+        left join t_virtual_form on t_virtual_form.`code` = wf_process_step.virtual_form_code
+        where wf_process_step.id = #{currentId}
+    </select>
+
+
+    <select id="getVirtualFormByCurrentId" resultType="VirtualForm">
+        select t_virtual_form.* from  wf_process_step
+        left join t_virtual_form on t_virtual_form.`code` = wf_process_step.virtual_form_code
+        where wf_process_step.id = #{currentId}
+
+    </select>
+
+    <!-- 插入并返回ID -->
+    <insert id="insertProcessInstance" parameterType="com.jfeat.am.module.workflow.services.persistence.model.ProcessInstance"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO wf_process_instance
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="processId != null">process_id,</if>
+            <if test="formGroup != null">form_group,</if>
+            <if test="formType != null">form_type,</if>
+            <if test="formId != null">form_id,</if>
+            <if test="name != null">name,</if>
+            <if test="status != null">status,</if>
+            <if test="creatorId != null">creator_id,</if>
+            <if test="creator != null">creator,</if>
+            <if test="executorId != null">executor_id,</if>
+            <if test="executor != null">executor,</if>
+            <if test="currentStepId != null">current_step_id,</if>
+            <if test="currentUserId != null">current_user_id,</if>
+            <if test="currentUserName != null">current_user_name,</if>
+            <if test="currentStepName != null">current_step_name,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="handledSteps != null">handled_steps,</if>
+            <if test="handledUsers != null">handled_users,</if>
+            <if test="orgId != null">org_id,</if>
+            <if test="autoCode != null">auto_code,</if>
+            <if test="code != null">code,</if>
+            <if test="rowId != null">row_id,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="processId != null">#{processId},</if>
+            <if test="formGroup != null">#{formGroup},</if>
+            <if test="formType != null">#{formType},</if>
+            <if test="formId != null">#{formId},</if>
+            <if test="name != null">#{name},</if>
+            <if test="status != null">#{status},</if>
+            <if test="creatorId != null">#{creatorId},</if>
+            <if test="creator != null">#{creator},</if>
+            <if test="executorId != null">#{executorId},</if>
+            <if test="executor != null">#{executor},</if>
+            <if test="currentStepId != null">#{currentStepId},</if>
+            <if test="currentUserId != null">#{currentUserId},</if>
+            <if test="currentUserName != null">#{currentUserName},</if>
+            <if test="currentStepName != null">#{currentStepName},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="handledSteps != null">#{handledSteps},</if>
+            <if test="handledUsers != null">#{handledUsers},</if>
+            <if test="orgId != null">#{orgId},</if>
+            <if test="autoCode != null">#{autoCode},</if>
+            <if test="code != null">#{code},</if>
+            <if test="rowId != null">#{rowId},</if>
+        </trim>
+    </insert>
+</mapper>

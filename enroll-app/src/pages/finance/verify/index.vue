@@ -173,7 +173,11 @@ export default {
         onlyFromCamera: false,
         scanType: ['qrCode', 'barCode', 'datamatrix', 'pdf417'],
         success: (res) => {
-          const code = res.result || ''
+          let code = (res.result || '').trim()
+          // 解析 checkin:{学号} 格式 (§3.2.1)
+          if (code.startsWith('checkin:')) {
+            code = code.slice('checkin:'.length)
+          }
           this.keyword = code
           this.onSearch('scan')
         },

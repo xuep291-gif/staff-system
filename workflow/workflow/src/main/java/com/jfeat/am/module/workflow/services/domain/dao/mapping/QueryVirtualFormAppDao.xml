@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.workflow.services.domain.dao.QueryVirtualFormAppDao">
+
+<select id="getAppDesignData" resultType="String">
+    select t_virtual_form.app_design_data from t_virtual_form where id =#{id}
+</select>
+
+    <select id="getAppDesignDataByCode" resultType="String">
+        select t_virtual_form.app_design_data from t_virtual_form where code =#{code}
+    </select>
+
+    <update id="updateAppDesignData" >
+        update t_virtual_form set app_design_data = #{designData} where id =#{id}
+    </update>
+
+</mapper>

@@ -47,6 +47,7 @@ export const PERMISSIONS = {
   // 财务端 - 收费专员
   'finance:overview': '财务概览',
   'finance:collect': '线下收款',
+  'finance:records': '收款记录查询',
   'finance:refund': '退费处理',
   'finance:diff': '补差退款',
   'finance:receipt': '票据管理',
@@ -84,7 +85,7 @@ export const PERMISSIONS = {
 // ============================================================
 
 export const SUB_ROLE_TODO_KEYS = {
-  [SUB_ROLES.FEE_COLLECTOR]: ['collect', 'aid-payout', 'loan-payout', 'refund', 'diff', 'receipt', 'urge', 'processed'],
+  [SUB_ROLES.FEE_COLLECTOR]: ['collect', 'records', 'aid-payout', 'loan-payout', 'refund', 'diff', 'receipt', 'urge', 'processed'],
   [SUB_ROLES.FEE_APPROVER]: ['aid-review', 'loan-review', 'processed'],
   [SUB_ROLES.CHECKIN_STAFF]: ['verify', 'onsite', 'checkin-stats'],
   [SUB_ROLES.STUDENT_AFFAIRS]: ['room-change', 'aid-home', 'loan-home'],
@@ -94,12 +95,12 @@ export const SUB_ROLE_TODO_KEYS = {
 
 // 子角色对应的快捷功能 Key 配置
 export const SUB_ROLE_QUICK_KEYS = {
-  [SUB_ROLES.FEE_COLLECTOR]: ['collect', 'refund', 'diff', 'receipt', 'urge', 'payout'],
+  [SUB_ROLES.FEE_COLLECTOR]: ['collect', 'records', 'refund', 'diff', 'receipt', 'urge', 'payout'],
   [SUB_ROLES.FEE_APPROVER]: ['aid-review', 'loan-review'],
   [SUB_ROLES.CHECKIN_STAFF]: ['verify', 'onsite', 'checkin-stats'],
   [SUB_ROLES.STUDENT_AFFAIRS]: ['room-change', 'aid-home', 'loan-home', 'checkin', 'messages'],
   [SUB_ROLES.COLLEGE_DEAN]: ['room-change', 'aid-home', 'loan-home', 'checkin', 'messages'],
-  [SUB_ROLES.HEAD_TEACHER]: ['fee-home', 'doc-home', 'loan-home', 'dorm-home', 'room-change', 'dorm-withdraw', 'aid-home', 'uniform', 'uniform-stats', 'checkin', 'messages']
+  [SUB_ROLES.HEAD_TEACHER]: ['fee-home', 'doc-home', 'loan-home', 'dorm-home', 'room-change', 'aid-home', 'uniform', 'checkin', 'messages']
 }
 
 // ============================================================

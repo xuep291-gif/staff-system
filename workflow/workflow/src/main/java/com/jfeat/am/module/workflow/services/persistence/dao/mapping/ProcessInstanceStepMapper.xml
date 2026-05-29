@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.workflow.services.persistence.dao.ProcessInstanceStepMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.jfeat.am.module.workflow.services.persistence.model.ProcessInstanceStep">
+        <id column="id" property="id" />
+        <result column="step_id" property="stepId" />
+        <result column="instance_id" property="instanceId" />
+        <result column="entity_id" property="entityId" />
+        <result column="row_id" property="rowId" />
+        <result column="virtual_form_code" property="virtualFormCode" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, step_id, instance_id, entity_id, row_id, virtual_form_code
+    </sql>
+
+</mapper>

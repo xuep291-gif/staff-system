@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.common.persistence.dao.CategoryMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.jfeat.am.common.persistence.model.Category">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="pid" property="pid" />
+		<result column="type_id" property="typeId" />
+		<result column="sortorder" property="sortorder" />
+		<result column="code" property="code" />
+		<result column="cover" property="cover" />
+		<result column="org_id" property="orgId" />
+	</resultMap>
+
+	<select id="getOne" resultType="com.jfeat.am.modular.category.transfer.CategoryVO">
+		select chi.*,fa.`name` as pName FROM
+		t_category chi
+		LEFT JOIN
+		t_category fa on fa.id = chi.pid
+		where chi.id = #{id}
+	</select>
+
+</mapper>

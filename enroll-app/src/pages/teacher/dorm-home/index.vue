@@ -120,10 +120,9 @@ export default {
         ...parseDorm(student.dorm)
       }))
     },
-  methods: {
     goDetail(item) {
       rememberStaffBackTarget('/pages/teacher/dorm-home/index')
-      uni.navigateTo({ url: `/pages/teacher/dorm-detail/index?id=${item.studentId || ''}&sid=${item.sid}` })
+      uni.navigateTo({ url: `/pages/teacher/dorm-detail/index?sid=${item.sid}` })
     }
   }
 }

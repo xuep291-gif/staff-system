@@ -40,13 +40,27 @@
 
       <!-- Fee Detail -->
       <SCard title="缴费情况" :padding="16">
-        <SInfoRow label="应缴金额">¥{{ formatMoney(fee?.expectedAmount || student.feeTuition) }}</SInfoRow>
-        <SInfoRow label="已缴金额">¥{{ formatMoney(fee?.paidAmount || 0) }}</SInfoRow>
-        <SInfoRow label="缴费状态"><SBadge :color="fee?.statusColor || 'wa'">{{ fee?.statusLabel || '未缴' }}</SBadge></SInfoRow>
+        <SInfoRow label="应缴金额">¥{{ formatMoney(feeTotal.expected) }}</SInfoRow>
+        <SInfoRow label="已缴金额">¥{{ formatMoney(feeTotal.paid) }}</SInfoRow>
+        <SInfoRow label="缴费状态"><SBadge :color="feeTotal.statusColor">{{ feeTotal.statusLabel }}</SBadge></SInfoRow>
+        <view class="fee-divider" />
+        <!-- Fee Items List -->
+        <view class="fee-item-header">
+          <text class="fee-item-header-name">项目名称</text>
+          <text class="fee-item-header-amount">金额</text>
+          <text class="fee-item-header-req">必缴</text>
+          <text class="fee-item-header-status">状态</text>
+        </view>
+        <view class="fee-item-row" v-for="item in feeItems" :key="item.name">
+          <text class="fee-item-name">{{ item.name }}</text>
+          <text class="fee-item-amount">¥{{ formatMoney(item.amount) }}</text>
+          <text class="fee-item-req">{{ item.required ? '是' : '否' }}</text>
+          <SBadge :color="item.statusColor">{{ item.statusLabel }}</SBadge>
+        </view>
         <view class="fee-divider" />
         <view class="fee-total-row">
           <text class="fee-total-label">未缴合计</text>
-          <text class="fee-total-value">¥{{ formatMoney(fee?.dueAmount || student.totalDue) }}</text>
+          <text class="fee-total-value">¥{{ formatMoney(feeTotal.due) }}</text>
         </view>
       </SCard>
 
@@ -72,7 +86,7 @@ import SNavBar from '@/components/shared/SNavBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SBadge from '@/components/shared/SBadge.vue'
-import { getStudent, getFeeList } from '@/utils/businessState.js'
+import { getStudent, getFeeList, getStudentFeeItems } from '@/utils/businessState.js'
 import { studentApi } from '@/common/api/student.js'
 import { paymentApi } from '@/common/api/payment.js'
 
@@ -109,23 +123,43 @@ export default {
   data() {
     return {
       student: { ...DEFAULT_STUDENT },
-      fee: null
+      fee: null,
+      feeItems: []
     }
   },
   computed: {
     maskedIdNo() {
       const id = this.student.idNo || ''
       return id.length > 10 ? `${id.slice(0, 6)}********${id.slice(-4)}` : id
+    },
+    feeTotal() {
+      const items = this.feeItems
+      if (!items.length) return { expected: 0, paid: 0, due: 0, statusLabel: '未缴', statusColor: 'wa' }
+      const expected = items.reduce((s, i) => s + i.amount, 0)
+      const paid = items.reduce((s, i) => s + (i.paidAmount || 0), 0)
+      const due = expected - paid
+      const payStatus = due <= 0 ? 'paid' : paid > 0 ? 'partial' : this.fee?.payStatus === 'overdue' ? 'overdue' : 'unpaid'
+      const statusMap = {
+        paid: { label: '已缴', color: 'ok' },
+        unpaid: { label: '未缴', color: 'wa' },
+        partial: { label: '部分未缴', color: 'in' },
+        overdue: { label: '逾期', color: 'er' }
+      }
+      const meta = statusMap[payStatus] || statusMap.unpaid
+      return { expected, paid, due, statusLabel: meta.label, statusColor: meta.color }
     }
   },
   async onLoad(options) {
     const uid = options.uid
     const sid = options.sid
-    const apiId = options.id || sid
+    const rawId = options.id
+    const cleanId = (rawId && rawId !== 'undefined') ? rawId : null
+    const apiId = cleanId || sid
     if (uid || sid) {
       const found = searchStorage(uid, sid)
       const bizStudent = getStudent(sid || found?.sid || found?.id)
       this.fee = getFeeList().find(i => i.sid === (sid || found?.sid || found?.id))
+      this.feeItems = getStudentFeeItems(sid || found?.sid || found?.id)
       if (found || bizStudent) {
         const source = bizStudent || {}
         this.student = {
@@ -217,5 +251,25 @@ export default {
 .record-title { display: block; font-size: var(--fs-13); color: var(--N900); font-weight: 600; }
 .record-meta { display: block; margin-top: 6rpx; font-size: var(--fs-11); color: var(--N500); }
 .empty-text { display: block; font-size: var(--fs-12); color: var(--N400); padding: 8rpx 0; }
+
+/* ── Fee Items ── */
+.fee-item-header {
+  display: flex; align-items: center;
+  padding: 16rpx 0 8rpx;
+}
+.fee-item-header-name { flex: 1; font-size: var(--fs-11); color: var(--N400); font-weight: 500; min-width: 0; }
+.fee-item-header-amount { width: 120rpx; text-align: right; font-size: var(--fs-11); color: var(--N400); font-weight: 500; flex-shrink: 0; }
+.fee-item-header-req { width: 60rpx; text-align: center; font-size: var(--fs-11); color: var(--N400); font-weight: 500; flex-shrink: 0; }
+.fee-item-header-status { width: 88rpx; text-align: right; font-size: var(--fs-11); color: var(--N400); font-weight: 500; flex-shrink: 0; }
+
+.fee-item-row {
+  display: flex; align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1px solid var(--N50);
+}
+.fee-item-row:last-child { border-bottom: none; }
+.fee-item-name { flex: 1; font-size: var(--fs-14); color: var(--N900); font-weight: 500; min-width: 0; }
+.fee-item-amount { width: 120rpx; text-align: right; font-size: var(--fs-13); color: var(--N900); font-weight: 500; flex-shrink: 0; }
+.fee-item-req { width: 60rpx; text-align: center; font-size: var(--fs-13); color: var(--N700); flex-shrink: 0; }
 
 </style>

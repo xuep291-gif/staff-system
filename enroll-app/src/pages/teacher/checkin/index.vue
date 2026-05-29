@@ -201,30 +201,27 @@ export default {
     },
     goDetail(student) {
       rememberStaffBackTarget('/pages/teacher/checkin/index')
-      uni.navigateTo({ url: `/pages/teacher/student-detail/index?id=${student.id}&sid=${student.studentId}` })
+      uni.navigateTo({ url: `/pages/teacher/student-detail/index?sid=${student.studentId}` })
     },
     async urgeStudent(student) {
       await reminderApi.sendReminder({ studentId: student.studentId, channels: ['site', 'sms'], scene: 'checkin' })
       uni.showToast({ title: '已向 ' + student.name + ' 发送催促通知', icon: 'success' })
     },
-    delayStudent(student) {
-      uni.showModal({
+    async delayStudent(student) {
+      const res = await uni.showModal({
         title: '延期报到',
-        content: '确认为 ' + student.name + ' 办理延期报到？',
-        success: async (res) => {
-          if (res.confirm) {
-            const expectedCheckinDate = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
-            checkinApi.delay(student.studentId, {
-              reason: '学生申请延期报到',
-              expectedCheckinDate
-            }).catch(() => {})
-            updateStudentDelay(student.studentId, true)
-            this.filterVersion++
-            await this.refresh()
-            uni.showToast({ title: '已办理延期报到', icon: 'success' })
-          }
-        }
+        content: '确认为 ' + student.name + ' 办理延期报到？'
       })
+      if (!res.confirm) return
+      const expectedCheckinDate = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
+      checkinApi.delay(student.studentId, {
+        reason: '学生申请延期报到',
+        expectedCheckinDate
+      }).catch(() => {})
+      updateStudentDelay(student.studentId, true)
+      this.filterVersion++
+      this.refresh()
+      uni.showToast({ title: '已办理延期报到', icon: 'success' })
     },
     scanQR() {
       uni.scanCode({

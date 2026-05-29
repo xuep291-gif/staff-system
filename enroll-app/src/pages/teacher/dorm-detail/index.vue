@@ -2,17 +2,19 @@
   <view class="page">
     <SNavBar title="宿舍详情" :showBack="true" />
     <scroll-view scroll-y class="body">
-      <SCard v-if="student" title="学生信息">
-        <SInfoRow label="学生姓名" :value="student.name" />
-        <SInfoRow label="学号" :value="student.sid" copyable />
-        <SInfoRow label="班级" :value="student.className" />
-        <SInfoRow label="联系电话" :value="student.phone" clickable @click="callPhone(student.phone)" />
+      <SCard v-if="student" title="学生信息" :padding="16">
+        <SInfoRow label="学生姓名">{{ student.name }}</SInfoRow>
+        <SInfoRow label="学号">{{ student.sid }}</SInfoRow>
+        <SInfoRow label="班级">{{ student.className }}</SInfoRow>
+        <SInfoRow label="联系电话">
+          <text class="link-text" @click="callPhone(student.phone)">{{ student.phone }}</text>
+        </SInfoRow>
       </SCard>
 
-      <SCard v-if="student" title="宿舍信息">
-        <SInfoRow label="宿舍楼" :value="dorm.building" />
-        <SInfoRow label="房间号" :value="dorm.room" />
-        <SInfoRow label="床位号" :value="dorm.bed" />
+      <SCard v-if="student" title="宿舍信息" :padding="16">
+        <SInfoRow label="宿舍楼">{{ dorm.building }}</SInfoRow>
+        <SInfoRow label="房间号">{{ dorm.room }}</SInfoRow>
+        <SInfoRow label="床位号">{{ dorm.bed }}</SInfoRow>
       </SCard>
 
       <SEmpty v-if="!student" text="未找到学生宿舍信息" />
@@ -70,4 +72,5 @@ export default {
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
 .body { height: 0; flex: 1; padding: 28rpx; box-sizing: border-box; }
 .body > * + * { margin-top: 20rpx; }
+.link-text { color: var(--brand); font-weight: 500; }
 </style>

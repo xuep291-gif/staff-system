@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.workflow.services.persistence.dao.ProcessMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.jfeat.am.module.workflow.services.persistence.model.Process">
+		<id column="id" property="id" />
+		<result column="code" property="code" />
+		<result column="form_group" property="formGroup" />
+		<result column="form_type" property="formType" />
+		<result column="name" property="name" />
+		<result column="category_id" property="categoryId" />
+		<result column="status" property="status" />
+		<result column="open_to" property="openTo" />
+		<result column="open_to_ids" property="openToIds" />
+		<result column="current_user_id" property="currentUserId" />
+		<result column="org_id" property="orgId"/>
+		<result column="code_rule" property="codeRule" />
+		<result column="allow_delete" property="allowDelete" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, code, form_group AS formGroup, form_type AS formType, name, category_id AS categoryId, status,
+		open_to AS openTo, open_to_ids AS openToIds,current_user_id As currentUserId
+		,org_id as orgId,code_rule AS codeRule,allow_delete as allowDelete
+    </sql>
+
+
+	<!-- 插入Process记录并返回ID -->
+	<insert id="insertProcess" parameterType="com.jfeat.am.module.workflow.services.persistence.model.Process"
+			useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+		INSERT INTO wf_process
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="code != null">code,</if>
+			<if test="formGroup != null">form_group,</if>
+			<if test="formType != null">form_type,</if>
+			<if test="name != null">name,</if>
+			<if test="categoryId != null">category_id,</if>
+			<if test="status != null">status,</if>
+			<if test="openTo != null">open_to,</if>
+			<if test="openToIds != null">open_to_ids,</if>
+			<if test="currentUserId != null">current_user_id,</if>
+			<if test="orgId != null">org_id,</if>
+			<if test="codeRule != null">code_rule,</if>
+			<if test="allowDelete != null">allow_delete,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="code != null">#{code},</if>
+			<if test="formGroup != null">#{formGroup},</if>
+			<if test="formType != null">#{formType},</if>
+			<if test="name != null">#{name},</if>
+			<if test="categoryId != null">#{categoryId},</if>
+			<if test="status != null">#{status},</if>
+			<if test="openTo != null">#{openTo},</if>
+			<if test="openToIds != null">#{openToIds},</if>
+			<if test="currentUserId != null">#{currentUserId},</if>
+			<if test="orgId != null">#{orgId},</if>
+			<if test="codeRule != null">#{codeRule},</if>
+			<if test="allowDelete != null">#{allowDelete},</if>
+		</trim>
+	</insert>
+
+</mapper>

@@ -1,0 +1,279 @@
+{
+    "info": {
+        "name": "Task",
+        "description": "",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "任务",
+            "description": "",
+            "item": [
+                {
+                    "name": "添加任务",
+                    "description": "",
+                    "event": [],
+                    "auth": {},
+                    "request": {
+                        "auth": {},
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n  \"title\": \"第四季度市场推广计划\",\r\n  \"attachment\": \"https://oss.example.com/attachments/Q4_marketing.pptx\",\r\n  \"imageUrl\": null,\r\n  \"description\": \"制定第四季度产品市场推广计划，预算50万\",\r\n  \"priority\": \"MEDIUM\",\r\n  \"startTime\": \"2025-11-01T00:00:00\",\r\n  \"deadline\": \"2025-11-15T23:59:59\"\r\n}"
+                        },
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJvcmdJZCI6IjEiLCJ1c2VySWQiOiIxIiwidGVuYW50T3JnSWQiOjEsImFjY291bnQiOiJhZG1pbiIsInVzZXJUeXBlIjoxLCJkZXZVc2VyVHlwZSI6MCwiYlVzZXJUeXBlIjoiU1lTVEVNIiwiYXBwaWQiOiJzbWFydHNCaWdTY3JlZW4iLCJwYXJ0eU9yZ2FuaXphdGlvbklkIjoxLCJpYXQiOjE3NDQ4NjA3NTAsImp0aSI6IjEiLCJzdWIiOiJhZG1pbiIsImV4cCI6MTc0NTQ2NTU1MH0.tq_pa_ng7ULf-6xlakJUglVM8YSvMPxsjNhxxbl4h4nWWAQ1cDtqgP8mexFSV40Mli0orNnPXyRLKxoAO7kqyg",
+                                "description": "",
+                                "type": "string"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/task",
+                            "path": [
+                                "api",
+                                "task"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        }
+                    },
+                    "response": [],
+                    "protocolProfileBehavior": {
+                        "strictSSL": false,
+                        "followRedirects": true
+                    }
+                },
+                {
+                    "name": "任务流转",
+                    "description": "",
+                    "event": [],
+                    "auth": {},
+                    "request": {
+                        "auth": {},
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n  \"taskId\": 19,\r\n  \"fromAssigneeType\": \"ROLE\",\r\n  \"fromAssigneeId\": 1,\r\n  \"toAssigneeType\": \"USER\",\r\n  \"toAssigneeId\": 2725,\r\n  \"transferredBy\": 1,\r\n  \"notes\": \"转交白浩\"\r\n}"
+                        },
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/pub/taskTransfer",
+                            "path": [
+                                "api",
+                                "pub",
+                                "taskTransfer"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        }
+                    },
+                    "response": [],
+                    "protocolProfileBehavior": {
+                        "strictSSL": false,
+                        "followRedirects": true
+                    }
+                },
+                {
+                    "name": "查询",
+                    "description": "",
+                    "event": [],
+                    "auth": {},
+                    "request": {
+                        "auth": {},
+                        "method": "GET",
+                        "body": {},
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/pub/taskTransfer/19/timeline",
+                            "path": [
+                                "api",
+                                "pub",
+                                "taskTransfer",
+                                "19",
+                                "timeline"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        }
+                    },
+                    "response": [],
+                    "protocolProfileBehavior": {
+                        "strictSSL": false,
+                        "followRedirects": true
+                    }
+                },
+                {
+                    "name": "指派任务",
+                    "description": "",
+                    "event": [],
+                    "auth": {},
+                    "request": {
+                        "auth": {},
+                        "method": "POST",
+                        "body": {},
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/task/19/assign",
+                            "path": [
+                                "api",
+                                "task",
+                                "19",
+                                "assign"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [
+                                {
+                                    "key": "assigneeType",
+                                    "value": "ROLE",
+                                    "description": "",
+                                    "type": "string"
+                                },
+                                {
+                                    "key": "assigneeId",
+                                    "value": "4",
+                                    "description": "",
+                                    "type": "string"
+                                }
+                            ],
+                            "variable": []
+                        }
+                    },
+                    "response": [],
+                    "protocolProfileBehavior": {
+                        "strictSSL": false,
+                        "followRedirects": true
+                    }
+                },
+                {
+                    "name": "处理任务",
+                    "description": "",
+                    "event": [],
+                    "auth": {},
+                    "request": {
+                        "auth": {},
+                        "method": "POST",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n    \"note\":\"处理完成\",\r\n    \"attachment\":\"/file.txt\",\r\n    \"imageUrl\":\"/image.jpg\"\r\n}"
+                        },
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/task/19/taskNote",
+                            "path": [
+                                "api",
+                                "task",
+                                "19",
+                                "taskNote"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        }
+                    },
+                    "response": [],
+                    "protocolProfileBehavior": {
+                        "strictSSL": false,
+                        "followRedirects": true
+                    }
+                },
+                {
+                    "name": "完成或取消任务",
+                    "description": "",
+                    "event": [],
+                    "auth": {},
+                    "request": {
+                        "auth": {},
+                        "method": "PUT",
+                        "body": {},
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/task/19/taskStatus",
+                            "path": [
+                                "api",
+                                "task",
+                                "19",
+                                "taskStatus"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        }
+                    },
+                    "response": [],
+                    "protocolProfileBehavior": {
+                        "strictSSL": false,
+                        "followRedirects": true
+                    }
+                },
+                {
+                    "name": "查看自己的任务列表",
+                    "description": "",
+                    "event": [],
+                    "auth": {},
+                    "request": {
+                        "auth": {},
+                        "method": "GET",
+                        "body": {},
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/task",
+                            "path": [
+                                "api",
+                                "task"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        }
+                    },
+                    "response": [],
+                    "protocolProfileBehavior": {
+                        "strictSSL": false,
+                        "followRedirects": true
+                    }
+                }
+            ],
+            "event": [
+                {
+                    "listen": "prerequest",
+                    "script": {
+                        "exec": [],
+                        "type": "text/javascript",
+                        "packages": {}
+                    }
+                },
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [],
+                        "type": "text/javascript",
+                        "packages": {}
+                    }
+                }
+            ],
+            "auth": {}
+        }
+    ],
+    "variable": [],
+    "event": [],
+    "auth": {}
+}

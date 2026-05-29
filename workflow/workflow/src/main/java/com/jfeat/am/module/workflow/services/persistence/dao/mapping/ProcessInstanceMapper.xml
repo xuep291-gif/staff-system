@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.workflow.services.persistence.dao.ProcessInstanceMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.jfeat.am.module.workflow.services.persistence.model.ProcessInstance">
+		<id column="id" property="id" />
+		<result column="process_id" property="processId" />
+		<result column="form_group" property="formGroup" />
+		<result column="form_type" property="formType" />
+		<result column="form_id" property="formId" />
+		<result column="name" property="name" />
+		<result column="status" property="status" />
+		<result column="creator_id" property="creatorId" />
+		<result column="creator" property="creator" />
+		<result column="executor_id" property="executorId" />
+		<result column="executor" property="executor" />
+		<result column="current_step_id" property="currentStepId" />
+		<result column="current_user_id" property="currentUserId" />
+		<result column="current_user_name" property="currentUserName" />
+		<result column="current_step_name" property="currentStepName" />
+		<result column="create_time" property="createTime" />
+		<result column="handled_steps" property="handledSteps" />
+		<result column="handled_users" property="handledUsers" />
+		<result column="auto_code" property="autoCode" />
+		<result column="code" property="code" />
+		<result column="org_id" property="orgId" />
+	</resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, process_id AS processId, form_group AS formGroup, form_type AS formType, form_id AS formId, name, status,
+		creator_id AS creatorId, creator, executor_id AS executorId, executor, current_step_id AS currentStepId,
+		current_user_id AS currentUserId, current_user_name AS currentUserName,
+		current_step_name AS currentStepName, create_time AS createTime,
+		handled_steps AS handledSteps, handled_users AS handledUsers
+		,org_id As orgId,auto_code As autoCode,code As code
+    </sql>
+
+
+
+
+    <!-- 查询抄送给指定用户且已审批完成的流程实例 -->
+    <select id="findCopyProcessInstances" resultMap="BaseResultMap">
+        SELECT wfpi.*
+        FROM wf_process_instance AS wfpi
+        JOIN (
+            SELECT DISTINCT wfps.process_id
+            FROM wf_process_step AS wfps
+            JOIN wf_process_step_approval AS wfpsa
+                ON wfpsa.step_id = wfps.id
+                AND wfpsa.user_id = #{userId}
+            WHERE wfps.type = 'COPY'
+        ) AS sub
+            ON wfpi.process_id = sub.process_id
+        WHERE wfpi.status = 'CLOSE_APPROVED'
+    </select>
+
+</mapper>

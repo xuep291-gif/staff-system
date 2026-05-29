@@ -37,25 +37,32 @@ export const DORM_REVIEW_STATUS = {
 
 export const REFUND_STATUS = {
   PENDING: 'pending',
-  APPROVED: 'approved',
-  REJECTED: 'rejected',
-  REFUNDED: 'refunded'
+  PROCESSING: 'processing',
+  SUCCESS: 'success',
+  FAILED: 'failed'
 }
 
 const REFUND_STATUS_MAP = {
   [REFUND_STATUS.PENDING]: REFUND_STATUS.PENDING,
   pending_review: REFUND_STATUS.PENDING,
   '待审核': REFUND_STATUS.PENDING,
-  [REFUND_STATUS.APPROVED]: REFUND_STATUS.APPROVED,
-  pending_payment: REFUND_STATUS.APPROVED,
-  payout_pending: REFUND_STATUS.APPROVED,
-  '待财务确认打款': REFUND_STATUS.APPROVED,
-  [REFUND_STATUS.REJECTED]: REFUND_STATUS.REJECTED,
-  '已驳回': REFUND_STATUS.REJECTED,
-  [REFUND_STATUS.REFUNDED]: REFUND_STATUS.REFUNDED,
-  completed: REFUND_STATUS.REFUNDED,
-  '已退费': REFUND_STATUS.REFUNDED,
-  '已完结': REFUND_STATUS.REFUNDED
+  pending: REFUND_STATUS.PENDING,
+  [REFUND_STATUS.PROCESSING]: REFUND_STATUS.PROCESSING,
+  approved: REFUND_STATUS.PROCESSING,
+  pending_payment: REFUND_STATUS.PROCESSING,
+  payout_pending: REFUND_STATUS.PROCESSING,
+  '待财务确认打款': REFUND_STATUS.PROCESSING,
+  '处理中': REFUND_STATUS.PROCESSING,
+  [REFUND_STATUS.SUCCESS]: REFUND_STATUS.SUCCESS,
+  refunded: REFUND_STATUS.SUCCESS,
+  completed: REFUND_STATUS.SUCCESS,
+  '已退费': REFUND_STATUS.SUCCESS,
+  '已完结': REFUND_STATUS.SUCCESS,
+  '成功': REFUND_STATUS.SUCCESS,
+  [REFUND_STATUS.FAILED]: REFUND_STATUS.FAILED,
+  rejected: REFUND_STATUS.FAILED,
+  '已驳回': REFUND_STATUS.FAILED,
+  '失败': REFUND_STATUS.FAILED
 }
 
 const OFFLINE_COLLECTION_STATUS_MAP = {
@@ -163,10 +170,10 @@ export const dormReviewStatusMeta = {
 }
 
 export const refundStatusMeta = {
-  pending: { label: '待审核', color: 'wa', filterKey: 'pending' },
-  approved: { label: '待财务确认打款', color: 'wa', filterKey: 'approved' },
-  rejected: { label: '已驳回', color: 'er', filterKey: 'rejected' },
-  refunded: { label: '已完结', color: 'ok', filterKey: 'refunded' }
+  pending: { label: '待财务审核', color: 'wa', filterKey: 'pending' },
+  processing: { label: '处理中', color: 'in', filterKey: 'processing' },
+  success: { label: '退款成功', color: 'ok', filterKey: 'success' },
+  failed: { label: '退款失败', color: 'er', filterKey: 'failed' }
 }
 
 const students = [
@@ -234,9 +241,9 @@ const seed = {
   refunds: [
     { uid: 'rf-1', sid: '2026010001', feeType: '退住宿费', reason: '退出宿舍，改为走读', amount: 1200, status: REFUND_STATUS.PENDING, applyTime: '2026-05-20 10:10', logs: [{ node: '学生申请', time: '2026-05-20 10:10', result: '已提交' }] },
     { uid: 'rf-2', sid: '2026010015', feeType: '退教材费', reason: '重复缴费', amount: 320, status: REFUND_STATUS.PENDING, applyTime: '2026-05-20 15:30', logs: [{ node: '学生申请', time: '2026-05-20 15:30', result: '已提交' }] },
-    { uid: 'rf-3', sid: '2026010039', feeType: '退住宿费', reason: '宿舍补差退款', amount: 800, status: REFUND_STATUS.APPROVED, applyTime: '2026-05-18 09:20', logs: [{ node: '财务审核', time: '2026-05-18 15:20', result: '已通过' }] },
-    { uid: 'rf-4', sid: '2026010002', feeType: '退教材费', reason: '课程包调整', amount: 320, status: REFUND_STATUS.REFUNDED, applyTime: '2026-05-14 08:50', logs: [{ node: '财务退费', time: '2026-05-14 16:20', result: '已退费' }] },
-    { uid: 'rf-5', sid: '2026010035', feeType: '退军训服费', reason: '尺码异常暂缓发放', amount: 180, status: REFUND_STATUS.REJECTED, applyTime: '2026-05-13 12:10', logs: [{ node: '财务审核', time: '2026-05-13 16:40', result: '已驳回', remark: '需学生重新提交说明' }] }
+    { uid: 'rf-3', sid: '2026010039', feeType: '退住宿费', reason: '宿舍补差退款', amount: 800, status: REFUND_STATUS.PROCESSING, applyTime: '2026-05-18 09:20', logs: [{ node: '学生申请', time: '2026-05-18 09:20', result: '已提交' }, { node: '财务确认退款', time: '2026-05-18 15:20', result: '已提交第三方退款接口，处理中' }] },
+    { uid: 'rf-4', sid: '2026010002', feeType: '退教材费', reason: '课程包调整', amount: 320, status: REFUND_STATUS.SUCCESS, applyTime: '2026-05-14 08:50', logs: [{ node: '学生申请', time: '2026-05-14 08:50', result: '已提交' }, { node: '财务确认退款', time: '2026-05-14 14:00', result: '退款处理中' }, { node: '退款到账', time: '2026-05-14 16:20', result: '已退费' }] },
+    { uid: 'rf-5', sid: '2026010035', feeType: '退军训服费', reason: '尺码异常暂缓发放', amount: 180, status: REFUND_STATUS.FAILED, applyTime: '2026-05-13 12:10', failReason: '学生账户异常，银行退回', logs: [{ node: '学生申请', time: '2026-05-13 12:10', result: '已提交' }, { node: '财务确认退款', time: '2026-05-13 15:00', result: '退款处理中' }, { node: '退款失败', time: '2026-05-13 16:40', result: '失败', remark: '学生账户异常，银行退回' }] }
   ],
   offlineCollections: [
     { id: 'oc-1', sid: '2026010001', method: '现金缴纳', location: '收款台1', time: '05-16 09:12', amount: 5800, status: 'pending', logs: [{ node: '学生线下缴费', time: '2026-05-16 09:12', result: '待确认' }] },
@@ -250,9 +257,9 @@ const seed = {
     { id: 'df-3', sid: '2026010008', roomFrom: '8人间', roomTo: '4人间', refundType: '差额退款', amount: 600, status: 'refunded', submittedAt: '2026-05-16 09:20', confirmedAt: '2026-05-16 15:10' }
   ],
   receipts: [
-    { id: 'rp-1', sid: '2026010001', receiptNo: 'PJ20260516001', receiptType: '学费收据', amount: 5800, reason: '原件遗失', status: 'pending', submittedAt: '2026-05-20 09:20' },
-    { id: 'rp-2', sid: '2026010002', receiptNo: 'PJ20260516002', receiptType: '住宿费收据', amount: 1200, reason: '报销需要', status: 'pending', submittedAt: '2026-05-20 10:15' },
-    { id: 'rp-3', sid: '2026010030', receiptNo: 'PJ20260514003', receiptType: '学费收据', amount: 5800, reason: '补打', status: 'reprinted', reprintTime: '2026-05-14 14:30' }
+    { id: 'rp-1', sid: '2026010001', receiptNo: 'RCP2026051600000001', receiptType: '学费收据', amount: 5800, reason: '原件遗失', status: 'pending', submittedAt: '2026-05-20 09:20', issueDate: '2026-05-16', payMethod: '微信支付', payTime: '2026-05-16 09:12', schoolName: '华东科技大学', items: [{ name: '学费', qty: 1, price: 5800, amount: 5800 }], signature: 'SHA256:RSA:abc123...', reprintCount: 0 },
+    { id: 'rp-2', sid: '2026010002', receiptNo: 'RCP2026051600000002', receiptType: '住宿费收据', amount: 1200, reason: '报销需要', status: 'pending', submittedAt: '2026-05-20 10:15', issueDate: '2026-05-16', payMethod: '银行转账', payTime: '2026-05-16 09:35', schoolName: '华东科技大学', items: [{ name: '住宿费', qty: 1, price: 1200, amount: 1200 }], signature: 'SHA256:RSA:def456...', reprintCount: 0 },
+    { id: 'rp-3', sid: '2026010030', receiptNo: 'RCP2026051400000003', receiptType: '学费收据', amount: 5800, reason: '补打', status: 'reprinted', reprintTime: '2026-05-14 14:30', reprintCount: 1, issueDate: '2026-05-14', payMethod: '在线支付-微信', payTime: '2026-05-14 09:00', schoolName: '华东科技大学', items: [{ name: '学费', qty: 1, price: 5800, amount: 5800 }], signature: 'SHA256:RSA:ghi789...' }
   ],
   urgeTasks: [
     { id: 'ut-1', name: '学费逾期催缴 - 5月第二批', scope: '计算机学院', targetCount: 5, sentCount: 5, paidCount: 2, createdAt: '2026-05-16 08:00', status: 'running' },
@@ -291,7 +298,13 @@ const seed = {
     ],
     finance: [
       { id: 'f-1', type: '收款确认', icon: '¥', color: 'var(--ok)', time: '09:05', content: '今日新增 12 笔线下收款待确认', read: false },
-      { id: 'f-2', type: '退费审批', icon: '!', color: 'var(--wa)', time: '昨天', content: '3 条退费申请等待财务处理', read: true }
+      { id: 'f-2', type: '退费审批', icon: '!', color: 'var(--wa)', time: '昨天', content: '3 条退费申请等待财务处理', read: true },
+      { id: 'f-3', type: '缴费成功', icon: '¥', color: 'var(--ok)', time: '08:30', content: '银行批扣完成，89名学生学费已成功扣款', read: true },
+      { id: 'f-4', type: '退费结果', icon: '↩', color: 'var(--in)', time: '昨天', content: '5笔退费已原路返回，3笔处理中', read: false },
+      { id: 'f-5', type: '补差订单', icon: '🏠', color: 'var(--pu)', time: '05-25', content: '3间宿舍调整产生补差订单，请跟进补缴/退款', read: false },
+      { id: 'f-6', type: '补差预警', icon: '⏰', color: 'var(--wa)', time: '05-24', content: '有2笔补差补缴距今截止仅剩3天，请关注', read: false },
+      { id: 'f-7', type: '批扣失败', icon: '⚠', color: 'var(--er)', time: '05-26', content: '银行批扣有7笔因余额不足失败，请手动跟进', read: false },
+      { id: 'f-8', type: '预缴提醒', icon: '📋', color: 'var(--in)', time: '05-20', content: '5名学生预缴余额将于30天后到期，请及时处理', read: true }
     ],
     government: [
       { id: 'g-1', type: '终审提醒', icon: '*', color: 'var(--pu)', time: '11:20', content: '助学金终审有 4 条记录待处理', read: false },
@@ -318,9 +331,9 @@ export const REVIEW_TAB_GROUPS = {
 }
 
 export const REFUND_TAB_GROUPS = [
-  { label: '待审核', statuses: [REFUND_STATUS.PENDING], color: 'brand' },
-  { label: '待财务确认打款', statuses: [REFUND_STATUS.APPROVED], color: 'wa' },
-  { label: '已完结', statuses: [REFUND_STATUS.REFUNDED, REFUND_STATUS.REJECTED], color: 'ok' }
+  { label: '待财务审核', statuses: [REFUND_STATUS.PENDING], color: 'brand' },
+  { label: '处理中', statuses: [REFUND_STATUS.PROCESSING], color: 'in' },
+  { label: '已完结', statuses: [REFUND_STATUS.SUCCESS, REFUND_STATUS.FAILED], color: 'ok' }
 ]
 
 export const PAYMENT_TAB_GROUPS = [
@@ -687,9 +700,10 @@ export function withStudent(record, metaMap = statusMeta) {
 }
 
 export function getFeeList() {
+  const FEE_TOTAL = FEE_ITEMS_CONFIG.reduce((s, i) => s + i.amount, 0)
   const records = ensureClassCoverage('fees', loadState('fees'), student => ({
     sid: student.sid,
-    amount: '5,800',
+    amount: String(FEE_TOTAL),
     payStatus: 'unpaid',
     urgeCount: 0,
     urgeTimes: [],
@@ -731,6 +745,51 @@ export function getFeeList() {
       statusColor: meta.color,
       daysLabel: meta.days,
       avatarBg: `var(--${meta.color}-bg)`
+    }
+  })
+}
+
+const FEE_ITEMS_CONFIG = [
+  { name: '学费', priority: 1, required: true, amount: 5000 },
+  { name: '住宿费', priority: 2, required: false, amount: 1200 },
+  { name: '教材费', priority: 3, required: true, amount: 320 },
+  { name: '体检费', priority: 4, required: false, amount: 80 },
+  { name: '商业保险费', priority: 5, required: false, amount: 60 },
+  { name: '军训服装费', priority: 6, required: false, amount: 180 },
+  { name: '床上用品费', priority: 7, required: false, amount: 350 }
+]
+
+export function getStudentFeeItems(sid) {
+  const fee = getFeeList().find(f => f.sid === sid)
+  if (!fee) return []
+
+  const channel = fee.payStatus === 'channel'
+  const paidAmount = channel
+    ? FEE_ITEMS_CONFIG.reduce((s, i) => s + i.amount, 0)
+    : (fee.paidAmount || 0)
+
+  // 按优先级从高到低分配已缴金额（D-02 规则）
+  let remaining = paidAmount
+  return FEE_ITEMS_CONFIG.map(item => {
+    let itemPaid = 0
+    if (remaining >= item.amount) {
+      itemPaid = item.amount
+      remaining -= item.amount
+    } else if (remaining > 0) {
+      itemPaid = remaining
+      remaining = 0
+    }
+
+    const isPaid = itemPaid >= item.amount
+    return {
+      name: item.name,
+      priority: item.priority,
+      required: item.required,
+      amount: item.amount,
+      paidAmount: itemPaid,
+      payStatus: isPaid ? 'paid' : 'unpaid',
+      statusLabel: isPaid ? '已缴' : '未缴',
+      statusColor: isPaid ? 'ok' : 'wa'
     }
   })
 }
@@ -916,7 +975,8 @@ export function getRefundList() {
       avatar: (student.name || '?').charAt(0),
       statusLabel: meta.label,
       badgeColor: meta.color,
-      filterKey: meta.filterKey
+      filterKey: meta.filterKey,
+      failReason: item.failReason || null
     }
   })
 }
@@ -986,12 +1046,16 @@ export function confirmDifferenceRefund(id) {
 export function getReceiptList() {
   return loadState('receipts').map(item => {
     const student = getStudent(item.sid) || {}
+    const statusLabelMap = { pending: '待处理', reprinted: '已补打', voided: '已作废' }
+    const badgeColorMap = { pending: 'wa', reprinted: 'ok', voided: 'er' }
     return {
       ...item,
       name: student.name || '未知学生',
       studentNo: item.sid,
-      badgeColor: item.status === 'pending' ? 'wa' : item.status === 'voided' ? 'er' : 'ok',
-      statusLabel: item.status === 'pending' ? '待处理' : item.status === 'voided' ? '已作废' : '已补打'
+      badgeColor: badgeColorMap[item.status] || 'wa',
+      statusLabel: statusLabelMap[item.status] || item.status,
+      reprintCount: item.reprintCount || 0,
+      maxReprint: 3
     }
   })
 }
@@ -1001,6 +1065,9 @@ export function updateReceipt(id, action) {
   const item = list.find(record => record.id === id)
   if (!item || item.status === 'voided') return item
   if (action === 'reprint' && item.status === 'pending') {
+    const count = (item.reprintCount || 0) + 1
+    if (count > 3) return { error: true, message: '该票据已补打 3 次，不可继续补打' }
+    item.reprintCount = count
     item.status = 'reprinted'
     item.reprintTime = nowText()
   } else if (action === 'void' && item.status !== 'pending') {
@@ -1339,6 +1406,71 @@ export function clearAllMessages(role) {
   return []
 }
 
+// ============================================================
+// 收款记录查询 (§3.1.3)
+// ============================================================
+
+const PAYMENT_METHOD_ENUM = ['在线支付', '线下收款', '银行批扣', '预缴抵扣']
+
+const paymentRecordsSeed = [
+  { id: 'pr-1', sid: '2026010001', billId: 'BILL20260001', method: '在线支付', channel: '微信支付', amount: 5800, status: 'paid', paidAt: '2026-05-16 09:12:30', operator: '学生自主' },
+  { id: 'pr-2', sid: '2026010002', billId: 'BILL20260002', method: '线下收款', channel: '现金', amount: 5800, status: 'confirmed', paidAt: '2026-05-16 09:35:00', operator: '陈美玲' },
+  { id: 'pr-3', sid: '2026010008', billId: 'BILL20260003', method: '在线支付', channel: '支付宝', amount: 5800, status: 'paid', paidAt: '2026-05-17 10:05:22', operator: '学生自主' },
+  { id: 'pr-4', sid: '2026010015', billId: 'BILL20260004', method: '银行批扣', channel: '建设银行', amount: 5800, status: 'paid', paidAt: '2026-05-18 06:30:00', operator: '系统批扣' },
+  { id: 'pr-5', sid: '2026010022', billId: 'BILL20260005', method: '在线支付', channel: '微信支付', amount: 3200, status: 'paid', paidAt: '2026-05-19 14:18:10', operator: '学生自主' },
+  { id: 'pr-6', sid: '2026010030', billId: 'BILL20260006', method: '预缴抵扣', channel: '—', amount: 5800, status: 'paid', paidAt: '2026-05-15 08:00:00', operator: '系统自动' },
+  { id: 'pr-7', sid: '2026010035', billId: 'BILL20260007', method: '在线支付', channel: '银联支付', amount: 5800, status: 'paid', paidAt: '2026-05-20 11:22:45', operator: '学生自主' },
+  { id: 'pr-8', sid: '2026010039', billId: 'BILL20260008', method: '线下收款', channel: '银行转账', amount: 2900, status: 'confirmed', paidAt: '2026-05-21 15:10:00', operator: '陈美玲' },
+  { id: 'pr-9', sid: '2026010042', billId: 'BILL20260009', method: '在线支付', channel: '微信支付', amount: 1200, status: 'paid', paidAt: '2026-05-22 09:08:33', operator: '学生自主' },
+  { id: 'pr-10', sid: '2026010018', billId: 'BILL20260010', method: '线下收款', channel: 'POS机', amount: 5800, status: 'confirmed', paidAt: '2026-05-23 16:45:00', operator: '李明' },
+  { id: 'pr-11', sid: '2026010027', billId: 'BILL20260011', method: '在线支付', channel: '支付宝', amount: 3200, status: 'paid', paidAt: '2026-05-24 12:30:18', operator: '学生自主' },
+  { id: 'pr-12', sid: '2026010033', billId: 'BILL20260012', method: '银行批扣', channel: '工商银行', amount: 5800, status: 'paid', paidAt: '2026-05-25 06:30:00', operator: '系统批扣' }
+]
+
+const PAYMENT_RECORD_STATUS_MAP = {
+  paid: 'paid',
+  success: 'paid',
+  '支付成功': 'paid',
+  confirmed: 'confirmed',
+  '已确认': 'confirmed',
+  voided: 'voided',
+  '已作废': 'voided'
+}
+
+export function getPaymentRecordList() {
+  let list = loadState('paymentRecords')
+  if (!list || list.length === 0) {
+    list = clone(paymentRecordsSeed)
+    paymentRecordsSeed.forEach(r => {
+      if (!list.some(item => item.id === r.id)) list.push(clone(r))
+    })
+    saveState('paymentRecords', list)
+  }
+  return list.map(item => {
+    const student = getStudent(item.sid) || {}
+    const status = PAYMENT_RECORD_STATUS_MAP[item.status] || item.status
+    const statusLabelMap = { paid: '已支付', confirmed: '已确认', voided: '已作废' }
+    const badgeColorMap = { paid: 'ok', confirmed: 'ok', voided: 'er' }
+    return {
+      ...item,
+      studentName: student.name || '未知学生',
+      studentNo: item.sid,
+      college: student.college || '计算机学院',
+      className: student.className || '2026级1班',
+      status,
+      statusLabel: statusLabelMap[status] || item.status,
+      badgeColor: badgeColorMap[status] || 'wa'
+    }
+  })
+}
+
+export function getPaymentRecordById(id) {
+  return getPaymentRecordList().find(item => item.id === id) || null
+}
+
+// ============================================================
+
 export function clearBusinessState() {
   Object.keys(seed).forEach(name => saveState(name, clone(seed[name])))
+  saveState('paymentRecords', clone(paymentRecordsSeed))
 }

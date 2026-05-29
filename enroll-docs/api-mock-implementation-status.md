@@ -83,7 +83,7 @@
 | 57 | 助学贷款审核 | 助学贷款驳回 | POST | `/loans/{loanId}/reject` | 是 | 是 | 是 | 是 | 不适用 | 不适用 | 是 | 是 | 是 | 已完成 | 教师/财务审核页已接入 |
 | 58 | 助学贷款审核 | 助学贷款打款/冲抵 | POST | `/loans/{loanId}/disburse` | 是 | 是 | 是 | 是 | 不适用 | 不适用 | 是 | 是 | 是 | 已完成 | 财务打款页已接入 |
 | 59 | 住宿管理 | 宿舍/住宿列表 | GET | `/dormitories/students` | 是 | 是 | 是 | 否 | 是 | 是 | 不适用 | 是 | 部分 | 部分完成 | service/mock 已有，住宿页面仍有本地数据路径 |
-| 60 | 住宿管理 | 学生住宿详情 | GET | `/dormitories/students/{studentId}` | 是 | 是 | 是 | 否 | 不适用 | 不适用 | 不适用 | 是 | 部分 | 部分完成 | service/mock 已有 |
+| 60 | 住宿管理 | 学生住宿详情 | GET | `/dormitories/students/{studentId}` | 是 | 是 | 是 | 否 | 不适用 | 不适用 | 不适用 | 是 | 部分 | 部分完成 | service/m2ock 已有 |
 | 61 | 住宿管理 | 换宿申请列表 | GET | `/dormitory/room-change-applications` | 是 | 是 | 否 | 否 | 是 | 是 | 不适用 | 是 | 部分 | 部分完成 | mock 已有，缺统一 service 方法和页面接入 |
 | 62 | 住宿管理 | 换宿申请详情 | GET | `/dormitory/room-change-applications/{applicationId}` | 是 | 是 | 否 | 否 | 不适用 | 不适用 | 不适用 | 是 | 部分 | 部分完成 | mock 已有，缺统一 service 方法和页面接入 |
 | 63 | 住宿管理 | 换宿审批通过 | POST | `/dormitory/room-change-applications/{applicationId}/approve` | 是 | 是 | 否 | 否 | 不适用 | 不适用 | 是 | 是 | 部分 | 部分完成 | mock 状态可变更，缺 service/page |

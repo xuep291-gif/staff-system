@@ -1,6 +1,6 @@
 <template>
   <view class="page">
-    <SNavBar title="换房审批" :showBack="true" />
+    <SNavBar title="换房审批" :showBack="true" fallbackUrl="/pages/government/home/index" />
     <StatusTabs tabGroup="govRoomChange" :tabs="tabs" />
     <scroll-view scroll-y class="body">
       <view class="sc">
@@ -62,6 +62,7 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   onShow() {
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
   },
   methods: {

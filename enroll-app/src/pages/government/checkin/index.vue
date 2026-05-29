@@ -1,6 +1,6 @@
 <template>
   <view class="page">
-    <SNavBar title="报到统计" :showBack="true" />
+    <SNavBar title="报到统计" :showBack="true" fallbackUrl="/pages/government/home/index" />
 
     <scroll-view scroll-y class="body">
       <!-- Stats Overview Card -->
@@ -103,7 +103,17 @@ export default {
       uncheckedTotal: 0
     }
   },
+  onLoad() {
+    this.onBusinessStateChange = ({ collection }) => {
+      if (collection === 'students') this.refresh()
+    }
+    if (typeof uni.$on === 'function') uni.$on('business-state-change', this.onBusinessStateChange)
+  },
+  onUnload() {
+    if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
+  },
   async onShow() {
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     await this.refresh()
   },
   methods: {

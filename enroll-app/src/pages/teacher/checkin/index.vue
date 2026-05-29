@@ -1,6 +1,6 @@
 <template>
   <view class="page">
-    <SNavBar title="报到统计" :showBack="true" />
+    <SNavBar title="报到统计" :showBack="true" fallbackUrl="/pages/teacher/home/index" />
     <scroll-view scroll-y class="scroll-body">
       <!-- Stats Card -->
       <view class="stats-card">
@@ -48,7 +48,7 @@
       <!-- Unchecked Students Card -->
       <SCard title="未报到学生" :padding="16">
         <view class="student-list">
-          <view class="student-row" v-for="student in uncheckedStudents" :key="student.id" @click="goDetail(student)">
+          <view class="student-row" v-for="student in uncheckedStudents" :key="filterVersion + '-' + student.id" @click="goDetail(student)">
             <view class="student-avatar">
               <text>{{ student.name.charAt(0) }}</text>
             </view>
@@ -78,7 +78,7 @@
       <!-- Deferred Students Card -->
       <SCard title="已延期学生" :padding="16" v-if="deferredStudents.length > 0">
         <view class="student-list">
-          <view class="student-row" v-for="student in deferredStudents" :key="student.id" @click="goDetail(student)">
+          <view class="student-row" v-for="student in deferredStudents" :key="'def-' + filterVersion + '-' + student.id" @click="goDetail(student)">
             <view class="student-avatar">
               <text>{{ student.name.charAt(0) }}</text>
             </view>
@@ -138,10 +138,22 @@ export default {
       uncheckedStudents: [],
       deferredStudents: [],
       remainingCount: 0,
-      deferredCount: 0
+      deferredCount: 0,
+      filterVersion: 0
     }
   },
+  onLoad() {
+    this.onBusinessStateChange = ({ collection }) => {
+      if (collection === 'students') this.refresh()
+    }
+    if (typeof uni.$on === 'function') uni.$on('business-state-change', this.onBusinessStateChange)
+  },
+  onUnload() {
+    if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
+  },
   async onShow() {
+    this.filterVersion++
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     await this.refresh()
   },
   methods: {
@@ -207,6 +219,7 @@ export default {
               expectedCheckinDate
             }).catch(() => {})
             updateStudentDelay(student.studentId, true)
+            this.filterVersion++
             await this.refresh()
             uni.showToast({ title: '已办理延期报到', icon: 'success' })
           }
@@ -230,6 +243,7 @@ export default {
           })
           if (res?.data?.code === 0) {
             updateStudentCheckin(studentId, true)
+            this.filterVersion++
             this.refresh()
             uni.showToast({ title: '报到确认成功', icon: 'success' })
           }

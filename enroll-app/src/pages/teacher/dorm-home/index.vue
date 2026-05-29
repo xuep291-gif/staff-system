@@ -1,6 +1,6 @@
 <template>
   <view class="page">
-    <SNavBar title="宿舍查看" :showBack="true" />
+    <SNavBar title="宿舍查看" :showBack="true" fallbackUrl="/pages/teacher/home/index" />
 
     <scroll-view scroll-y class="body">
       <view class="card stats-card">
@@ -100,12 +100,26 @@ export default {
       )
     }
   },
-  onShow() {
-    this.list = getStudents().map(student => ({
-      ...student,
-      ...parseDorm(student.dorm)
-    }))
+  onLoad() {
+    this.onBusinessStateChange = ({ collection }) => {
+      if (collection === 'students') this.loadList()
+    }
+    if (typeof uni.$on === 'function') uni.$on('business-state-change', this.onBusinessStateChange)
   },
+  onUnload() {
+    if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
+  },
+  onShow() {
+    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
+    this.loadList()
+  },
+  methods: {
+    loadList() {
+      this.list = getStudents().map(student => ({
+        ...student,
+        ...parseDorm(student.dorm)
+      }))
+    },
   methods: {
     goDetail(item) {
       rememberStaffBackTarget('/pages/teacher/dorm-home/index')

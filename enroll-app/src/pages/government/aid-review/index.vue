@@ -162,10 +162,13 @@ export default {
   async onShow() {
     const localItem = this.uid ? getReviewItem('aids', this.uid) : null
     const res = this.uid ? await scholarshipApi.getScholarshipDetail(this.uid) : null
-    const item = localItem || (res?.data?.code === 0 ? res.data.data : null)
-    if (item && item.status !== REVIEW_STATUS.FIRST_PASS) {
-      uni.showToast({ title: '该申请不在学院复审阶段', icon: 'none', duration: 1500 })
-      setTimeout(() => uni.navigateBack(), 500)
+    const apiItem = res?.data?.code === 0 ? res.data.data : null
+    // API 优先，local fallback
+    const item = apiItem || localItem
+    if (!item) return
+    if (item.status !== REVIEW_STATUS.FIRST_PASS) {
+      uni.showToast({ title: '当前状态: ' + (item.status || '?') + '，非学院复审阶段', icon: 'none', duration: 2000 })
+      setTimeout(() => uni.navigateBack(), 600)
       return
     }
     this.item = item

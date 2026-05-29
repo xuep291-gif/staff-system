@@ -122,7 +122,11 @@ export default {
     }
   },
   onShow() {
-    const subRole = getSubRole()
+    let subRole = getSubRole()
+    if (!subRole) {
+      // 直接从独立 key 兜底
+      try { subRole = uni.getStorageSync('staff_sub_role') || '' } catch (e) {}
+    }
     const scope = getDataScope()
     this.isSchool = subRole === SUB_ROLES.STUDENT_AFFAIRS
     const summary = getClassSummary()

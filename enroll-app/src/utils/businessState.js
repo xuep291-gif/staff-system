@@ -968,7 +968,12 @@ export function getReviewList(collection) {
       logs: []
     }))
   } else {
-    list = ensureReviewDemoCoverage(collection, list)
+    // 只在首次加载时补充 demo 数据，避免状态变更后反复插入
+    const coverageKey = key(`${collection}_demo_coverage_applied`)
+    if (!uni.getStorageSync(coverageKey)) {
+      list = ensureReviewDemoCoverage(collection, list)
+      try { uni.setStorageSync(coverageKey, '1') } catch (e) { /* ignore */ }
+    }
   }
   const metaMap = collection === 'documents' ? materialStatusMeta : statusMeta
   return list.map(item => {

@@ -43,12 +43,12 @@
         </SCard>
 
         <SEmpty v-if="!tasks.length" text="暂无催缴任务" />
-
-        <view class="btn-area">
-          <SButton variant="primary" block @click="openCreate">+ 新建催缴任务</SButton>
-        </view>
       </view>
     </scroll-view>
+
+    <view class="btn-area">
+      <SButton variant="primary" block @tap="openCreate">+ 新建催缴任务</SButton>
+    </view>
 
     <!-- Create Sheet -->
     <SBottomSheet v-model="showSheet" title="新建催缴任务">
@@ -81,8 +81,8 @@
       </view>
       <template #footer>
         <view class="sheet-actions">
-          <SButton variant="secondary" @click="showSheet = false">取消</SButton>
-          <SButton variant="primary" @click="onCreate">创建{{ timeBlocked ? '并定时' : '并发送' }}</SButton>
+          <SButton variant="secondary" @tap="showSheet = false">取消</SButton>
+          <SButton variant="primary" @tap="onCreate">创建{{ timeBlocked ? '并定时' : '并发送' }}</SButton>
         </view>
       </template>
     </SBottomSheet>
@@ -227,7 +227,7 @@ export default {
 .t-name { font-size: var(--fs-13); font-weight: 600; color: var(--N900); display: block; }
 .t-meta { font-size: var(--fs-11); color: var(--N500); margin-top: 4rpx; display: block; }
 
-.btn-area { padding-top: 8rpx; }
+.btn-area { padding: 20rpx 28rpx 40rpx; background: var(--N50); }
 
 /* ── Sheet ── */
 .sheet-form { display: flex; flex-direction: column; gap: 24rpx; }

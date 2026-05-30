@@ -61,16 +61,6 @@
           <text :class="{ 'ph': !form.collectionType }">{{ form.collectionType || '请选择收款方式' }}</text>
           <text class="arrow" :class="{ open: showMethodPicker }">›</text>
         </view>
-        <view class="method-dropdown" v-if="showMethodPicker">
-          <view
-            class="method-option"
-            :class="{ active: form.collectionType === m }"
-            v-for="m in collectionTypes"
-            :key="m"
-            @click.stop="selectMethod(m)"
-          >{{ m }}</view>
-        </view>
-        <view v-if="showMethodPicker" class="method-mask" @click.stop="showMethodPicker = false" />
 
         <text class="field-label" style="margin-top: 24rpx;">收款备注</text>
         <textarea class="remark-area" v-model="form.remark" placeholder="可填写票据号或现场说明" maxlength="100" />
@@ -97,6 +87,24 @@
       <view class="body-foot" />
     </scroll-view>
     <SEmpty v-else text="未找到该收款记录" />
+
+    <!-- 收款方式选择下拉（独立于卡片外，fixed定位） -->
+    <view v-if="showMethodPicker" class="method-overlay" @click.stop="showMethodPicker = false">
+      <view class="method-sheet">
+        <view class="method-sheet-title">选择收款方式</view>
+        <view
+          class="method-sheet-option"
+          :class="{ active: form.collectionType === m }"
+          v-for="m in collectionTypes"
+          :key="m"
+          @click.stop="selectMethod(m)"
+        >
+          <text>{{ m }}</text>
+          <text v-if="form.collectionType === m" class="method-check">✓</text>
+        </view>
+        <view class="method-sheet-cancel" @click.stop="showMethodPicker = false">取消</view>
+      </view>
+    </view>
 
     <!-- 凭证预览弹窗 -->
     <view v-if="showPreview" class="ovl on" @click="showPreview = false">

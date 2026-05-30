@@ -7,7 +7,6 @@
         <view class="card" v-for="item in filteredList" :key="activeTab + '-' + filterVersion + '-' + item.uid" @click="goDetail(item.uid)">
           <view class="card-bd">
             <view class="li">
-              <view class="li-ico" :style="{ background: 'var(--brand-t)', color: 'var(--brand)' }">{{ item.avatar }}</view>
               <view class="li-info">
                 <text class="li-name">{{ item.name }}</text>
                 <text class="li-meta">{{ item.id }} · {{ item.college }}</text>
@@ -112,7 +111,6 @@ export default {
 .card-bd { padding: var(--card-body-padding); }
 .li { display: flex; align-items: center; }
 .li > * + * { margin-left: 20rpx; }
-.li-ico { width: 80rpx; height: 80rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 600; flex-shrink: 0; }
 .li-info { flex: 1; min-width: 0; }
 .li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
 .li-meta { font-size: var(--fs-11); color: var(--N500); display: block; margin-top: 4rpx; }

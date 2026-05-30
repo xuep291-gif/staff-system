@@ -22,7 +22,7 @@
       <SEmpty v-if="!filteredList.length" :text="emptyText" />
 
       <view class="receipt-list" v-for="item in filteredList" :key="activeTab + '-' + filterVersion + '-' + item.id">
-        <view class="receipt-card" @click="openDetail(item)">
+        <view class="receipt-card" @tap="openDetail(item)">
           <view class="card-top">
             <view class="avatar" :style="{ background: avatarBg(item) }">
               <text :style="{ color: avatarColor(item) }">{{ item.name.charAt(0) }}</text>

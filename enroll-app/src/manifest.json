@@ -72,12 +72,6 @@
     "navigateToMiniProgramAppIdList": [
       "wx655125af82d81015"
     ],
-    "plugins": {
-      "wxPano": {
-        "version": "2.1.4",
-        "provider": "wx386c038238531f87"
-      }
-    }
   },
   "mp-alipay": {
     "usingComponents": true

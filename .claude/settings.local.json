@@ -83,7 +83,8 @@
       "Bash(curl -s -o /dev/null -w \" port8080: %{http_code}\" http://localhost:8080)",
       "Bash(npx playwright *)",
       "Bash(python3 -c ' *)",
-      "Bash(python3 fix_business.py)"
+      "Bash(python3 fix_business.py)",
+      "Bash(ping -n 1 github.com)"
     ]
   }
 }

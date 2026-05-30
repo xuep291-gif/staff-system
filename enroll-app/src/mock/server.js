@@ -1,5 +1,22 @@
 const STORAGE_KEY = 'enroll_mock_api_state_v1'
 
+// 同步写入 businessState，保证跨角色状态一致
+import {
+  updateReview as bsUpdateReview,
+  markPayment as bsMarkPayment,
+  updateRefund as bsUpdateRefund,
+  confirmOfflineCollection as bsConfirmOffline,
+  voidOfflineCollection as bsVoidOffline,
+  REFUND_STATUS as BS_REFUND_STATUS,
+  DORM_REVIEW_STATUS as BS_DORM_STATUS
+} from '@/utils/businessState.js'
+
+function bsSyncRefund(id, mockStatus, log) {
+  const map = { approved: BS_REFUND_STATUS.PROCESSING, rejected: BS_REFUND_STATUS.FAILED, refunded: BS_REFUND_STATUS.SUCCESS }
+  const bsStatus = map[mockStatus] || mockStatus
+  try { bsUpdateRefund(id, bsStatus, log) } catch (e) { /* ignore */ }
+}
+
 const now = () => Date.now()
 const iso = () => new Date().toISOString()
 const reqId = () => `req_${now()}_${Math.random().toString(16).slice(2, 8)}`
@@ -419,6 +436,9 @@ function approveReview(state, collection, id, params, status) {
   const log = { node: currentNode(oldStatus, collection), result: '通过', remark: params.opinion || params.remark || '', time: iso() }
   item.auditLogs = item.auditLogs || []
   item.auditLogs.unshift(log)
+  // 同步 businessState
+  const bizCol = collection === 'scholarships' ? 'aids' : collection
+  try { bsUpdateReview(bizCol, item.uid, item.status, log) } catch (e) { /* ignore */ }
   return ok(mutationResult(state, collection, id, oldStatus, item.status, log))
 }
 
@@ -431,6 +451,9 @@ function rejectReview(state, collection, id, params) {
   item.rejectReason = log.remark
   item.auditLogs = item.auditLogs || []
   item.auditLogs.unshift(log)
+  // 同步 businessState
+  const bizCol = collection === 'scholarships' ? 'aids' : collection
+  try { bsUpdateReview(bizCol, item.uid, 'rejected', log) } catch (e) { /* ignore */ }
   return ok(mutationResult(state, collection, id, oldStatus, item.status, log))
 }
 
@@ -451,6 +474,9 @@ function disburse(state, collection, id, params) {
   item.payout = { payoutRecordId: `po-${id}`, amount: params.amount || item.approvedAmount || item.amount, payoutMethod: params.payoutMethod || 'bank_transfer', paidAt: iso(), operatorName: 'Mock 财务' }
   const log = { node: '财务打款', result: '已完成', remark: params.remark || '', time: iso() }
   item.auditLogs.unshift(log)
+  // 同步 businessState
+  const bizCol = collection === 'scholarships' ? 'aids' : collection
+  try { bsMarkPayment(bizCol, item.uid, log) } catch (e) { /* ignore */ }
   return ok({ ...mutationResult(state, collection, id, oldStatus, item.status, log), payoutRecordId: item.payout.payoutRecordId, paidAt: item.payout.paidAt, messageSent: true })
 }
 
@@ -831,6 +857,8 @@ function confirmOfflinePayment(state, params) {
     if (pay.unpaidAmount <= 0) pay.paymentStatus = 'paid'
     else if (pay.paidAmount > 0) pay.paymentStatus = 'partial'
   }
+  // 同步 businessState
+  try { bsConfirmOffline(item.offlinePaymentId || item.id, { collectionType: item.collectionType, remark: item.remark || '', confirmedBy: item.confirmOperator || '陈美玲' }) } catch (e) { /* ignore */ }
 
   return {
     offlinePaymentId: item.offlinePaymentId || item.id,
@@ -852,6 +880,8 @@ function voidOfflinePayment(state, params) {
   const oldStatus = item.status
   item.status = 'voided'
   item.voidTime = iso()
+  // 同步 businessState
+  try { bsVoidOffline(item.offlinePaymentId || item.id) } catch (e) { /* ignore */ }
 
   // 回退账单金额
   const pay = state.payments.find(i => i.studentNo === item.studentNo)
@@ -1084,6 +1114,8 @@ function confirmOffline(state, id, params) {
   item.method = item.collectionType
   const pay = state.payments.find(i => i.studentNo === item.studentNo)
   if (pay) { pay.paidAmount = Math.max(pay.paidAmount, params.confirmedAmount || item.amount); pay.unpaidAmount = Math.max(pay.receivableAmount - pay.paidAmount, 0); pay.paymentStatus = pay.unpaidAmount === 0 ? 'paid' : 'partial'; pay.payStatus = pay.paymentStatus }
+  // 同步 businessState
+  try { bsConfirmOffline(item.offlinePaymentId || id, { collectionType: item.collectionType, remark: item.collectionRemark || '', confirmedBy: '陈美玲' }) } catch (e) { /* ignore */ }
   return ok({ paymentRecordId: `rec-${id}`, oldStatus, status: item.status, paymentStatus: pay?.paymentStatus, billStatuses: [], invoiceId: `inv-${id}` })
 }
 function sendReminder(state, params) {
@@ -1107,7 +1139,10 @@ function mutateRefund(state, id, action, params) {
   if (action === 'approve') item.status = 'approved'
   if (action === 'reject') { item.status = 'rejected'; item.rejectReason = params.rejectReason || params.opinion || '财务驳回' }
   if (action === 'execute' || action === 'retry') item.status = 'refunded'
-  return ok(mutationResult(state, 'refund', id, oldStatus, item.status, { node: '财务处理', result: action, remark: params.opinion || params.rejectReason || '', time: iso() }))
+  const log = { node: '财务处理', result: action, remark: params.opinion || params.rejectReason || '', time: iso() }
+  // 同步 businessState
+  bsSyncRefund(item.uid, item.status, log)
+  return ok(mutationResult(state, 'refund', id, oldStatus, item.status, log))
 }
 function processedRecords(state) {
   return [...state.scholarships.filter(i => ['paid', 'completed'].includes(i.status)).map(i => ({ recordId: `pr-${i.uid}`, bizType: 'scholarship', bizId: i.uid, studentNo: i.studentNo, studentName: i.studentName, amount: i.amount, status: i.status, processedAt: i.payout?.paidAt || i.submittedAt, operatorName: 'Mock 财务', summary: '助学金打款' })), ...state.loans.filter(i => ['paid', 'completed'].includes(i.status)).map(i => ({ recordId: `pr-${i.uid}`, bizType: 'loan', bizId: i.uid, studentNo: i.studentNo, studentName: i.studentName, amount: i.amount, status: i.status, processedAt: i.payout?.paidAt || i.submittedAt, operatorName: 'Mock 财务', summary: '助学贷款打款' })), ...state.refunds.filter(i => i.status !== 'pending').map(i => ({ recordId: `pr-${i.uid}`, bizType: 'refund', bizId: i.uid, studentNo: i.studentNo, studentName: i.studentName, amount: i.amount, status: i.status, processedAt: i.applyTime, operatorName: 'Mock 财务', summary: '退费处理' }))]
@@ -1250,6 +1285,9 @@ function mutateDormApplication(state, type, id, action, params) {
   const log = { node: '住宿审批', result: action === 'approve' ? '通过' : '驳回', remark: params.remark || params.rejectReason || '', time: iso() }
   item.auditLogs = item.auditLogs || []
   item.auditLogs.unshift(log)
+  // 同步 businessState（nonDorm 对应 nonDorm 单数）
+  const bizCol = type === 'non-dorm' ? 'nonDorm' : map[type]
+  try { bsUpdateReview(bizCol, item.uid, item.status, log) } catch (e) { /* ignore */ }
   return ok({ ...mutationResult(state, type, id, oldStatus, item.status, log), applicationId: id, dormitoryChanged: action === 'approve', diffOrderId: params.generateDiffOrder === false ? '' : `diff-${id}` })
 }
 

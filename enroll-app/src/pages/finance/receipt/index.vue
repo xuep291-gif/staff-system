@@ -212,6 +212,17 @@ export default {
       this.showDetail = true
     },
     onReprint() {
+      const that = this
+      uni.showModal({
+        title: '确认补打',
+        content: '确认为 ' + (this.detail.name || '') + '（' + (this.detail.studentNo || '') + '）补打票据吗？\n票据编号：' + (this.detail.receiptNo || '') + '\n票据金额：¥' + this.fmt(this.detail.amount) + '\n已补打次数：' + (this.detail.reprintCount || 0) + '/' + (this.detail.maxReprint || 3),
+        confirmText: '确认补打',
+        success(res) {
+          if (res.confirm) that.doReprint()
+        }
+      })
+    },
+    doReprint() {
       const result = updateReceipt(this.detail.id, 'reprint')
       if (result && result.error) {
         uni.showToast({ title: result.message, icon: 'none' })

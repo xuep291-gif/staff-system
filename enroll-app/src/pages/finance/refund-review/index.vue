@@ -31,18 +31,6 @@
         </view>
       </SCard>
 
-      <!-- 佐证材料 -->
-      <SCard title="佐证材料" :padding="16">
-        <view class="preview-entry" @click="showPreview = true">
-          <view class="preview-icon">📄</view>
-          <view class="preview-main">
-            <text class="preview-title">预览材料</text>
-            <text class="preview-sub">查看学生提交的退费佐证材料</text>
-          </view>
-          <text class="preview-arrow">›</text>
-        </view>
-      </SCard>
-
       <!-- 财务意见（仅待审核状态） -->
       <SCard title="财务意见" :padding="16" v-if="canAudit">
         <textarea v-model="opinion" class="opinion-textarea" placeholder="请输入审核意见…" />
@@ -112,20 +100,6 @@
       </view>
     </view>
 
-    <!-- 材料预览弹窗 -->
-    <view v-if="showPreview" class="ovl on" @click="showPreview = false">
-      <view class="sheet" @click.stop>
-        <view class="shandle" />
-        <text class="stitle">材料预览</text>
-        <view class="sbody2">
-          <text class="smsg">学生提交的退费佐证材料将在此统一预览。</text>
-          <view class="preview-file">
-            <text class="pf-name">退费申请材料包</text>
-            <SBadge color="in">可预览</SBadge>
-          </view>
-        </view>
-      </view>
-    </view>
   </view>
 </template>
 
@@ -150,7 +124,6 @@ export default {
       rejectReason: '',
       showConfirm: false,
       showReject: false,
-      showPreview: false,
       submitting: false
     }
   },
@@ -273,13 +246,6 @@ export default {
 .fail-text { font-size: var(--fs-12); color: var(--er); line-height: 1.5; display: block; }
 
 /* 材料预览 */
-.preview-entry { display: flex; align-items: center; min-height: 96rpx; }
-.preview-entry > * + * { margin-left: 20rpx; }
-.preview-icon { width: 72rpx; height: 72rpx; border-radius: var(--r-12); background: var(--brand-t); color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: var(--fs-20); }
-.preview-main { flex: 1; min-width: 0; }
-.preview-title { display: block; font-size: var(--fs-14); color: var(--N900); font-weight: 600; }
-.preview-sub { display: block; margin-top: 4rpx; font-size: var(--fs-11); color: var(--N500); }
-.preview-arrow { color: var(--N400); font-size: 32rpx; }
 
 /* 财务意见 */
 .opinion-textarea { width: 100%; min-height: 144rpx; padding: 20rpx 24rpx; border: 1.5px solid var(--N200); border-radius: 24rpx; font-size: var(--fs-13); color: var(--N900); background: var(--white); box-sizing: border-box; }
@@ -320,8 +286,6 @@ export default {
 .sheet-textarea { width: 100%; min-height: 144rpx; padding: 20rpx 24rpx; border: 1.5px solid var(--N200); border-radius: 24rpx; font-size: var(--fs-13); color: var(--N900); background: var(--white); box-sizing: border-box; }
 .brow { display: flex; }
 .brow > * + * { margin-left: 16rpx; }
-.preview-file { display: flex; align-items: center; justify-content: space-between; padding: 20rpx 24rpx; border-radius: var(--r-12); background: var(--N25); }
-.pf-name { font-size: var(--fs-13); color: var(--N900); font-weight: 600; }
 
 .body-foot { height: 48rpx; }
 </style>

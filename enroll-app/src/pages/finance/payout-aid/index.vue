@@ -7,7 +7,7 @@
         <view class="card" v-for="item in filteredList" :key="activeTab + '-' + filterVersion + '-' + item.uid" @click="goDetail(item.uid)">
           <view class="card-bd">
             <view class="li">
-              <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>
+              <view class="li-ico" :style="{ background: 'var(--brand-t)', color: 'var(--brand)' }">{{ item.avatar }}</view>
               <view class="li-info">
                 <text class="li-name">{{ item.name }}</text>
                 <text class="li-meta">{{ item.id }} · {{ item.college }}</text>
@@ -30,7 +30,7 @@ import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
+import { FINANCE_AID_TAB_GROUPS, getLastBusinessChange, getReviewList, matchesStatusGroup, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const REVIEW_KEY_MAP = ['pending', 'processing', 'completed']
@@ -43,14 +43,17 @@ export default {
   },
   computed: {
     tabs() {
-      return buildReviewTabs(this.list, 'finance').map((tab, i) => ({
-        ...tab,
+      return FINANCE_AID_TAB_GROUPS.map((group, i) => ({
+        label: group.label,
+        count: this.list.filter(item => matchesStatusGroup(item, group.statuses)).length,
+        color: group.color,
         key: REVIEW_KEY_MAP[i] || `tab-${i}`
       }))
     },
     filteredList() {
       const idx = REVIEW_KEY_MAP.indexOf(this.activeTab)
-      return filterReviewByTab(this.list, 'finance', idx >= 0 ? idx : 0)
+      const group = FINANCE_AID_TAB_GROUPS[idx] || FINANCE_AID_TAB_GROUPS[0]
+      return this.list.filter(item => matchesStatusGroup(item, group.statuses))
     }
   },
   onLoad() {
@@ -74,9 +77,7 @@ export default {
       const rows = getReviewList('aids')
       this.list = rows.map(item => ({
         ...item,
-        badgeColor: reviewStatusMeta[item.status]?.color || item.badgeColor,
-        bg: `var(--${reviewStatusMeta[item.status]?.color || 'wa'}-bg)`,
-        iconColor: `var(--${reviewStatusMeta[item.status]?.color || 'wa'})`
+        badgeColor: reviewStatusMeta[item.status]?.color || item.badgeColor
       }))
       if (syncChangedTab) this.syncActiveTabFromLastChange()
     },
@@ -85,9 +86,13 @@ export default {
       const token = change ? `${change.uid}-${change.status}-${change.time}` : ''
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
-      const item = this.list.find(i => i.uid === change.uid) || change
-      const idx = getReviewTabIndex(item, 'finance')
-      const key = REVIEW_KEY_MAP[idx] || 'pending'; this.activeTab = key; setActiveKey('financePayoutAid', key)
+      const status = change.status
+      let key = 'pending'
+      if (status === 'payment_pending') key = 'pending'
+      else if (['first_pass', 'review_pass', 'final_pass'].includes(status)) key = 'processing'
+      else key = 'completed'
+      this.activeTab = key
+      setActiveKey('financePayoutAid', key)
     },
     goDetail(uid) {
       rememberStaffBackTarget('/pages/finance/payout-aid/index')

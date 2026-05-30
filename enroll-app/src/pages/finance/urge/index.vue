@@ -54,13 +54,23 @@
     <SBottomSheet v-model="showSheet" title="新建催缴任务">
       <view class="sheet-form">
         <SFormGroup label="任务名称" required>
-          <input class="form-input" v-model="form.name" placeholder="如：学费逾期催缴 - 5月批次" />
+          <input class="form-input" v-model="form.name" :placeholder="autoBatchName" />
         </SFormGroup>
-        <SFormGroup label="发送范围" required>
-          <input class="form-input" v-model="form.scope" placeholder="如：计算机学院未缴及逾期学生" />
+        <SFormGroup label="催缴范围">
+          <view class="scope-options">
+            <view class="scope-opt" :class="{ on: !form.overdueOnly }" @click="form.overdueOnly = false">
+              <text>全部未缴/逾期</text><text class="opt-num">{{ eligibleCount }}人</text>
+            </view>
+            <view class="scope-opt" :class="{ on: form.overdueOnly }" @click="form.overdueOnly = true">
+              <text>仅逾期</text><text class="opt-num">{{ overdueCount }}人</text>
+            </view>
+          </view>
+        </SFormGroup>
+        <SFormGroup label="发送范围">
+          <input class="form-input" v-model="form.scope" placeholder="如：计算机学院" />
         </SFormGroup>
         <SFormGroup label="预计发送人数" hint="上限 1000 人">
-          <text class="form-count">{{ eligibleCount }} 人</text>
+          <text class="form-count">{{ form.overdueOnly ? overdueCount : eligibleCount }} 人</text>
         </SFormGroup>
         <view v-if="timeBlocked" class="time-block-hint">
           <text class="tb-text">⚠️ 当前时间不在发送时段内（09:00–20:00），任务将在明早 09:00 自动发送</text>
@@ -125,15 +135,21 @@ export default {
       showRetry: false,
       tasks: [],
       retryTask: null,
-      form: { name: '', scope: '' },
+      form: { name: '', scope: '', overdueOnly: false },
       sampleFailures
     }
   },
   computed: {
     runningTasks() { return this.tasks.filter(t => t.status === 'running') },
     completedTasks() { return this.tasks.filter(t => t.status === 'completed') },
-    eligibleCount() {
-      return getFeeList().filter(f => ['unpaid', 'overdue', 'partial'].includes(f.payStatus)).length
+    allEligible() {
+      return getFeeList().filter(f => ['unpaid', 'overdue', 'partial'].includes(f.payStatus))
+    },
+    eligibleCount() { return this.allEligible.length },
+    overdueCount() { return this.allEligible.filter(f => f.payStatus === 'overdue').length },
+    autoBatchName() {
+      const m = new Date().getMonth() + 1
+      return `学费逾期催缴 - ${m}月批次`
     },
     timeBlocked() {
       const h = new Date().getHours()
@@ -146,30 +162,24 @@ export default {
       return task && task.targetCount ? Math.round((task.paidCount || 0) / task.targetCount * 100) : 0
     },
     openCreate() {
-      this.form = { name: '', scope: '全校未缴及逾期学生' }
+      this.form = { name: '', scope: '全校未缴及逾期学生', overdueOnly: false }
       this.showSheet = true
     },
     onCreate() {
-      if (!this.form.name.trim()) {
-        uni.showToast({ title: '请输入任务名称', icon: 'none' })
-        return
-      }
-
-      // 校验人数上限
-      const count = Math.min(this.eligibleCount, 1000)
+      const count = Math.min(this.form.overdueOnly ? this.overdueCount : this.eligibleCount, 1000)
       if (count === 0) {
         uni.showToast({ title: '没有需要催缴的学生', icon: 'none' })
         return
       }
 
-      createUrgeTask({ name: this.form.name.trim(), scope: this.form.scope.trim() || '全校未缴及逾期学生' })
+      createUrgeTask({
+        name: this.form.name.trim() || '',
+        scope: this.form.scope.trim() || '全校未缴及逾期学生',
+        overdueOnly: this.form.overdueOnly
+      })
       this.tasks = getUrgeTasks()
       this.showSheet = false
-
-      const msg = this.timeBlocked
-        ? `任务已创建，将在明早 09:00 自动发送（当前不在发送时段）`
-        : `催缴任务已创建，已发送给 ${count} 名学生（7 天内已催缴者自动跳过）`
-      uni.showToast({ title: '催缴任务已创建', icon: 'success' })
+      uni.showToast({ title: '催缴任务已创建，状态：进行中', icon: 'success' })
     },
     onRetryFailed(task) {
       this.retryTask = task
@@ -227,6 +237,14 @@ export default {
   font-size: var(--fs-13); color: var(--N900); background: var(--white); box-sizing: border-box;
 }
 .form-input::placeholder { color: var(--N400); }
+.scope-options { display: flex; gap: 16rpx; }
+.scope-opt { flex: 1; padding: 16rpx 20rpx; border-radius: var(--r-10); border: 1.5px solid var(--N200); background: var(--white); display: flex; justify-content: space-between; align-items: center; }
+.scope-opt.on { border-color: var(--brand); background: var(--brand-t); }
+.scope-opt text { font-size: var(--fs-13); color: var(--N700); }
+.scope-opt.on text { color: var(--brand); font-weight: 600; }
+.opt-num { font-size: var(--fs-11) !important; color: var(--N400) !important; }
+.scope-opt.on .opt-num { color: var(--brand) !important; }
+
 .form-count { font-size: var(--fs-18); font-weight: 700; color: var(--brand); }
 .time-block-hint {
   padding: 16rpx 20rpx; border-radius: var(--r-8); background: var(--wa-bg);

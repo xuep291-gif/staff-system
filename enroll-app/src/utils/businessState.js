@@ -1157,14 +1157,27 @@ export function getUrgeTasks() {
 
 export function createUrgeTask(data = {}) {
   const list = loadState('urgeTasks')
-  const targetCount = getFeeList().filter(item => ['unpaid', 'overdue'].includes(item.payStatus)).length
+  const eligible = getFeeList().filter(item => ['unpaid', 'overdue', 'partial'].includes(item.payStatus))
+  const overdueOnly = data.overdueOnly ? eligible.filter(item => item.payStatus === 'overdue') : eligible
+  const target = overdueOnly.length ? overdueOnly : eligible
+  const targetCount = Math.min(target.length, 1000)
+
+  // 自动生成批次名称：X月第N批
+  const now = new Date()
+  const month = now.getMonth() + 1
+  const thisMonthTasks = list.filter(t => t.name && t.name.includes(`${month}月`))
+  const batchNo = thisMonthTasks.length + 1
+  const batchLabel = `${month}月第${['一','二','三','四','五','六','七','八','九','十'][batchNo - 1] || batchNo}批`
+  const autoName = data.name || `学费逾期催缴 - ${batchLabel}`
+
   const item = {
     id: `ut-${Date.now()}`,
-    name: data.name || '学费逾期催缴任务',
+    name: autoName,
     scope: data.scope || '全校未缴及逾期学生',
     targetCount,
     sentCount: targetCount,
     paidCount: 0,
+    failCount: 0,
     createdAt: nowText(),
     status: 'running'
   }

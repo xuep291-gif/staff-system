@@ -7,12 +7,12 @@
         <view class="card" v-for="item in filteredList" :key="activeTab + '-' + filterVersion + '-' + item.uid" @click="goDetail(item.uid)">
           <view class="card-bd">
             <view class="li">
+              <view class="li-ico" :style="{ background: 'var(--brand-t)', color: 'var(--brand)' }">{{ item.avatar }}</view>
               <view class="li-info">
                 <text class="li-name">{{ item.name }}</text>
                 <text class="li-meta">{{ item.id }} · {{ item.college }}</text>
                 <text class="li-amount">¥{{ item.amount }} · {{ item.type }}</text>
               </view>
-              <SBadge :color="item.listBadgeColor">{{ item.listStatusLabel }}</SBadge>
               <text class="li-arrow">›</text>
             </view>
           </view>
@@ -27,7 +27,6 @@
 import SNavBar from '@/components/shared/SNavBar.vue'
 import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
-import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import { FINANCE_LOAN_TAB_GROUPS, getLastBusinessChange, getReviewList, matchesStatusGroup, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
@@ -36,7 +35,7 @@ const REVIEW_KEY_MAP = ['pending', 'completed']
 
 export default {
   name: 'FinancePayoutLoan',
-  components: { SNavBar, StatusTabs, SBadge, SEmpty },
+  components: { SNavBar, StatusTabs, SEmpty },
   data() {
     return { activeTab: 'pending', filterVersion: 0, list: [], lastSyncedChange: '' }
   },
@@ -108,6 +107,7 @@ export default {
 .card-bd { padding: var(--card-body-padding); }
 .li { display: flex; align-items: center; }
 .li > * + * { margin-left: 20rpx; }
+.li-ico { width: 80rpx; height: 80rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 600; flex-shrink: 0; }
 .li-info { flex: 1; min-width: 0; }
 .li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
 .li-meta { font-size: var(--fs-11); color: var(--N500); display: block; margin-top: 4rpx; }

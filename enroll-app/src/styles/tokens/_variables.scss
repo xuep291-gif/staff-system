@@ -42,12 +42,16 @@ body.rf {
   --brand-t: var(--fc-t);
   --brand-d: var(--fc-d);
   --brand-s: #F0FDF4;
+  --banner-bg: var(--fc);
+  --navbar-bg: var(--fc);
 }
 body.ra {
   --brand: var(--ac);
   --brand-t: var(--ac-t);
   --brand-d: var(--ac-d);
   --brand-s: #F5F3FF;
+  --banner-bg: var(--ac);
+  --navbar-bg: var(--ac);
 }
 
 // ---------- Neutral Grays ----------

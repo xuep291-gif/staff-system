@@ -245,8 +245,6 @@ export default {
 .fail-label { display: block; font-size: var(--fs-11); font-weight: 600; color: var(--er); margin-bottom: 8rpx; }
 .fail-text { font-size: var(--fs-12); color: var(--er); line-height: 1.5; display: block; }
 
-/* 材料预览 */
-
 /* 财务意见 */
 .opinion-textarea { width: 100%; min-height: 144rpx; padding: 20rpx 24rpx; border: 1.5px solid var(--N200); border-radius: 24rpx; font-size: var(--fs-13); color: var(--N900); background: var(--white); box-sizing: border-box; }
 

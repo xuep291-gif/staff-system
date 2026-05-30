@@ -20,8 +20,7 @@
           v-for="msg in messages"
           :key="msg.id"
           @touchstart="onTouchStart($event, msg.id)"
-          @touchend="onTouchEnd($event, msg.id)"
-          @click="onCardClick(msg)"
+          @touchend="onTouchEnd($event, msg)"
         >
           <view class="delete-action" @click.stop="onDelete(msg.id)">删除</view>
           <view class="card-bd">
@@ -194,14 +193,20 @@ export default {
       uni.showToast({ title: '已清空', icon: 'none' })
     },
     onTouchStart(e, id) {
-      this.touchStartX = e.changedTouches?.[0]?.clientX || 0
+      this.touchStartX = e.changedTouches?.[0]?.clientX || e.touches?.[0]?.clientX || 0
       if (this.swipedId && this.swipedId !== id) this.swipedId = ''
     },
-    onTouchEnd(e, id) {
+    onTouchEnd(e, msg) {
       const endX = e.changedTouches?.[0]?.clientX || 0
       const diff = endX - this.touchStartX
-      if (diff < -36) this.swipedId = id
-      if (diff > 36) this.swipedId = ''
+      if (diff < -36) {
+        this.swipedId = msg.id
+      } else if (diff > 36) {
+        this.swipedId = ''
+      } else {
+        // 小幅度移动视为点击
+        this.onCardClick(msg)
+      }
     }
   }
 }

@@ -30,7 +30,7 @@ import SEmpty from '@/components/shared/SEmpty.vue'
 import { FINANCE_AID_TAB_GROUPS, getLastBusinessChange, getReviewList, matchesStatusGroup, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
-const REVIEW_KEY_MAP = ['pending', 'processing', 'completed']
+const REVIEW_KEY_MAP = ['pending', 'completed']
 
 export default {
   name: 'FinancePayoutAid',
@@ -84,10 +84,7 @@ export default {
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
       const status = change.status
-      let key = 'pending'
-      if (status === 'payment_pending') key = 'pending'
-      else if (['first_pass', 'review_pass', 'final_pass'].includes(status)) key = 'processing'
-      else key = 'completed'
+      const key = status === 'payment_pending' ? 'pending' : 'completed'
       this.activeTab = key
       setActiveKey('financePayoutAid', key)
     },

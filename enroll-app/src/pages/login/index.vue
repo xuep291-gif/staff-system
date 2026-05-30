@@ -11,19 +11,12 @@
     <view class="login-body">
       <!-- 登录方式切换 §9 Tabs -->
       <view class="login-tabs">
-        <view
-          class="login-tab"
-          :class="{ 'login-tab-on': loginType === 'pwd' }"
-          @click="switchTab('pwd')"
-        >
-          <text class="login-tab-text">密码登录</text>
+        <view class="login-tabs-slider" :style="sliderStyle" />
+        <view class="login-tab" @click="switchTab('pwd')">
+          <text class="login-tab-text" :class="{ on: loginType === 'pwd' }">密码登录</text>
         </view>
-        <view
-          class="login-tab"
-          :class="{ 'login-tab-on': loginType === 'sms' }"
-          @click="switchTab('sms')"
-        >
-          <text class="login-tab-text">验证码登录</text>
+        <view class="login-tab" @click="switchTab('sms')">
+          <text class="login-tab-text" :class="{ on: loginType === 'sms' }">验证码登录</text>
         </view>
       </view>
 
@@ -136,6 +129,7 @@ export default {
       showDialog: false,
       isWechat: isMPWeixin(),
       loginType: 'pwd',
+      tabIndex: 0,
       form: {
         account: '',
         password: '',
@@ -152,6 +146,15 @@ export default {
         { role: '政务端(学院)', account: '3002', password: '123456', phone: '13800138003' },
         { role: '迎新工作人员', account: '2003', password: '123456', phone: '13800138004' }
       ]
+    }
+  },
+  computed: {
+    sliderStyle() {
+      const pct = 50
+      return {
+        width: `${pct}%`,
+        transform: `translateX(${this.tabIndex * 100}%)`
+      }
     }
   },
   onLoad(options) {
@@ -278,6 +281,7 @@ export default {
     switchTab(type) {
       if (this.loginType === type) return
       this.loginType = type
+      this.tabIndex = type === 'pwd' ? 0 : 1
     },
 
     // 密码登录
@@ -616,35 +620,40 @@ export default {
 /* ── §9 登录方式切换 ── */
 .login-tabs {
   display: flex;
+  position: relative;
   background: var(--N50);
   border: 1px solid var(--N200);
   border-radius: var(--r-10);
   padding: 6rpx;
   margin-bottom: 32rpx;
 }
+.login-tabs-slider {
+  position: absolute;
+  top: 6rpx;
+  left: 6rpx;
+  height: 64rpx;
+  background: var(--white);
+  border-radius: var(--r-8);
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,.10);
+  transition: transform .25s cubic-bezier(.4, 0, .2, 1);
+  z-index: 0;
+}
 .login-tab {
   flex: 1;
   height: 64rpx;
-  text-align: center;
-  font-size: var(--fs-14);
-  color: var(--N500);
-  font-weight: 500;
   border-radius: var(--r-8);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background .18s, color .18s, box-shadow .18s;
+  position: relative;
+  z-index: 1;
 }
-.login-tab:active {
-  background: var(--white);
+.login-tab-text {
+  font-size: var(--fs-14);
+  color: var(--N700);
+  font-weight: 500;
+  line-height: 1;
 }
-.login-tab-on {
-  color: var(--brand);
-  background: var(--white);
-  font-weight: 600;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,.10);
-}
-.login-tab-text { line-height: 1; }
 
 /* ── §17 表单 ── */
 .login-form {

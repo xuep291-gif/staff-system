@@ -325,10 +325,9 @@ const REVIEW_STATUS_TABS = [
   { label: '已完结', statuses: [REVIEW_STATUS.REJECTED, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED], color: 'ok' }
 ]
 
-// 财务端助学金：待审批→待打款，保留审批中
+// 财务端助学金：待打款 / 已完结
 export const FINANCE_AID_TAB_GROUPS = [
   { label: '待打款', statuses: [REVIEW_STATUS.PAYMENT_PENDING], color: 'brand' },
-  { label: '审批中', statuses: [REVIEW_STATUS.FIRST_PASS, REVIEW_STATUS.REVIEW_PASS, REVIEW_STATUS.FINAL_PASS], color: 'wa' },
   { label: '已完结', statuses: [REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED], color: 'ok' }
 ]
 

@@ -70,7 +70,7 @@ export default {
   background: var(--white);
   border-radius: var(--sheet-radius);
   width: 100%;
-  max-height: 70vh;
+  max-height: 800rpx;
   padding-bottom: env(safe-area-inset-bottom);
   transform: translateY(100%);
   transition: transform .28s cubic-bezier(.32,.72,0,1);
@@ -103,7 +103,7 @@ export default {
 
 .sheet-body {
   padding: 32rpx;
-  max-height: 50vh;
+  max-height: 600rpx;
   display: flex;
   flex-direction: column;
   > * + * { margin-top: 24rpx; }

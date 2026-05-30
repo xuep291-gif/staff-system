@@ -42,30 +42,32 @@ export default {
 page {
   background-color: var(--N50);
   height: 100%;
-  // 确保页面宽度不超出屏幕
   width: 100%;
-  max-width: 100vw;
   overflow-x: hidden;
   box-sizing: border-box;
 }
 
+/* #ifdef MP-WEIXIN */
+// 小程序不支持 vh/vw，用百分比兜底
+.page {
+  min-height: 100% !important;
+}
+/* #endif */
+
 // 确保 uni-app 导航栏不超出屏幕宽度（所有平台）
 .uni-page-head {
   width: 100% !important;
-  max-width: 100vw !important;
   box-sizing: border-box !important;
 }
 
 .uni-page-wrapper {
   width: 100% !important;
-  max-width: 100vw !important;
   box-sizing: border-box !important;
   background: transparent !important;
 }
 
 .uni-page-body {
   width: 100% !important;
-  max-width: 100vw !important;
   box-sizing: border-box !important;
   background: transparent !important;
 }

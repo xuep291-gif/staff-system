@@ -1538,6 +1538,18 @@ export function getPaymentRecordById(id) {
   return getPaymentRecordList().find(item => item.id === id) || null
 }
 
+export function confirmPaymentRecord(id) {
+  const list = loadState('paymentRecords')
+  const item = list.find(i => i.id === id)
+  if (item && item.status === 'paid') {
+    item.status = 'confirmed'
+    item.confirmTime = nowText()
+  }
+  saveState('paymentRecords', list)
+  notifyBusinessStateChange('paymentRecords', item)
+  return item
+}
+
 // ============================================================
 
 export function clearBusinessState() {

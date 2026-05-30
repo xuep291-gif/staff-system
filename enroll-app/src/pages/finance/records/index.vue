@@ -78,6 +78,9 @@
             <view class="item-method">{{ item.method }} · {{ item.channel }}</view>
             <SBadge :color="item.badgeColor" customStyle="font-size: var(--fs-10); padding: 2rpx 12rpx">{{ item.statusLabel }}</SBadge>
             <text class="item-time">{{ fmtTime(item.paidAt) }}</text>
+            <view v-if="item.status === 'paid'" class="confirm-pay-btn" @click.stop="onConfirmPayment(item)">
+              <text>确认收款</text>
+            </view>
           </view>
         </view>
       </view>
@@ -114,7 +117,7 @@ import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import SBottomSheet from '@/components/shared/SBottomSheet.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
-import { getPaymentRecordList, getStudents } from '@/utils/businessState.js'
+import { confirmPaymentRecord, getPaymentRecordList, getStudents } from '@/utils/businessState.js'
 
 const STATUS_TABS = [
   { key: 'all', label: '全部', color: 'brand' },
@@ -225,6 +228,21 @@ export default {
     openDetail(item) {
       this.detail = { ...item }
       this.showDetail = true
+    },
+    onConfirmPayment(item) {
+      uni.showModal({
+        title: '确认收款',
+        content: `确认收到 ${item.studentName}（${item.studentNo}）的 ¥${this.fmt(item.amount)} 款项？`,
+        confirmText: '确认',
+        success: (res) => {
+          if (res.confirm) {
+            confirmPaymentRecord(item.id)
+            this.refresh()
+            this.filterVersion++
+            uni.showToast({ title: '已确认收款', icon: 'success' })
+          }
+        }
+      })
     }
   }
 }
@@ -470,6 +488,19 @@ function applyBaseFilter(list, filters, method, college) {
 .item-time {
   font-size: var(--fs-9);
   color: var(--N400);
+}
+
+.confirm-pay-btn {
+  margin-top: 4rpx;
+  padding: 6rpx 16rpx;
+  background: var(--brand);
+  border-radius: var(--r-20);
+}
+.confirm-pay-btn:active { background: var(--brand-d); }
+.confirm-pay-btn text {
+  font-size: var(--fs-10);
+  color: #fff;
+  font-weight: 600;
 }
 
 /* ── Detail ── */

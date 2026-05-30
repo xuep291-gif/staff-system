@@ -187,6 +187,13 @@
       }
     },
     {
+      "path": "pages/finance/collect-detail/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "收款确认详情"
+      }
+    },
+    {
       "path": "pages/finance/refund/index",
       "style": {
         "navigationStyle": "custom",

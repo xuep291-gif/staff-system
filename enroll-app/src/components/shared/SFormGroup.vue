@@ -27,13 +27,13 @@ export default {
   display: flex;
   flex-direction: column;
 }
-.sfg > * + * { margin-top: 8rpx; }
+.sfg > view + view { margin-top: 8rpx; }
 
 .sfg-label {
   display: flex;
   align-items: center;
 }
-.sfg-label > * + * { margin-left: 6rpx; }
+.sfg-label > view + view { margin-left: 6rpx; }
 
 .sfg-label-text {
   font-size: var(--fs-13);

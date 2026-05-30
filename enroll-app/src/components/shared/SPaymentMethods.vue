@@ -40,7 +40,7 @@ export default {
   display: flex;
   padding: 0 0 8rpx;
 }
-.spm > * + * { margin-left: 16rpx; }
+.spm > view + view { margin-left: 16rpx; }
 
 .spm-item {
   flex: 1;

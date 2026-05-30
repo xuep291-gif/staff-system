@@ -58,7 +58,7 @@ export default {
   align-items: center;
   justify-content: center;
 }
-.stabs-tab > * + * { margin-left: 8rpx; }
+.stabs-tab > view + view { margin-left: 8rpx; }
 
 .stabs-on {
   color: var(--brand);

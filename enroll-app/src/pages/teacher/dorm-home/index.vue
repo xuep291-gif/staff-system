@@ -160,7 +160,7 @@ export default {
   margin-bottom: 20rpx;
 }
 .student-card:active { transform: scale(.995); background: var(--N50); }
-.student-card > * + * { margin-left: 20rpx; }
+.student-card > view + view { margin-left: 20rpx; }
 .avatar {
   width: 80rpx;
   height: 80rpx;

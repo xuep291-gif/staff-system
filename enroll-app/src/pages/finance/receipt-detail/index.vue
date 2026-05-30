@@ -258,8 +258,8 @@ export default {
 
 /* ── 操作按钮 ── */
 .action-row { display: flex; margin: 28rpx; }
-.action-row > * { flex: 1; }
-.action-row > * + * { margin-left: 20rpx; }
+.action-row > view { flex: 1; }
+.action-row > view + view { margin-left: 20rpx; }
 .btn-confirm { height: 96rpx; background: var(--brand); color: #fff; border-radius: 24rpx; font-size: var(--fs-15); font-weight: 600; display: flex; align-items: center; justify-content: center; }
 .btn-confirm:active { background: var(--brand-d); transform: scale(0.97); }
 .btn-disabled { opacity: 0.4; pointer-events: none; }
@@ -281,10 +281,10 @@ export default {
 .shandle { width: 72rpx; height: 8rpx; background: var(--N200); border-radius: 4rpx; margin: 20rpx auto 0; }
 .stitle { font-size: var(--fs-16); font-weight: 600; color: var(--N900); padding: 28rpx 32rpx 24rpx; border-bottom: 1px solid var(--N50); display: block; text-align: center; }
 .sbody2 { padding: 32rpx; display: flex; flex-direction: column; }
-.sbody2 > * + * { margin-top: 24rpx; }
+.sbody2 > view + view { margin-top: 24rpx; }
 .brow { display: flex; }
-.brow > * + * { margin-left: 16rpx; }
-.brow > * { flex: 1; }
+.brow > view + view { margin-left: 16rpx; }
+.brow > view { flex: 1; }
 .btn-e { flex: 1; height: 96rpx; border-radius: 24rpx; background: var(--er-bg); color: var(--er); font-size: var(--fs-15); font-weight: 600; border: 1px solid var(--er-bd); display: flex; align-items: center; justify-content: center; }
 .btn-e:active { background: var(--er); color: #fff; }
 .btn-e-outline-sheet { flex: 1; height: 96rpx; border-radius: 24rpx; background: var(--er); color: #fff; font-size: var(--fs-15); font-weight: 600; display: flex; align-items: center; justify-content: center; }

@@ -173,7 +173,7 @@ export default {
 }
 .size-row:active { background: var(--N50); }
 .size-row:last-child { border-bottom: none; }
-.size-row > * + * { margin-left: 20rpx; }
+.size-row > view + view { margin-left: 20rpx; }
 .avatar {
   width: 80rpx; height: 80rpx; border-radius: 50%; background: var(--brand-t);
   color: var(--brand); display: flex; align-items: center; justify-content: center;

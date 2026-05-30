@@ -186,7 +186,7 @@ export default {
   min-width: 0;
 }
 
-.item-left > * + * {
+.item-left > view + view {
   margin-left: 24rpx;
 }
 
@@ -211,7 +211,7 @@ export default {
   min-width: 0;
 }
 
-.item-info > * + * {
+.item-info > view + view {
   margin-top: 8rpx;
 }
 
@@ -220,7 +220,7 @@ export default {
   align-items: center;
 }
 
-.item-name-row > * + * {
+.item-name-row > view + view {
   margin-left: 16rpx;
 }
 
@@ -252,7 +252,7 @@ export default {
   margin-left: 24rpx;
 }
 
-.item-right > * + * {
+.item-right > view + view {
   margin-top: 8rpx;
 }
 
@@ -281,7 +281,7 @@ export default {
   flex-direction: column;
 }
 
-.sheet-info > * + * {
+.sheet-info > view + view {
   margin-top: 24rpx;
 }
 
@@ -321,11 +321,11 @@ export default {
   display: flex;
 }
 
-.sheet-actions > * {
+.sheet-actions > view {
   flex: 1;
 }
 
-.sheet-actions > * + * {
+.sheet-actions > view + view {
   margin-left: 24rpx;
 }
 </style>

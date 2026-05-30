@@ -338,7 +338,7 @@ export default {
 .stats-progress-title { font-size: var(--fs-12); color: var(--N500); display: block; margin-bottom: 8rpx; }
 
 /* ── Step Progress ── */
-.step-list > * + * { margin-top: 4rpx; }
+.step-list > view + view { margin-top: 4rpx; }
 .step-row { display: flex; justify-content: space-between; align-items: center; padding: 20rpx 0; }
 .step-row + .step-row { border-top: 1px solid var(--N50); }
 .step-row-left { display: flex; align-items: center; }
@@ -355,7 +355,7 @@ export default {
 .filter-row {
   display: flex;
   padding: 20rpx 28rpx 8rpx;
-  > * + * { margin-left: 16rpx; }
+  > view + view { margin-left: 16rpx; }
 }
 .filter-chip {
   height: 56rpx;
@@ -376,7 +376,7 @@ export default {
 }
 
 /* ── Student List ── */
-.student-list > * + * { margin-top: 0; }
+.student-list > view + view { margin-top: 0; }
 .student-row { display: flex; align-items: center; padding: 24rpx 0; }
 .student-row + .student-row { border-top: 1px solid var(--N50); }
 .student-avatar {

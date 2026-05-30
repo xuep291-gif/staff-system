@@ -67,7 +67,7 @@ export default {
   align-items: center;
   padding: 64rpx 28rpx 32rpx;
 
-  > * + * { margin-top: 20rpx; }
+  > view + view { margin-top: 20rpx; }
 }
 
 .success-icon {
@@ -107,7 +107,7 @@ export default {
   margin: 0 28rpx;
   padding: 24rpx 28rpx;
 
-  > * + * { border-top: 1px solid var(--N200); }
+  > view + view { border-top: 1px solid var(--N200); }
 }
 
 .result-ok {

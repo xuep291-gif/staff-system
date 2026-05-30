@@ -200,7 +200,7 @@ export default {
 .page { min-height: 100vh; background: var(--N50); }
 .sbody { height: calc(100vh - 104rpx); }
 .sc { padding: 28rpx; display: flex; flex-direction: column; }
-.sc > * + * { margin-top: 20rpx; }
+.sc > view + view { margin-top: 20rpx; }
 
 .task-title { font-size: var(--fs-15); font-weight: 600; color: var(--N900); display: block; }
 .task-sub { font-size: var(--fs-11); color: var(--N500); margin-top: 4rpx; display: block; }
@@ -256,8 +256,8 @@ export default {
 .lh-text { font-size: var(--fs-11); color: var(--er); line-height: 1.5; }
 
 .sheet-actions { display: flex; }
-.sheet-actions > * { flex: 1; }
-.sheet-actions > * + * { margin-left: 16rpx; }
+.sheet-actions > view { flex: 1; }
+.sheet-actions > view + view { margin-left: 16rpx; }
 
 /* ── Retry ── */
 .retry-body { padding: 8rpx 0; }

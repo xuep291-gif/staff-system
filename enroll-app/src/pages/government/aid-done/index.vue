@@ -73,7 +73,7 @@ export default {
   padding: 80rpx 28rpx 48rpx;
 }
 
-.success-section > * + * {
+.success-section > view + view {
   margin-top: 24rpx;
 }
 
@@ -113,7 +113,7 @@ export default {
   padding: 24rpx 28rpx;
 }
 
-.info-card > * + * {
+.info-card > view + view {
   border-top: 1px solid var(--N200);
 }
 

@@ -46,7 +46,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   margin: -8rpx;
-  > * { margin: 8rpx; }
+  > view { margin: 8rpx; }
 }
 
 .ug-item {

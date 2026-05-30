@@ -585,7 +585,7 @@ export default {
   display: flex;
   flex-direction: column;
 }
-.login-hero > * + * { margin-top: 12rpx; }
+.login-hero > view + view { margin-top: 12rpx; }
 
 .login-logo {
   width: 120rpx;
@@ -667,13 +667,13 @@ export default {
   display: flex;
   flex-direction: column;
 }
-.login-form > * + * { margin-top: 24rpx; }
+.login-form > view + view { margin-top: 24rpx; }
 
 .form-item {
   display: flex;
   flex-direction: column;
 }
-.form-item > * + * { margin-top: 8rpx; }
+.form-item > view + view { margin-top: 8rpx; }
 
 .form-label {
   font-size: var(--fs-13);
@@ -704,7 +704,7 @@ export default {
 .sms-row {
   display: flex;
 }
-.sms-row > * + * { margin-left: 16rpx; }
+.sms-row > view + view { margin-left: 16rpx; }
 .sms-input { flex: 1; }
 .sms-btn {
   height: 88rpx;
@@ -824,7 +824,7 @@ export default {
   width: 100%;
   max-width: 600rpx;
 }
-.dialog > * + * { margin-top: 24rpx; }
+.dialog > view + view { margin-top: 24rpx; }
 
 .dialog-title {
   font-size: var(--fs-16);
@@ -844,7 +844,7 @@ export default {
   display: flex;
   margin-top: 32rpx;
 }
-.dialog-btns > * + * { margin-left: 24rpx; }
+.dialog-btns > view + view { margin-left: 24rpx; }
 
 .dialog-btn {
   flex: 1;

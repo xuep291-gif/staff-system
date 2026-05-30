@@ -232,14 +232,14 @@ export default {
   padding: 28rpx 0 0;
   display: flex; flex-direction: column;
 }
-.sc > * + * { margin-top: 20rpx; }
+.sc > view + view { margin-top: 20rpx; }
 
 /* §6.14 待办列表项 */
 .todo-item {
   display: flex; align-items: center;
   padding: 20rpx 0;
   border-bottom: 1px solid var(--N50);
-  > * + * { margin-left: 20rpx; }
+  > view + view { margin-left: 20rpx; }
 }
 .todo-item:last-child { border-bottom: none; }
 .todo-item:active { background: var(--N50); }
@@ -259,7 +259,7 @@ export default {
 .grid-3 {
   display: flex; flex-wrap: wrap;
   background: var(--N50);
-  > * { width: calc(100% / 3); }
+  > view { width: calc(100% / 3); }
 }
 .grid-item {
   background: var(--white);

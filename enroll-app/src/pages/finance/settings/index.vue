@@ -296,7 +296,7 @@ export default {
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
 .body { height: 0; flex: 1; }
 .sc { padding: 28rpx; display: flex; flex-direction: column; }
-.sc > * + * { margin-top: 20rpx; }
+.sc > view + view { margin-top: 20rpx; }
 
 /* ── 用户信息卡片 ── */
 .user-card {
@@ -312,7 +312,7 @@ export default {
   flex-shrink: 0;
 }
 .user-info { flex: 1; min-width: 0; margin-left: 24rpx; }
-.user-info > * + * { margin-top: 4rpx; }
+.user-info > view + view { margin-top: 4rpx; }
 .user-name { font-size: var(--fs-16); font-weight: 700; color: var(--N900); display: block; }
 .user-meta { font-size: var(--fs-11); color: var(--N500); display: block; }
 
@@ -332,9 +332,9 @@ export default {
 
 /* ── Form ── */
 .frows { display: flex; flex-direction: column; }
-.frows > * + * { margin-top: 24rpx; }
+.frows > view + view { margin-top: 24rpx; }
 .frow { display: flex; flex-direction: column; }
-.frow > * + * { margin-top: 8rpx; }
+.frow > view + view { margin-top: 8rpx; }
 .flabel { font-size: var(--fs-13); font-weight: 600; color: var(--N700); }
 .fval { font-size: var(--fs-14); color: var(--N900); padding: 20rpx 0; }
 .finput {
@@ -344,7 +344,7 @@ export default {
   box-sizing: border-box;
 }
 .famt-row { display: flex; }
-.famt-row > * + * { margin-left: 16rpx; }
+.famt-row > view + view { margin-left: 16rpx; }
 .famt-in { flex: 1; }
 
 /* ── SMS按钮 ── */
@@ -406,10 +406,10 @@ export default {
   display: block; text-align: center;
 }
 .sbody2 { padding: 32rpx; display: flex; flex-direction: column; }
-.sbody2 > * + * { margin-top: 24rpx; }
+.sbody2 > view + view { margin-top: 24rpx; }
 .smsg { font-size: var(--fs-13); color: var(--N500); text-align: center; line-height: 1.6; display: block; }
 .brow { display: flex; }
-.brow > * + * { margin-left: 16rpx; }
+.brow > view + view { margin-left: 16rpx; }
 .btn-e {
   flex: 1; height: 96rpx; border-radius: 24rpx;
   background: var(--er-bg); color: var(--er);

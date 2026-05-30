@@ -44,7 +44,7 @@ export default {
   box-shadow: var(--tabbar-shadow);
   display: flex;
   z-index: 100;
-  > * + * { margin-left: 0; }
+  > view + view { margin-left: 0; }
 }
 .stabbar-item {
   flex: 1;
@@ -54,7 +54,7 @@ export default {
   justify-content: center;
   position: relative;
 
-  > * + * { margin-top: 4rpx; }
+  > view + view { margin-top: 4rpx; }
 }
 .stabbar-icon {
   font-size: var(--fs-20);

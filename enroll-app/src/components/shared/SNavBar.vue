@@ -61,7 +61,7 @@ export default {
   height: var(--navbar-height);
   box-sizing: border-box;
 }
-.nb > * + * { margin-left: 20rpx; }
+.nb > view + view { margin-left: 20rpx; }
 
 .nb-placeholder {
   height: var(--navbar-height);
@@ -117,5 +117,5 @@ export default {
   justify-content: flex-end;
   font-size: var(--navbar-action-size);
 }
-.nb-right > * + * { margin-left: 24rpx; }
+.nb-right > view + view { margin-left: 24rpx; }
 </style>

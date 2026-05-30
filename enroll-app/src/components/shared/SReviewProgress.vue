@@ -49,9 +49,9 @@ export default {
   transition: background .4s ease, color .4s ease, box-shadow .4s ease, transform .3s ease;
   border: 3px solid transparent;
 }
-.step-dot.done { background: var(--ok); color: #fff; border-color: var(--ok); box-shadow: 0 0 0 4rpx var(--ok-bg); }
-.step-dot.cur { background: var(--brand); color: #fff; border-color: var(--brand); box-shadow: 0 0 0 8rpx var(--brand-t); animation: pulse-dot 1.4s ease-in-out infinite; }
-.step-dot.step-pop { transform: scale(1.35); box-shadow: 0 0 0 16rpx var(--ok-bg); }
+.step-dot.done { background: var(--ok); color: #fff; border-color: var(--ok); box-shadow: 0 0 0 3rpx var(--ok-bg); }
+.step-dot.cur { background: var(--brand); color: #fff; border-color: var(--brand); box-shadow: 0 0 0 4rpx var(--brand-t); animation: pulse-dot 1.4s ease-in-out infinite; }
+.step-dot.step-pop { transform: scale(1.35); box-shadow: 0 0 0 6rpx var(--ok-bg); }
 .step-check { font-size: var(--fs-10); font-weight: 700; }
 .step-num { font-weight: 600; }
 .step-info { flex: 1; margin-left: 20rpx; min-width: 0; }
@@ -67,8 +67,8 @@ export default {
 .step-line.anim-line { background: var(--brand); animation: line-glow .6s ease-out forwards; }
 
 @keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 0 8rpx var(--brand-t); transform: scale(1); }
-  50% { box-shadow: 0 0 0 22rpx var(--brand-t); transform: scale(1.05); }
+  0%, 100% { box-shadow: 0 0 0 4rpx var(--brand-t); transform: scale(1); }
+  50% { box-shadow: 0 0 0 10rpx var(--brand-t); transform: scale(1.05); }
 }
 @keyframes line-glow {
   0% { background: var(--brand); box-shadow: 0 0 6rpx var(--brand-t); }

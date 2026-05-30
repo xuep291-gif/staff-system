@@ -48,7 +48,7 @@ export default {
   padding: 0 24rpx;
   height: 72rpx;
 
-  > * + * { margin-left: 16rpx; }
+  > view + view { margin-left: 16rpx; }
 }
 .ssb-icon {
   flex-shrink: 0;

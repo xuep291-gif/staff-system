@@ -28,7 +28,7 @@ export default {
   align-items: center;
   padding: 96rpx 40rpx 48rpx;
 }
-.ssp > * + * { margin-top: 24rpx; }
+.ssp > view + view { margin-top: 24rpx; }
 
 .ssp-ico {
   width: 144rpx;

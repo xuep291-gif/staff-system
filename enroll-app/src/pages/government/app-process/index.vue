@@ -41,11 +41,11 @@ export default {
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
 .body { height: 0; flex: 1; }
 .sc { padding: 28rpx; display: flex; flex-direction: column; }
-.sc > * + * { margin-top: 20rpx; }
+.sc > view + view { margin-top: 20rpx; }
 .card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); overflow: hidden; }
 .card-bd { padding: var(--card-body-padding); }
 .li { display: flex; align-items: center; padding: 12rpx 0; }
-.li > * + * { margin-left: 20rpx; }
+.li > view + view { margin-left: 20rpx; }
 .li-bar { width: 6rpx; height: 64rpx; border-radius: var(--r-3); flex-shrink: 0; }
 .li-info { flex: 1; min-width: 0; }
 .li-name { font-size: var(--fs-13); font-weight: 600; color: var(--N900); display: block; }

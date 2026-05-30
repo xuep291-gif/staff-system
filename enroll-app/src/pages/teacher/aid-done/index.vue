@@ -59,7 +59,7 @@ export default {
   padding: 80rpx 28rpx 48rpx;
 }
 
-.success-area > * + * {
+.success-area > view + view {
   margin-top: 24rpx;
 }
 

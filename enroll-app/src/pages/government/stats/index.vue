@@ -202,7 +202,7 @@ export default {
   padding: 24rpx;
   display: flex;
   flex-direction: column;
-  > * + * { margin-top: 20rpx; }
+  > view + view { margin-top: 20rpx; }
 }
 
 .scope-tag {
@@ -225,7 +225,7 @@ export default {
   border-radius: var(--r-14);
   padding: 28rpx;
   box-shadow: var(--card-shadow);
-  > * + * { margin-top: 20rpx; }
+  > view + view { margin-top: 20rpx; }
 }
 
 .card-title {

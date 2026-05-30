@@ -133,7 +133,7 @@ export default {
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
 .body { height: 0; flex: 1; padding: 28rpx; box-sizing: border-box; }
-.body > * + * { margin-top: 20rpx; }
+.body > view + view { margin-top: 20rpx; }
 .log { padding: 20rpx 0; border-bottom: 1px solid var(--N100); }
 .log:last-child { border-bottom: none; }
 .log-title { display: block; font-size: var(--fs-13); color: var(--N900); font-weight: 600; }
@@ -151,7 +151,7 @@ export default {
 }
 .ph { color: var(--N400); }
 .actions { display: flex; padding-bottom: 32rpx; }
-.actions > * + * { margin-left: 20rpx; }
+.actions > view + view { margin-left: 20rpx; }
 .btn {
   flex: 1;
   height: 96rpx;

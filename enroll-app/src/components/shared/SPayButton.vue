@@ -32,7 +32,7 @@ export default {
   background: var(--brand);
   border: none;
 
-  > * + * { margin-left: 16rpx; }
+  > view + view { margin-left: 16rpx; }
 }
 .pay-btn:active {
   opacity: 0.8;

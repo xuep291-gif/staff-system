@@ -52,7 +52,7 @@ export default {
   border-bottom: 1px solid var(--N50);
 }
 .schecklist-item:last-child { border-bottom: none; }
-.schecklist-item > * + * { margin-left: 20rpx; }
+.schecklist-item > view + view { margin-left: 20rpx; }
 
 .schecklist-ico {
   width: 40rpx;

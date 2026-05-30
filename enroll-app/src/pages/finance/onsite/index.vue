@@ -442,7 +442,7 @@ export default {
   padding: 24rpx;
   display: flex;
   flex-direction: column;
-  > * + * { margin-top: 20rpx; }
+  > view + view { margin-top: 20rpx; }
 }
 
 /* 搜索卡片 */
@@ -487,7 +487,7 @@ export default {
 .search-actions {
   display: flex;
   margin-top: 16rpx;
-  > * + * { margin-left: 16rpx; }
+  > view + view { margin-left: 16rpx; }
 }
 
 .btn-scan {
@@ -532,7 +532,7 @@ export default {
   align-items: center;
   padding: 24rpx 28rpx;
   border-bottom: 1px solid var(--N50);
-  > * + * { margin-left: 20rpx; }
+  > view + view { margin-left: 20rpx; }
 }
 .result-item:last-child { border-bottom: none; }
 .result-item:active { background: var(--N25); }
@@ -575,7 +575,7 @@ export default {
   flex-direction: column;
   align-items: flex-end;
   flex-shrink: 0;
-  > * + * { margin-top: 4rpx; }
+  > view + view { margin-top: 4rpx; }
 }
 .result-arrow {
   font-size: 28rpx;
@@ -588,7 +588,7 @@ export default {
   border-radius: var(--r-14);
   padding: 28rpx;
   box-shadow: var(--card-shadow);
-  > * + * { margin-top: 20rpx; }
+  > view + view { margin-top: 20rpx; }
 }
 
 .card-title {
@@ -599,7 +599,7 @@ export default {
 }
 
 .info-grid {
-  > * + * { margin-top: 12rpx; }
+  > view + view { margin-top: 12rpx; }
 }
 
 .val-ok { color: var(--ok); font-weight: 700; }
@@ -609,7 +609,7 @@ export default {
 .form-item {
   display: flex;
   flex-direction: column;
-  > * + * { margin-top: 8rpx; }
+  > view + view { margin-top: 8rpx; }
 }
 
 .fi-label {
@@ -671,7 +671,7 @@ export default {
 .method-grid {
   display: flex;
   flex-wrap: wrap;
-  > * { margin-right: 16rpx; margin-bottom: 12rpx; }
+  > view { margin-right: 16rpx; margin-bottom: 12rpx; }
 }
 
 .method-item {
@@ -785,7 +785,7 @@ export default {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  > * + * { margin-top: 16rpx; }
+  > view + view { margin-top: 16rpx; }
 }
 
 .success-icon { font-size: 64rpx; }
@@ -808,7 +808,7 @@ export default {
   padding: 20rpx 24rpx;
   width: 100%;
   text-align: left;
-  > * + * { margin-top: 8rpx; }
+  > view + view { margin-top: 8rpx; }
 }
 
 .si-item {
@@ -821,7 +821,7 @@ export default {
   display: flex;
   width: 100%;
   margin-top: 24rpx;
-  > * + * { margin-left: 16rpx; }
+  > view + view { margin-left: 16rpx; }
 }
 
 .btn-primary {

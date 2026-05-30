@@ -331,7 +331,7 @@ export default {
 /* ── 卡片头部 ── */
 .card-ttl { font-size: var(--fs-15); font-weight: 600; color: var(--N900); }
 .card-hd-right { display: flex; align-items: center; }
-.card-hd-right > * + * { margin-left: 16rpx; }
+.card-hd-right > view + view { margin-left: 16rpx; }
 .sel-hint { font-size: var(--fs-11); color: var(--brand); }
 .sel-all { font-size: var(--fs-11); color: var(--brand); font-weight: 500; }
 
@@ -343,7 +343,7 @@ export default {
   border-bottom: 1px solid var(--N50);
   border-radius: var(--r-8);
   transition: background .18s, border-color .18s;
-  > * + * { margin-left: 16rpx; }
+  > view + view { margin-left: 16rpx; }
 }
 .stu-item.selected { background: var(--brand-t); box-shadow: inset 0 0 0 1px var(--brand); }
 .stu-item:last-child { border-bottom: none; }

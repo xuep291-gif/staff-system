@@ -745,7 +745,7 @@ export function getFeeList() {
       paid: { label: '已缴', color: 'ok', days: '已缴清' },
       overdue: { label: '逾期', color: 'er', days: '逾期未缴费' },
       unpaid: { label: '未缴', color: 'wa', days: '未缴费' },
-      partial: { label: '部分未缴', color: 'in', days: '部分未缴' },
+      partial: { label: '部分未缴', color: 'wa', days: '部分未缴' },
       channel: { label: '绿通', color: 'pu', days: '绿色通道' }
     }
     const FEE_TOTAL = FEE_ITEMS_CONFIG.reduce((s, i) => s + i.amount, 0)

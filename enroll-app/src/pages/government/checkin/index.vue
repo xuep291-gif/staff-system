@@ -211,7 +211,7 @@ export default {
 
 /* ========== College List ========== */
 .college-list {
-  > * + * { margin-top: 0; }
+  > view + view { margin-top: 0; }
 }
 
 .college-item {
@@ -244,7 +244,7 @@ export default {
 
 /* ========== Unchecked Students ========== */
 .student-list {
-  > * + * { margin-top: 0; }
+  > view + view { margin-top: 0; }
 }
 
 .student-row {
@@ -252,7 +252,7 @@ export default {
   align-items: center;
   padding: 24rpx 0;
 
-  > * + * { margin-left: 16rpx; }
+  > view + view { margin-left: 16rpx; }
 }
 
 .student-row + .student-row {

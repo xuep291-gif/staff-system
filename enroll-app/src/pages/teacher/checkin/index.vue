@@ -275,7 +275,7 @@ export default {
 .stats-progress-title { font-size: var(--fs-12); color: var(--N500); display: block; margin-bottom: 8rpx; }
 
 /* ── Step Progress ── */
-.step-list > * + * { margin-top: 4rpx; }
+.step-list > view + view { margin-top: 4rpx; }
 .step-row { display: flex; justify-content: space-between; align-items: center; padding: 20rpx 0; }
 .step-row + .step-row { border-top: 1px solid var(--N50); }
 .step-row-left { display: flex; align-items: center; }
@@ -289,7 +289,7 @@ export default {
 .step-count--wa { color: var(--wa); }
 
 /* ── Unchecked Students ── */
-.student-list > * + * { margin-top: 0; }
+.student-list > view + view { margin-top: 0; }
 .student-row { display: flex; align-items: center; padding: 24rpx 0; }
 .student-row + .student-row { border-top: 1px solid var(--N50); }
 .student-avatar {
@@ -305,7 +305,7 @@ export default {
 .student-reason { font-size: var(--fs-12); color: var(--N500); display: block; margin-top: 6rpx; }
 
 .student-actions { display: flex; flex-shrink: 0; margin-right: 16rpx; }
-.student-actions > * + * { margin-left: 10rpx; }
+.student-actions > view + view { margin-left: 10rpx; }
 .action-btn {
   min-height: 40rpx;
   padding: var(--badge-padding);

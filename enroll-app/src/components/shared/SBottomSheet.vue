@@ -106,7 +106,7 @@ export default {
   max-height: 600rpx;
   display: flex;
   flex-direction: column;
-  > * + * { margin-top: 24rpx; }
+  > view + view { margin-top: 24rpx; }
 }
 
 .sheet-footer {

@@ -101,11 +101,11 @@ export default {
 .body { height: 0; flex: 1; }
 
 .sc { padding: 20rpx 28rpx 28rpx; display: flex; flex-direction: column; }
-.sc > * + * { margin-top: 20rpx; }
+.sc > view + view { margin-top: 20rpx; }
 .card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); overflow: hidden; }
 .card-bd { padding: var(--card-body-padding); }
 .li { display: flex; align-items: center; }
-.li > * + * { margin-left: 20rpx; }
+.li > view + view { margin-left: 20rpx; }
 .li-info { flex: 1; min-width: 0; }
 .li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
 .li-meta { font-size: var(--fs-11); color: var(--N500); display: block; margin-top: 4rpx; }

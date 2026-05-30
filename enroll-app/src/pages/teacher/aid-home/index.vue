@@ -114,11 +114,11 @@ export default {
 .body { height: 0; flex: 1; }
 
 .sc { padding: 20rpx 28rpx 28rpx; display: flex; flex-direction: column; }
-.sc > * + * { margin-top: 20rpx; }
+.sc > view + view { margin-top: 20rpx; }
 .card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); overflow: hidden; }
 .card-bd { padding: var(--card-body-padding); }
 .li { display: flex; align-items: center; }
-.li > * + * { margin-left: 20rpx; }
+.li > view + view { margin-left: 20rpx; }
 .li-ico { width: 80rpx; height: 80rpx; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 600; flex-shrink: 0; }
 .li-info { flex: 1; min-width: 0; }
 .li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }

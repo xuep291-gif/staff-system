@@ -44,9 +44,10 @@ export default {
   font-size: var(--fs-12);
   line-height: 1.5;
 
-  > * + * { margin-left: 16rpx; }
 }
 .alertbar-left { flex-shrink: 0; }
+.alertbar-content { margin-left: 16rpx; }
+.alertbar-right { margin-left: 16rpx; }
 .alertbar-icon { font-size: 32rpx; font-weight: 600; }
 .alertbar-content { flex: 1; }
 .alertbar-right { flex-shrink: 0; }

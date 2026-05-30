@@ -71,6 +71,6 @@ export default {
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
 .body { height: 0; flex: 1; padding: 28rpx; box-sizing: border-box; }
-.body > * + * { margin-top: 20rpx; }
+.body > view + view { margin-top: 20rpx; }
 .link-text { color: var(--brand); font-weight: 500; }
 </style>

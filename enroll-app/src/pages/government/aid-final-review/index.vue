@@ -223,7 +223,7 @@ export default {
 .type-option.active { color: var(--brand); font-weight: 600; background: var(--brand-t); }
 .type-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10; background: transparent; }
 .preview-entry { display: flex; align-items: center; min-height: 96rpx; }
-.preview-entry > * + * { margin-left: 20rpx; }
+.preview-entry > view + view { margin-left: 20rpx; }
 .preview-icon { width: 72rpx; height: 72rpx; border-radius: var(--r-12); background: var(--brand-t); color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: var(--fs-20); }
 .preview-main { flex: 1; min-width: 0; }
 .preview-title { display: block; font-size: var(--fs-14); color: var(--N900); font-weight: 600; }
@@ -235,8 +235,8 @@ export default {
 .form-label { font-size: var(--fs-13); font-weight: 600; color: var(--N700); margin-bottom: 12rpx; }
 .opinion-textarea, .sheet-textarea { width: 100%; min-height: 144rpx; padding: 20rpx 24rpx; border: 1.5px solid var(--N200); border-radius: 24rpx; font-size: var(--fs-13); color: var(--N900); background: var(--white); box-sizing: border-box; }
 .action-row { display: flex; margin: 28rpx; }
-.action-row > * { flex: 1; }
-.action-row > * + * { margin-left: 20rpx; }
+.action-row > view { flex: 1; }
+.action-row > view + view { margin-left: 20rpx; }
 .btn-p { height: 96rpx; background: var(--brand); color: #fff; border-radius: 24rpx; font-size: var(--fs-15); font-weight: 600; display: flex; align-items: center; justify-content: center; transition: background .3s, transform .2s; }
 .btn-p:active { background: var(--brand-d); transform: scale(0.97); }
 .btn-e-outline { height: 96rpx; border-radius: 24rpx; border: 2px solid var(--er); color: var(--er); font-size: var(--fs-15); font-weight: 600; display: flex; align-items: center; justify-content: center; background: var(--white); transition: background .2s; }
@@ -250,8 +250,8 @@ export default {
 .shandle { width: 72rpx; height: 8rpx; background: var(--N200); border-radius: 4rpx; margin: 20rpx auto 0; }
 .stitle { font-size: var(--fs-16); font-weight: 600; color: var(--N900); padding: 28rpx 32rpx 24rpx; border-bottom: 1px solid var(--N50); display: block; text-align: center; }
 .sbody2 { padding: 32rpx; display: flex; flex-direction: column; }
-.sbody2 > * + * { margin-top: 24rpx; }
+.sbody2 > view + view { margin-top: 24rpx; }
 .smsg { font-size: var(--fs-13); color: var(--N500); text-align: center; line-height: 1.6; display: block; }
 .brow { display: flex; }
-.brow > * + * { margin-left: 16rpx; }
+.brow > view + view { margin-left: 16rpx; }
 </style>

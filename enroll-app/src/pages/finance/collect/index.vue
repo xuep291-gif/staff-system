@@ -169,23 +169,23 @@ function applyFilter(list, filters) {
 
 /* ── Filter Bar ── */
 .filter-bar { padding: 16rpx 28rpx; display: flex; align-items: center; }
-.filter-bar > * + * { margin-left: 16rpx; }
+.filter-bar > view + view { margin-left: 16rpx; }
 .search-input { flex: 1; min-width: 0; height: 72rpx; padding: 0 18rpx; border-radius: var(--r-8); background: var(--white); font-size: var(--fs-12); color: var(--N900); box-sizing: border-box; box-shadow: var(--card-shadow); }
 .filter-picker { min-width: 156rpx; height: 72rpx; padding: 0 16rpx; border-radius: var(--r-8); background: var(--white); color: var(--N700); font-size: var(--fs-11); display: flex; align-items: center; justify-content: space-between; box-shadow: var(--card-shadow); }
 .select-arrow { font-size: 32rpx; color: var(--N400); }
 
 /* ── Section ── */
 .list-section { padding: 0 28rpx; }
-.list-section > * + * { margin-top: 16rpx; }
+.list-section > view + view { margin-top: 16rpx; }
 
 .list-item { display: flex; align-items: center; justify-content: space-between; background: var(--white); border-radius: var(--r-12); padding: 24rpx; box-shadow: var(--card-shadow); }
 .list-item:active { background: var(--N25); }
 .item-left { display: flex; align-items: center; flex: 1; min-width: 0; }
-.item-left > * + * { margin-left: 20rpx; }
+.item-left > view + view { margin-left: 20rpx; }
 .item-info { flex: 1; min-width: 0; }
-.item-info > * + * { margin-top: 6rpx; }
+.item-info > view + view { margin-top: 6rpx; }
 .item-row { display: flex; align-items: center; flex-wrap: wrap; }
-.item-row > * + * { margin-left: 12rpx; }
+.item-row > view + view { margin-left: 12rpx; }
 
 .avatar { width: 80rpx; height: 80rpx; border-radius: var(--r-full); display: flex; align-items: center; justify-content: center; font-size: var(--fs-16); font-weight: 700; color: var(--N700); flex-shrink: 0; }
 .avatar-pending { background: var(--fc-t); }
@@ -195,7 +195,7 @@ function applyFilter(list, filters) {
 .item-no { font-size: var(--fs-12); color: var(--N500); }
 .item-meta { font-size: var(--fs-11); color: var(--N400); }
 .item-right { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-left: 20rpx; }
-.item-right > * + * { margin-top: 8rpx; }
+.item-right > view + view { margin-top: 8rpx; }
 .item-time { font-size: var(--fs-10); color: var(--N400); }
 .item-amount { font-size: 28rpx; font-weight: 600; color: var(--er); }
 .item-amount-ok { color: var(--ok); }

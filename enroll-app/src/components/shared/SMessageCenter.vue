@@ -216,7 +216,7 @@ export default {
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
 .sbody { height: 0; flex: 1; }
 .sc { padding: 28rpx; display: flex; flex-direction: column; }
-.sc > * + * { margin-top: 20rpx; }
+.sc > view + view { margin-top: 20rpx; }
 
 /* ── NavBar actions ── */
 .nav-action { font-size: var(--fs-13); color: var(--N700); margin-left: 20rpx; }
@@ -260,7 +260,7 @@ export default {
 }
 .msg-type { font-size: var(--fs-12); font-weight: 600; }
 .msg-right { display: flex; align-items: center; }
-.msg-right > * + * { margin-left: 16rpx; }
+.msg-right > view + view { margin-left: 16rpx; }
 .msg-time { font-size: var(--fs-11); color: var(--N400); }
 .msg-close {
   width: 36rpx; height: 36rpx; border-radius: 50%;
@@ -274,7 +274,7 @@ export default {
 .msg-body { font-size: var(--fs-13); color: var(--N700); line-height: 1.5; display: block; }
 
 .detail-body { display: flex; flex-direction: column; }
-.detail-body > * + * { margin-top: 24rpx; }
+.detail-body > view + view { margin-top: 24rpx; }
 .detail-title-row { display: flex; align-items: center; justify-content: space-between; }
 .detail-title { font-size: var(--fs-15); color: var(--N900); font-weight: 600; }
 .detail-time { font-size: var(--fs-11); color: var(--N400); }
@@ -309,10 +309,10 @@ export default {
   display: block; text-align: center;
 }
 .sbody2 { padding: 32rpx; display: flex; flex-direction: column; }
-.sbody2 > * + * { margin-top: 24rpx; }
+.sbody2 > view + view { margin-top: 24rpx; }
 .smsg { font-size: var(--fs-13); color: var(--N500); text-align: center; line-height: 1.6; display: block; }
 .brow { display: flex; }
-.brow > * + * { margin-left: 16rpx; }
+.brow > view + view { margin-left: 16rpx; }
 .btn-e {
   flex: 1; height: 96rpx; border-radius: 24rpx;
   background: var(--er-bg); color: var(--er);

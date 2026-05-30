@@ -60,7 +60,7 @@ export default {
   flex-direction: column;
   align-items: center;
 }
-.bind-container > * + * { margin-top: 24rpx; }
+.bind-container > view + view { margin-top: 24rpx; }
 .bind-icon { font-size: 80rpx; }
 .bind-title { font-size: var(--fs-18); font-weight: 700; color: var(--N900); }
 .bind-desc { font-size: var(--fs-13); color: var(--N500); }
@@ -68,7 +68,7 @@ export default {
   width: 100%;
   margin-top: 40rpx;
 }
-.bind-form > * + * { margin-top: 20rpx; }
+.bind-form > view + view { margin-top: 20rpx; }
 .form-item {
   display: flex;
   flex-direction: column;

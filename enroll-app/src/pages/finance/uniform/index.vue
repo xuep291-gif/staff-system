@@ -63,7 +63,7 @@ export default {
 .card-bd { padding: var(--card-body-padding); }
 .li { display: flex; align-items: center; padding: 16rpx 0; border-bottom: 1px solid var(--N50); }
 .li:last-child { border-bottom: none; }
-.li > * + * { margin-left: 16rpx; }
+.li > view + view { margin-left: 16rpx; }
 .li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); }
 .li-total { font-size: var(--fs-11); color: var(--N500); flex: 1; }
 .li-arrow { font-size: 28rpx; color: var(--N400); }

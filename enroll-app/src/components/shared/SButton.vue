@@ -49,7 +49,7 @@ export default {
   line-height: 1;
   box-sizing: border-box;
 }
-.sbtn > * + * { margin-left: 12rpx; }
+.sbtn > view + view { margin-left: 12rpx; }
 
 .sbtn-block { width: 100%; }
 

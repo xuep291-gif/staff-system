@@ -350,7 +350,7 @@ export default {
 .search-actions {
   display: flex;
   margin-top: 16rpx;
-  > * + * { margin-left: 16rpx; }
+  > view + view { margin-left: 16rpx; }
 }
 
 .btn-scan {
@@ -395,7 +395,7 @@ export default {
 .student-row {
   display: flex;
   align-items: center;
-  > * + * { margin-left: 16rpx; }
+  > view + view { margin-left: 16rpx; }
 }
 
 .student-avatar {
@@ -619,7 +619,7 @@ export default {
   align-items: center;
   padding: 16rpx 0;
   border-bottom: 1px solid var(--N50);
-  > * + * { margin-left: 16rpx; }
+  > view + view { margin-left: 16rpx; }
 }
 .log-item:last-child { border-bottom: none; }
 

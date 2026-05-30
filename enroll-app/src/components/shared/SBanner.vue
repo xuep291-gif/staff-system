@@ -37,7 +37,7 @@ export default {
   transition: background .3s;
   flex-shrink: 0;
 }
-.banner > * + * { margin-left: 24rpx; }
+.banner > view + view { margin-left: 24rpx; }
 
 .banner-avatar {
   width: 96rpx;

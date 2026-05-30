@@ -28,7 +28,7 @@ export default {
   border-radius: var(--r-20);
   font-weight: 600;
   white-space: nowrap;
-  > * + * { margin-left: 8rpx; }
+  > view + view { margin-left: 8rpx; }
 }
 .stag-brand { background: var(--brand-t); color: var(--brand-d); }
 .stag-ok { background: var(--ok-bg); color: var(--ok); }

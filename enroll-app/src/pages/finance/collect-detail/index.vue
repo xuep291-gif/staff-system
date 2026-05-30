@@ -54,10 +54,22 @@
         </view>
       </SCard>
 
-      <!-- 财务确认区域（待确认） -->
+      <!-- 财务确认（待确认状态） -->
+      <SCard title="财务确认" :padding="16" v-if="isPending">
+        <text class="field-label">确认收款方式 <text class="required">*</text></text>
+        <view class="method-picker" @click="pickMethod">
+          <text :class="{ 'ph': !form.collectionType }">{{ form.collectionType || '请选择收款方式' }}</text>
+          <text class="arrow">›</text>
+        </view>
+
+        <text class="field-label" style="margin-top: 24rpx;">收款备注</text>
+        <textarea class="remark-area" v-model="form.remark" placeholder="可填写票据号或现场说明" maxlength="100" />
+      </SCard>
+
+      <!-- 操作按钮（待确认） -->
       <view class="action-row" v-if="isPending">
         <view class="btn-cancel" @click="goBack"><text>返回</text></view>
-        <view class="btn-confirm" @click="showConfirm = true"><text>确认收款</text></view>
+        <view class="btn-confirm" :class="{ 'btn-disabled': !form.collectionType }" @click="onConfirmClick"><text>确认收款</text></view>
       </view>
 
       <!-- 已确认可作废 -->
@@ -86,36 +98,6 @@
           <view class="preview-file">
             <text class="preview-file-name">现场收款凭证</text>
             <SBadge color="in">可预览</SBadge>
-          </view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 确认收款弹窗 -->
-    <view v-if="showConfirm" class="ovl on" @click="showConfirm = false">
-      <view class="sheet" @click.stop>
-        <view class="shandle" />
-        <text class="stitle">确认收款</text>
-        <view class="sbody2">
-          <SInfoRow label="学生">{{ item ? item.name : '' }}</SInfoRow>
-          <SInfoRow label="金额">
-            <text class="amount-highlight">¥{{ item ? fmt(item.amount) : '0' }}</text>
-          </SInfoRow>
-
-          <!-- 收款方式选择 -->
-          <text class="field-label">确认收款方式 <text class="required">*</text></text>
-          <picker :range="collectionTypes" :value="methodIndex" @change="onMethodChange">
-            <view class="picker-field" :class="{ 'picker-placeholder': !form.collectionType }">
-              <text>{{ form.collectionType || '请选择收款方式' }}</text>
-              <text class="picker-arrow">›</text>
-            </view>
-          </picker>
-
-          <textarea class="sheet-textarea" v-model="form.remark" placeholder="收款备注（可选）" />
-
-          <view class="brow">
-            <view class="btn-e" @click="showConfirm = false"><text>取消</text></view>
-            <view class="btn-p" :class="{ 'btn-disabled': !form.collectionType }" @click="onConfirm"><text>确认</text></view>
           </view>
         </view>
       </view>
@@ -178,7 +160,6 @@ export default {
       itemId: '',
       item: null,
       showPreview: false,
-      showConfirm: false,
       showVoid: false,
       showSuccess: false,
       submitting: false,
@@ -192,10 +173,6 @@ export default {
     isPending() { return this.item && this.item.status === 'pending' },
     isConfirmed() { return this.item && this.item.status === 'confirmed' },
     isVoided() { return this.item && this.item.status === 'voided' },
-    methodIndex() {
-      const idx = this.collectionTypes.indexOf(this.form.collectionType)
-      return idx >= 0 ? idx : 0
-    },
     statusSteps() {
       if (!this.item) return []
       const steps = [
@@ -230,20 +207,32 @@ export default {
       }
     },
     fmt(v) { const n = Number(v); return isNaN(n) ? '0' : n.toLocaleString() },
-    onMethodChange(e) {
-      const idx = Number(e.detail.value)
-      if (idx >= 0 && idx < this.collectionTypes.length) {
-        this.form.collectionType = this.collectionTypes[idx]
-      }
+    pickMethod() {
+      uni.showActionSheet({
+        itemList: this.collectionTypes,
+        success: (res) => {
+          this.form.collectionType = this.collectionTypes[res.tapIndex] || ''
+        }
+      })
     },
-    onConfirm() {
-      if (this.submitting) return
+    onConfirmClick() {
       if (!this.form.collectionType) {
-        uni.showToast({ title: '请选择收款方式', icon: 'none' })
+        uni.showToast({ title: '请先选择收款方式', icon: 'none' })
         return
       }
+      const that = this
+      uni.showModal({
+        title: '确认收款',
+        content: '确认收到 ' + (this.item ? this.item.name : '') + ' 的线下收款 ¥' + this.fmt(this.item ? this.item.amount : 0) + '？\n收款方式：' + this.form.collectionType,
+        confirmText: '确认收款',
+        success(res) {
+          if (res.confirm) that.doConfirm()
+        }
+      })
+    },
+    doConfirm() {
+      if (this.submitting) return
       this.submitting = true
-      this.showConfirm = false
       try {
         const result = confirmOfflineCollection(this.item.id, {
           collectionType: this.form.collectionType,
@@ -315,6 +304,38 @@ export default {
 .log-time { display: block; margin-top: 4rpx; font-size: var(--fs-11); color: var(--N400); }
 .log-remark { display: block; margin-top: 6rpx; font-size: var(--fs-12); color: var(--N500); }
 
+/* ── 财务确认表单 ── */
+.field-label { font-size: var(--fs-13); font-weight: 600; color: var(--N700); display: block; margin-bottom: 12rpx; }
+.required { color: var(--er); }
+.method-picker {
+  height: 88rpx;
+  padding: 0 24rpx;
+  border: 1.5px solid var(--N200);
+  border-radius: var(--r-12);
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-14);
+  color: var(--N900);
+}
+.method-picker:active { background: var(--N25); }
+.method-picker .ph { color: var(--N400); }
+.method-picker .arrow { font-size: 28rpx; color: var(--N400); }
+.remark-area {
+  width: 100%;
+  min-height: 120rpx;
+  padding: 20rpx 24rpx;
+  border: 1.5px solid var(--N200);
+  border-radius: var(--r-12);
+  font-size: var(--fs-13);
+  color: var(--N900);
+  background: var(--white);
+  box-sizing: border-box;
+  line-height: 1.5;
+  margin-top: 12rpx;
+}
+
 /* ── 操作按钮行 ── */
 .action-row { display: flex; margin: 28rpx; }
 .action-row > * { flex: 1; }
@@ -344,14 +365,6 @@ export default {
 .sbody2 { padding: 32rpx; display: flex; flex-direction: column; }
 .sbody2 > * + * { margin-top: 24rpx; }
 .smsg { font-size: var(--fs-13); color: var(--N500); text-align: center; line-height: 1.6; display: block; }
-
-/* ── 弹窗内表单 ── */
-.field-label { font-size: var(--fs-13); font-weight: 600; color: var(--N700); }
-.required { color: var(--er); }
-.picker-field { height: 88rpx; padding: 0 24rpx; border: 1.5px solid var(--N200); border-radius: var(--r-12); background: var(--white); display: flex; align-items: center; justify-content: space-between; font-size: var(--fs-14); color: var(--N900); }
-.picker-placeholder { color: var(--N400); }
-.picker-arrow { font-size: 28rpx; color: var(--N400); }
-.sheet-textarea { width: 100%; min-height: 120rpx; padding: 20rpx 24rpx; border: 1.5px solid var(--N200); border-radius: 24rpx; font-size: var(--fs-13); color: var(--N900); background: var(--white); box-sizing: border-box; }
 
 /* ── 弹窗按钮 ── */
 .brow { display: flex; }

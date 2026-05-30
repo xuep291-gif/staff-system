@@ -32,6 +32,9 @@
           <view class="item-right">
             <text class="item-amount">退 ¥{{ item.amount }}</text>
             <SBadge :color="item.badgeColor">{{ item.statusLabel }}</SBadge>
+            <view v-if="item.status === 'pending'" class="confirm-btn" @click.stop="onQuickConfirm(item)">
+              <text>确认处理</text>
+            </view>
           </view>
         </view>
       </view>
@@ -112,6 +115,20 @@ export default {
       this.showSheet = false
       this.refresh()
       uni.showToast({ title: '退款已确认', icon: 'success' })
+    },
+    onQuickConfirm(item) {
+      uni.showModal({
+        title: '确认退款',
+        content: `确认 ${item.studentName}（${item.studentNo}）的补差退款 ¥${item.amount}？`,
+        confirmText: '确认',
+        success: (res) => {
+          if (res.confirm) {
+            confirmDifferenceRefund(item.id)
+            this.refresh()
+            uni.showToast({ title: '退款已确认', icon: 'success' })
+          }
+        }
+      })
     }
   }
 }
@@ -243,6 +260,19 @@ export default {
   font-size: var(--fs-14);
   font-weight: 600;
   color: var(--ok);
+}
+
+.confirm-btn {
+  margin-top: 4rpx;
+  padding: 6rpx 16rpx;
+  background: var(--brand);
+  border-radius: var(--r-20);
+}
+.confirm-btn:active { background: var(--brand-d); }
+.confirm-btn text {
+  font-size: var(--fs-10);
+  color: #fff;
+  font-weight: 600;
 }
 
 /* ── BottomSheet Info ── */

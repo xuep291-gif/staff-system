@@ -201,6 +201,13 @@
       }
     },
     {
+      "path": "pages/finance/refund-review/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "退费审核"
+      }
+    },
+    {
       "path": "pages/finance/payout-aid/index",
       "style": {
         "navigationStyle": "custom",

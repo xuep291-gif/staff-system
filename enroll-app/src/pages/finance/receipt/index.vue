@@ -22,7 +22,7 @@
       <SEmpty v-if="!filteredList.length" :text="emptyText" />
 
       <view class="receipt-list" v-for="item in filteredList" :key="activeTab + '-' + filterVersion + '-' + item.id">
-        <view class="receipt-card" @tap="openDetail(item)">
+        <view class="receipt-card" @tap="item.status === 'pending' ? goDetail(item) : openDetail(item)">
           <view class="card-top">
             <view class="avatar" :style="{ background: avatarBg(item) }">
               <text :style="{ color: avatarColor(item) }">{{ item.name.charAt(0) }}</text>
@@ -141,6 +141,7 @@ import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import SAlertBar from '@/components/shared/SAlertBar.vue'
 import { getReceiptList, updateReceipt } from '@/utils/businessState.js'
+import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const TABS = [
   { key: 'pending', label: '待处理' },
@@ -210,6 +211,10 @@ export default {
     openDetail(item) {
       this.detail = item
       this.showDetail = true
+    },
+    goDetail(item) {
+      rememberStaffBackTarget('/pages/finance/receipt/index')
+      uni.navigateTo({ url: '/pages/finance/receipt-detail/index?id=' + item.id })
     },
     onReprint() {
       const that = this

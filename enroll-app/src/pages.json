@@ -243,6 +243,13 @@
       }
     },
     {
+      "path": "pages/finance/receipt-detail/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "票据补打确认"
+      }
+    },
+    {
       "path": "pages/finance/urge/index",
       "style": {
         "navigationStyle": "custom",

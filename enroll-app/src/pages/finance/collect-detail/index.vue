@@ -57,10 +57,20 @@
       <!-- 财务确认（待确认状态） -->
       <SCard title="财务确认" :padding="16" v-if="isPending">
         <text class="field-label">确认收款方式 <text class="required">*</text></text>
-        <view class="method-picker" @click="pickMethod">
+        <view class="method-picker" @click.stop="showMethodPicker = !showMethodPicker">
           <text :class="{ 'ph': !form.collectionType }">{{ form.collectionType || '请选择收款方式' }}</text>
-          <text class="arrow">›</text>
+          <text class="arrow" :class="{ open: showMethodPicker }">›</text>
         </view>
+        <view class="method-dropdown" v-if="showMethodPicker">
+          <view
+            class="method-option"
+            :class="{ active: form.collectionType === m }"
+            v-for="m in collectionTypes"
+            :key="m"
+            @click.stop="selectMethod(m)"
+          >{{ m }}</view>
+        </view>
+        <view v-if="showMethodPicker" class="method-mask" @click.stop="showMethodPicker = false" />
 
         <text class="field-label" style="margin-top: 24rpx;">收款备注</text>
         <textarea class="remark-area" v-model="form.remark" placeholder="可填写票据号或现场说明" maxlength="100" />
@@ -162,6 +172,7 @@ export default {
       showPreview: false,
       showVoid: false,
       showSuccess: false,
+      showMethodPicker: false,
       submitting: false,
       collectionTypes: ['现金', '银行转账', 'POS机', '微信', '支付宝', '其他'],
       form: { collectionType: '', remark: '' },
@@ -173,10 +184,6 @@ export default {
     isPending() { return this.item && this.item.status === 'pending' },
     isConfirmed() { return this.item && this.item.status === 'confirmed' },
     isVoided() { return this.item && this.item.status === 'voided' },
-    methodIndex() {
-      const idx = this.collectionTypes.indexOf(this.form.collectionType)
-      return idx >= 0 ? idx : 0
-    },
     statusSteps() {
       if (!this.item) return []
       const steps = [
@@ -211,17 +218,9 @@ export default {
       }
     },
     fmt(v) { const n = Number(v); return isNaN(n) ? '0' : n.toLocaleString() },
-    onMethodChange(e) {
-      const idx = Number(e.detail.value)
-      if (idx >= 0 && idx < this.collectionTypes.length) {
-        this.form.collectionType = this.collectionTypes[idx]
-      }
-    },
-    pickMethod() {
-      uni.showActionSheet({
-        itemList: this.collectionTypes,
-        success: (res) => { this.form.collectionType = this.collectionTypes[res.tapIndex] || '' }
-      })
+    selectMethod(m) {
+      this.form.collectionType = m
+      this.showMethodPicker = false
     },
     onConfirmClick() {
       if (!this.form.collectionType) {
@@ -329,7 +328,14 @@ export default {
 }
 .method-picker:active { background: var(--N25); }
 .method-picker .ph { color: var(--N400); }
-.method-picker .arrow { font-size: 28rpx; color: var(--N400); }
+.method-picker .arrow { font-size: 28rpx; color: var(--N400); transition: transform .2s; }
+.method-picker .arrow.open { transform: rotate(90deg); }
+.method-dropdown { position: relative; z-index: 10; background: var(--white); border-radius: var(--r-8); box-shadow: 0 8rpx 24rpx rgba(0,0,0,.12); margin-top: 8rpx; overflow: hidden; }
+.method-option { padding: 22rpx 24rpx; font-size: var(--fs-13); color: var(--N700); border-bottom: 1px solid var(--N50); }
+.method-option:last-child { border-bottom: none; }
+.method-option:active { background: var(--N50); }
+.method-option.active { color: var(--brand); font-weight: 600; background: var(--brand-t); }
+.method-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 5; }
 .remark-area {
   width: 100%;
   min-height: 120rpx;

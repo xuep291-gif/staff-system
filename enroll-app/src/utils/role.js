@@ -234,14 +234,15 @@ export function applyTheme(role) {
   const config = PORTAL_CONFIG[role]
   if (!config) return
 
-  // 设置 body class（兼容旧逻辑）
-  if (typeof document !== 'undefined' && document.body) {
+  // #ifdef H5
+  // 设置 body class
+  if (document.body) {
     document.body.classList.remove('rf', 'ra')
     if (config.themeClass) document.body.classList.add(config.themeClass)
   }
 
   // 直接在 :root 上设置 CSS 变量，确保生效
-  if (typeof document !== 'undefined' && document.documentElement) {
+  if (document.documentElement) {
     const root = document.documentElement
     const themeColors = {
       teacher:  { brand: '#2B6CB0', brandT: '#DBEAFE' },
@@ -253,6 +254,7 @@ export function applyTheme(role) {
     root.style.setProperty('--banner-bg', colors.brand)
     root.style.setProperty('--navbar-bg', colors.brand)
   }
+  // #endif
 }
 
 // ============================================================

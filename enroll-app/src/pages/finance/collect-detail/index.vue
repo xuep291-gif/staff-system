@@ -338,12 +338,15 @@ export default {
 .method-picker .ph { color: var(--N400); }
 .method-picker .arrow { font-size: 28rpx; color: var(--N400); transition: transform .2s; }
 .method-picker .arrow.open { transform: rotate(90deg); }
-.method-dropdown { position: relative; z-index: 10; background: var(--white); border-radius: var(--r-8); box-shadow: 0 8rpx 24rpx rgba(0,0,0,.12); margin-top: 8rpx; overflow: hidden; }
-.method-option { padding: 22rpx 24rpx; font-size: var(--fs-13); color: var(--N700); border-bottom: 1px solid var(--N50); }
-.method-option:last-child { border-bottom: none; }
-.method-option:active { background: var(--N50); }
-.method-option.active { color: var(--brand); font-weight: 600; background: var(--brand-t); }
-.method-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 5; }
+.method-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 500; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; }
+.method-sheet { width: 100%; background: #fff; border-radius: 40rpx 40rpx 0 0; padding-bottom: 72rpx; }
+.method-sheet-title { font-size: var(--fs-14); font-weight: 600; color: var(--N700); text-align: center; padding: 32rpx 32rpx 20rpx; border-bottom: 1px solid var(--N50); }
+.method-sheet-option { display: flex; align-items: center; justify-content: space-between; padding: 28rpx 32rpx; font-size: var(--fs-15); color: var(--N900); border-bottom: 1px solid var(--N50); }
+.method-sheet-option:active { background: var(--N50); }
+.method-sheet-option.active { color: var(--brand); font-weight: 600; }
+.method-check { color: var(--brand); font-weight: 700; font-size: var(--fs-16); }
+.method-sheet-cancel { text-align: center; padding: 28rpx; font-size: var(--fs-15); color: var(--N500); margin-top: 16rpx; background: var(--white); border-radius: 40rpx 40rpx 0 0; }
+.method-sheet-cancel:active { background: var(--N50); }
 .remark-area {
   width: 100%;
   min-height: 120rpx;

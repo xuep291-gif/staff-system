@@ -57,10 +57,12 @@
       <!-- 财务确认（待确认状态） -->
       <SCard title="财务确认" :padding="16" v-if="isPending">
         <text class="field-label">确认收款方式 <text class="required">*</text></text>
-        <view class="method-picker" @click="pickMethod">
-          <text :class="{ 'ph': !form.collectionType }">{{ form.collectionType || '请选择收款方式' }}</text>
-          <text class="arrow">›</text>
-        </view>
+        <picker :range="collectionTypes" :value="methodIndex" @change="onMethodChange">
+          <view class="method-picker">
+            <text :class="{ 'ph': !form.collectionType }">{{ form.collectionType || '请选择收款方式' }}</text>
+            <text class="arrow">›</text>
+          </view>
+        </picker>
 
         <text class="field-label" style="margin-top: 24rpx;">收款备注</text>
         <textarea class="remark-area" v-model="form.remark" placeholder="可填写票据号或现场说明" maxlength="100" />
@@ -173,6 +175,10 @@ export default {
     isPending() { return this.item && this.item.status === 'pending' },
     isConfirmed() { return this.item && this.item.status === 'confirmed' },
     isVoided() { return this.item && this.item.status === 'voided' },
+    methodIndex() {
+      const idx = this.collectionTypes.indexOf(this.form.collectionType)
+      return idx >= 0 ? idx : 0
+    },
     statusSteps() {
       if (!this.item) return []
       const steps = [
@@ -207,13 +213,11 @@ export default {
       }
     },
     fmt(v) { const n = Number(v); return isNaN(n) ? '0' : n.toLocaleString() },
-    pickMethod() {
-      uni.showActionSheet({
-        itemList: this.collectionTypes,
-        success: (res) => {
-          this.form.collectionType = this.collectionTypes[res.tapIndex] || ''
-        }
-      })
+    onMethodChange(e) {
+      const idx = Number(e.detail.value)
+      if (idx >= 0 && idx < this.collectionTypes.length) {
+        this.form.collectionType = this.collectionTypes[idx]
+      }
     },
     onConfirmClick() {
       if (!this.form.collectionType) {

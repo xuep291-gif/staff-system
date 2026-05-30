@@ -48,9 +48,17 @@ export default {
       ]
     },
     filteredList() {
-      if (this.activeTab === 'pending') return this.list.filter(i => i.status === REVIEW_STATUS.FIRST_PASS)
-      if (this.activeTab === 'processing') return this.list.filter(i => i.status === REVIEW_STATUS.REVIEW_PASS)
-      return this.list.filter(i => [REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED].includes(i.status))
+      const labelMap = {
+        pending: ['待审批', 'wa'],
+        processing: ['审批中', 'in'],
+        completed: ['已完结', 'ok']
+      }
+      const [label, color] = labelMap[this.activeTab] || ['', 'wa']
+      let rows
+      if (this.activeTab === 'pending') rows = this.list.filter(i => i.status === REVIEW_STATUS.FIRST_PASS)
+      else if (this.activeTab === 'processing') rows = this.list.filter(i => i.status === REVIEW_STATUS.REVIEW_PASS)
+      else rows = this.list.filter(i => [REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED].includes(i.status))
+      return rows.map(item => ({ ...item, listStatusLabel: label, listBadgeColor: color }))
     }
   },
   watch: {

@@ -2,6 +2,14 @@ import { toPromise } from './toPromise'
 import { globalConfig } from '@/config.js'
 import { isMockUrl, mockRequest } from '@/mock/server.js'
 
+// 平台客户端类型
+// #ifdef MP-WEIXIN
+const clientType = 'mp-weixin'
+// #endif
+// #ifdef H5
+const clientType = 'h5'
+// #endif
+
 // 封裝請求
 export const request = (method, url, params = {}, header = {}, timeout = 15000) => {
   if (isMockUrl(url, globalConfig)) {
@@ -32,7 +40,7 @@ export const request = (method, url, params = {}, header = {}, timeout = 15000) 
   }
   header['Content-Type'] = header['Content-Type'] || 'application/json;charset=UTF-8'
   header['X-App-Id'] = header['X-App-Id'] || String(globalConfig.appId)
-  header['X-Client-Type'] = header['X-Client-Type'] || 'h5'
+  header['X-Client-Type'] = header['X-Client-Type'] || clientType
 
   // 创建超时 Promise
   const timeoutPromise = new Promise((_, reject) => {
@@ -118,7 +126,7 @@ export const upLoad = (url, filePath, params, name, timeout = 30000) => {
     header: {
       Authorization: `Bearer ${token}`,
       'X-App-Id': String(globalConfig.appId),
-      'X-Client-Type': 'h5'
+      'X-Client-Type': clientType
     }
   })
 

@@ -21,7 +21,7 @@
     <scroll-view scroll-y class="body">
       <SEmpty v-if="!filteredList.length" :text="emptyText" />
 
-      <view class="receipt-list" v-for="item in filteredList" :key="item.id">
+      <view class="receipt-list" v-for="item in filteredList" :key="activeTab + '-' + filterVersion + '-' + item.id">
         <view class="receipt-card" @click="openDetail(item)">
           <view class="card-top">
             <view class="avatar" :style="{ background: avatarBg(item) }">
@@ -154,6 +154,7 @@ export default {
   data() {
     return {
       activeTab: 'pending',
+      filterVersion: 0,
       keyword: '',
       list: [],
       showDetail: false,
@@ -185,7 +186,7 @@ export default {
       return map[this.activeTab] || '暂无票据记录'
     }
   },
-  onShow() { this.refresh() },
+  onShow() { this.filterVersion++; this.refresh() },
   methods: {
     refresh() {
       this.list = getReceiptList()
@@ -205,7 +206,7 @@ export default {
       const map = { pending: 'var(--wa)', reprinted: 'var(--ok)', voided: 'var(--er)' }
       return map[item.status] || 'var(--in)'
     },
-    onTabClick(key) { this.activeTab = key },
+    onTabClick(key) { if (this.activeTab === key) return; this.activeTab = key; this.filterVersion++ },
     openDetail(item) {
       this.detail = item
       this.showDetail = true

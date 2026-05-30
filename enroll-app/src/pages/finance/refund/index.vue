@@ -4,7 +4,7 @@
     <StatusTabs tabGroup="financeRefund" :tabs="tabs" :modelValue="activeTab" @change="onTabClick" />
     <scroll-view scroll-y class="body">
       <view class="sc">
-        <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="openSheet(item)">
+        <view class="card" v-for="item in filteredList" :key="activeTab + '-' + filterVersion + '-' + item.uid" @click="openSheet(item)">
           <view class="card-bd">
             <view class="li">
               <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>

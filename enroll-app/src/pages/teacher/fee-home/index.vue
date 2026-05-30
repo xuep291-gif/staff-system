@@ -73,7 +73,6 @@
                 <text v-if="stu.overdueDays"> · 逾期 {{ stu.overdueDays }} 天</text>
               </text>
             </view>
-            <text class="stu-amount">¥{{ formatMoney(stu.dueAmount) }}</text>
             <text v-if="stu.urgeCount > 0" class="urge-tag">已催缴{{ stu.urgeCount }}次</text>
           </view>
           <SEmpty v-if="filteredStudents.length === 0" text="暂无数据" />
@@ -361,8 +360,6 @@ export default {
 .stu-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
 .stu-meta { font-size: var(--fs-11); color: var(--N500); margin-top: 4rpx; display: block; }
 .stu-fee { font-size: var(--fs-10); color: var(--N500); margin-top: 6rpx; line-height: 1.45; display: block; }
-.stu-amount { font-size: var(--fs-14); font-weight: 600; color: var(--N900); flex-shrink: 0; }
-
 .urge-tag {
   font-size: var(--fs-10); color: var(--wa); background: var(--wa-bg);
   padding: 4rpx 12rpx; border-radius: var(--r-20);

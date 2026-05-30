@@ -2,7 +2,7 @@
   <view class="inforow">
     <text class="inforow-label">{{ label }}</text>
     <text class="inforow-value">
-      <slot />
+      <slot>{{ displayValue }}</slot>
     </text>
   </view>
 </template>
@@ -11,7 +11,13 @@
 export default {
   name: 'SInfoRow',
   props: {
-    label: { type: String, default: '' }
+    label: { type: String, default: '' },
+    value: { type: [String, Number], default: '' }
+  },
+  computed: {
+    displayValue() {
+      return this.value !== undefined && this.value !== null ? String(this.value) : ''
+    }
   }
 }
 </script>

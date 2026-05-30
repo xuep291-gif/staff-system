@@ -310,7 +310,8 @@ const seed = {
       { id: 'g-1', type: '终审提醒', icon: '*', color: 'var(--pu)', time: '11:20', content: '助学金终审有 4 条记录待处理', read: false },
       { id: 'g-2', type: '换房审批', icon: 'i', color: 'var(--in)', time: '昨天', content: '校外住宿材料已进入政务复审', read: true }
     ]
-  }
+  },
+  paymentRecords: []
 }
 
 const clone = value => JSON.parse(JSON.stringify(value))
@@ -322,6 +323,19 @@ const REVIEW_STATUS_TABS = [
   { label: '待审批', statuses: [REVIEW_STATUS.PENDING], color: 'brand' },
   { label: '审批中', statuses: [REVIEW_STATUS.FIRST_PASS, REVIEW_STATUS.REVIEW_PASS, REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING], color: 'wa' },
   { label: '已完结', statuses: [REVIEW_STATUS.REJECTED, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED], color: 'ok' }
+]
+
+// 财务端助学金：待审批→待打款，保留审批中
+export const FINANCE_AID_TAB_GROUPS = [
+  { label: '待打款', statuses: [REVIEW_STATUS.PAYMENT_PENDING], color: 'brand' },
+  { label: '审批中', statuses: [REVIEW_STATUS.FIRST_PASS, REVIEW_STATUS.REVIEW_PASS, REVIEW_STATUS.FINAL_PASS], color: 'wa' },
+  { label: '已完结', statuses: [REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED], color: 'ok' }
+]
+
+// 财务端助学贷款：待审批→待打款，无审批中
+export const FINANCE_LOAN_TAB_GROUPS = [
+  { label: '待打款', statuses: [REVIEW_STATUS.PAYMENT_PENDING], color: 'brand' },
+  { label: '已完结', statuses: [REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED, REVIEW_STATUS.REJECTED], color: 'ok' }
 ]
 
 export const REVIEW_TAB_GROUPS = {
@@ -626,18 +640,32 @@ export function getLastBusinessChange(collection) {
   }
 }
 
+// In-memory cache to ensure immediate consistency after state mutations.
+const _stateMemCache = {}
+
 export function loadState(name) {
+  if (_stateMemCache[name]) return clone(_stateMemCache[name])
   try {
     const raw = uni.getStorageSync(key(name))
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const value = JSON.parse(raw)
+      _stateMemCache[name] = value
+      return clone(value)
+    }
   } catch (e) { /* ignore */ }
   const value = clone(seed[name])
+  _stateMemCache[name] = value
   saveState(name, value)
-  return value
+  return clone(value)
 }
 
 export function saveState(name, value) {
+  _stateMemCache[name] = value
   try { uni.setStorageSync(key(name), JSON.stringify(value)) } catch (e) { /* ignore */ }
+}
+
+export function invalidateStateCache(name) {
+  if (name) { delete _stateMemCache[name] } else { Object.keys(_stateMemCache).forEach(k => delete _stateMemCache[k]) }
 }
 
 export function getStudents() {
@@ -721,30 +749,51 @@ export function getFeeList() {
       partial: { label: '部分未缴', color: 'in', days: '部分未缴' },
       channel: { label: '绿通', color: 'pu', days: '绿色通道' }
     }
-    const meta = statusMap[payStatus] || statusMap.unpaid
-    const expectedAmount = Number(String(fee.expectedAmount || fee.amount || '0').replace(/,/g, '')) || 0
-    const paidAmount = fee.paidAmount !== undefined
-      ? Number(fee.paidAmount)
-      : payStatus === 'paid'
-        ? expectedAmount
-        : payStatus === 'partial'
-          ? Math.round(expectedAmount / 2)
-          : 0
-    const dueAmount = payStatus === 'channel' ? 0 : Math.max(expectedAmount - paidAmount, 0)
-    const overdueDays = payStatus === 'overdue' ? (fee.overdueDays || 12) : 0
+    const FEE_TOTAL = FEE_ITEMS_CONFIG.reduce((s, i) => s + i.amount, 0)
+    const seedPayStatus = PAYMENT_STATUS_MAP[fee.payStatus || fee.paymentStatus || fee.statusLabel] || 'unpaid'
+    const channel = seedPayStatus === 'channel'
+    const storedPaid = fee.paidAmount !== undefined ? Number(fee.paidAmount) : null
+
+    // 按 FEE_ITEMS_CONFIG 统一计算应缴总额和已缴金额
+    const expectedAmount = FEE_TOTAL
+    const effectivePaid = channel ? FEE_TOTAL
+      : storedPaid !== null ? storedPaid
+      : seedPayStatus === 'paid' ? FEE_TOTAL
+      : seedPayStatus === 'partial' ? Math.round(FEE_TOTAL / 2)
+      : 0
+
+    // 按优先级分配已缴金额，计算必缴项目实缴情况
+    let rem = effectivePaid
+    const requiredTotal = FEE_ITEMS_CONFIG.filter(i => i.required).reduce((s, i) => s + i.amount, 0)
+    let requiredPaid = 0
+    for (const item of FEE_ITEMS_CONFIG) {
+      const itemPaid = Math.min(rem, item.amount)
+      if (item.required) requiredPaid += itemPaid
+      rem -= itemPaid
+      if (rem <= 0) break
+    }
+
+    const computedPayStatus = channel ? 'channel'
+      : requiredPaid >= requiredTotal ? 'paid'
+      : requiredPaid > 0 ? 'partial'
+      : seedPayStatus === 'overdue' ? 'overdue' : 'unpaid'
+    const computedMeta = statusMap[computedPayStatus] || statusMap.unpaid
+    const dueAmount = channel ? 0 : Math.max(expectedAmount - effectivePaid, 0)
+    const overdueDays = seedPayStatus === 'overdue' ? (fee.overdueDays || 12) : 0
+
     return {
       ...fee,
       ...student,
-      payStatus,
+      payStatus: computedPayStatus,
       studentNo: fee.sid,
       expectedAmount,
-      paidAmount,
+      paidAmount: effectivePaid,
       dueAmount,
       overdueDays,
-      statusLabel: meta.label,
-      statusColor: meta.color,
-      daysLabel: meta.days,
-      avatarBg: `var(--${meta.color}-bg)`
+      statusLabel: computedMeta.label,
+      statusColor: computedMeta.color,
+      daysLabel: computedMeta.days,
+      avatarBg: `var(--${computedMeta.color}-bg)`
     }
   })
 }
@@ -770,7 +819,7 @@ export function getStudentFeeItems(sid) {
 
   // 按优先级从高到低分配已缴金额（D-02 规则）
   let remaining = paidAmount
-  return FEE_ITEMS_CONFIG.map(item => {
+  const items = FEE_ITEMS_CONFIG.map(item => {
     let itemPaid = 0
     if (remaining >= item.amount) {
       itemPaid = item.amount
@@ -792,6 +841,27 @@ export function getStudentFeeItems(sid) {
       statusColor: isPaid ? 'ok' : 'wa'
     }
   })
+
+  return items
+}
+
+// 基于必缴项目完成情况计算整体缴费状态
+export function computePaymentStatus(items) {
+  if (!items.length) return { payStatus: 'unpaid', statusLabel: '未缴', statusColor: 'wa' }
+  const requiredItems = items.filter(i => i.required)
+  if (requiredItems.length === 0) {
+    // 没有必缴项目时，按全部项目判断
+    const allPaid = items.every(i => i.payStatus === 'paid')
+    const anyPaid = items.some(i => i.payStatus === 'paid')
+    if (allPaid) return { payStatus: 'paid', statusLabel: '已缴', statusColor: 'ok' }
+    if (anyPaid) return { payStatus: 'partial', statusLabel: '部分未缴', statusColor: 'in' }
+    return { payStatus: 'unpaid', statusLabel: '未缴', statusColor: 'wa' }
+  }
+  const allRequiredPaid = requiredItems.every(i => i.payStatus === 'paid')
+  const anyRequiredPaid = requiredItems.some(i => i.payStatus === 'paid' || i.paidAmount > 0)
+  if (allRequiredPaid) return { payStatus: 'paid', statusLabel: '已缴', statusColor: 'ok' }
+  if (anyRequiredPaid) return { payStatus: 'partial', statusLabel: '部分未缴', statusColor: 'in' }
+  return { payStatus: 'unpaid', statusLabel: '未缴', statusColor: 'wa' }
 }
 
 export function getPaymentSummary(list = getFeeList()) {

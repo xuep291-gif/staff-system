@@ -38,7 +38,9 @@ function loadList() {
     const raw = uni.getStorageSync(STORAGE_KEY)
     if (raw) return JSON.parse(raw)
   } catch (e) { /* ignore */ }
-  return JSON.parse(JSON.stringify(DEFAULT_LIST))
+  const defaultList = JSON.parse(JSON.stringify(DEFAULT_LIST))
+  try { uni.setStorageSync(STORAGE_KEY, JSON.stringify(defaultList)) } catch (e) { /* ignore */ }
+  return defaultList
 }
 
 export default {

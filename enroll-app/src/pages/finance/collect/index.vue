@@ -194,7 +194,17 @@ export default {
     onPanelTap() {},
     onPickMethod() {
       this.pickerOpen = true
-      uni.showActionSheet({ itemList: this.collectionTypes, success: (res) => { this.pickerOpen = false; this.form.collectionType = this.collectionTypes[res.tapIndex] || '' }, fail: () => { this.pickerOpen = false }, complete: () => { this.pickerOpen = false } })
+      uni.showActionSheet({
+        itemList: this.collectionTypes,
+        success: (res) => {
+          this.form.collectionType = this.collectionTypes[res.tapIndex] || ''
+        },
+        fail: () => {},
+        complete: () => {
+          // 延迟重置，防止 actionSheet 关闭事件误触发 onOverlayClose
+          setTimeout(() => { this.pickerOpen = false }, 300)
+        }
+      })
     },
     onPaymentFilterChange(event) { this.filters.method = this.paymentMethods[Number(event.detail.value)] || '全部方式' },
     onConfirmSubmit() {

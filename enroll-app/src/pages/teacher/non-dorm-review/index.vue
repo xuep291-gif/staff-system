@@ -123,7 +123,15 @@ function saveToStorage(key, list) {
 
 function saveItemStatus(uid, status, badgeColor, info) {
   try {
-    const raw = uni.getStorageSync(STORAGE_KEY)
+    let raw = uni.getStorageSync(STORAGE_KEY)
+    if (!raw) {
+      const defaults = [
+        { uid: 'tnd-1', name: '赵刚', id: '2026010008', address: '校园路12号', status: '待审核', badgeColor: 'wa', avatar: '赵' },
+        { uid: 'tnd-2', name: '孙丽', id: '2026010019', address: '学府花园3栋', status: '待审核', badgeColor: 'wa', avatar: '孙' }
+      ]
+      saveToStorage(STORAGE_KEY, defaults)
+      raw = JSON.stringify(defaults)
+    }
     if (raw) {
       const list = JSON.parse(raw)
       const item = list.find(i => i.uid === uid)

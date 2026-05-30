@@ -47,13 +47,13 @@
         <!-- Fee Items List -->
         <view class="fee-item-header">
           <text class="fee-item-header-name">项目名称</text>
-          <text class="fee-item-header-amount">金额</text>
+          <text class="fee-item-header-paid">金额</text>
           <text class="fee-item-header-req">必缴</text>
           <text class="fee-item-header-status">状态</text>
         </view>
         <view class="fee-item-row" v-for="item in feeItems" :key="item.name">
           <text class="fee-item-name">{{ item.name }}</text>
-          <text class="fee-item-amount">¥{{ formatMoney(item.amount) }}</text>
+          <text class="fee-item-paid">¥{{ formatMoney(item.amount) }}</text>
           <text class="fee-item-req">{{ item.required ? '是' : '否' }}</text>
           <SBadge :color="item.statusColor">{{ item.statusLabel }}</SBadge>
         </view>
@@ -86,7 +86,7 @@ import SNavBar from '@/components/shared/SNavBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SBadge from '@/components/shared/SBadge.vue'
-import { getStudent, getFeeList, getStudentFeeItems } from '@/utils/businessState.js'
+import { getStudent, getFeeList, getStudentFeeItems, computePaymentStatus } from '@/utils/businessState.js'
 import { studentApi } from '@/common/api/student.js'
 import { paymentApi } from '@/common/api/payment.js'
 
@@ -135,18 +135,19 @@ export default {
     feeTotal() {
       const items = this.feeItems
       if (!items.length) return { expected: 0, paid: 0, due: 0, statusLabel: '未缴', statusColor: 'wa' }
-      const expected = items.reduce((s, i) => s + i.amount, 0)
-      const paid = items.reduce((s, i) => s + (i.paidAmount || 0), 0)
+      // 与列表页 getFeeList 保持一致：金额用 fee 记录，状态用 computePaymentStatus
+      const expected = this.fee?.expectedAmount || items.reduce((s, i) => s + i.amount, 0)
+      const paid = this.fee?.paidAmount || 0
       const due = expected - paid
-      const payStatus = due <= 0 ? 'paid' : paid > 0 ? 'partial' : this.fee?.payStatus === 'overdue' ? 'overdue' : 'unpaid'
-      const statusMap = {
-        paid: { label: '已缴', color: 'ok' },
-        unpaid: { label: '未缴', color: 'wa' },
-        partial: { label: '部分未缴', color: 'in' },
-        overdue: { label: '逾期', color: 'er' }
+      const result = computePaymentStatus(items)
+      // fee 记录的特殊状态优先（逾期、绿通），其余用 computePaymentStatus 结果
+      if (this.fee?.payStatus === 'channel') {
+        return { expected, paid, due, statusLabel: '绿通', statusColor: 'pu' }
       }
-      const meta = statusMap[payStatus] || statusMap.unpaid
-      return { expected, paid, due, statusLabel: meta.label, statusColor: meta.color }
+      if (this.fee?.payStatus === 'overdue' && result.payStatus === 'unpaid') {
+        return { expected, paid, due, statusLabel: '逾期', statusColor: 'er' }
+      }
+      return { expected, paid, due, statusLabel: result.statusLabel, statusColor: result.statusColor }
     }
   },
   async onLoad(options) {
@@ -258,9 +259,9 @@ export default {
   padding: 16rpx 0 8rpx;
 }
 .fee-item-header-name { flex: 1; font-size: var(--fs-11); color: var(--N400); font-weight: 500; min-width: 0; }
-.fee-item-header-amount { width: 120rpx; text-align: right; font-size: var(--fs-11); color: var(--N400); font-weight: 500; flex-shrink: 0; }
-.fee-item-header-req { width: 60rpx; text-align: center; font-size: var(--fs-11); color: var(--N400); font-weight: 500; flex-shrink: 0; }
-.fee-item-header-status { width: 88rpx; text-align: right; font-size: var(--fs-11); color: var(--N400); font-weight: 500; flex-shrink: 0; }
+.fee-item-header-paid { width: 120rpx; text-align: right; font-size: var(--fs-11); color: var(--N400); font-weight: 500; flex-shrink: 0; }
+.fee-item-header-req { width: 56rpx; text-align: center; font-size: var(--fs-11); color: var(--N400); font-weight: 500; flex-shrink: 0; }
+.fee-item-header-status { width: 80rpx; text-align: right; font-size: var(--fs-11); color: var(--N400); font-weight: 500; flex-shrink: 0; }
 
 .fee-item-row {
   display: flex; align-items: center;
@@ -269,7 +270,7 @@ export default {
 }
 .fee-item-row:last-child { border-bottom: none; }
 .fee-item-name { flex: 1; font-size: var(--fs-14); color: var(--N900); font-weight: 500; min-width: 0; }
-.fee-item-amount { width: 120rpx; text-align: right; font-size: var(--fs-13); color: var(--N900); font-weight: 500; flex-shrink: 0; }
-.fee-item-req { width: 60rpx; text-align: center; font-size: var(--fs-13); color: var(--N700); flex-shrink: 0; }
+.fee-item-paid { width: 120rpx; text-align: right; font-size: var(--fs-13); color: var(--N700); font-weight: 500; flex-shrink: 0; }
+.fee-item-req { width: 56rpx; text-align: center; font-size: var(--fs-13); color: var(--N700); flex-shrink: 0; }
 
 </style>

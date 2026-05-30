@@ -8,6 +8,7 @@ const DORM_COLORS = { pending: 'wa', approved: 'ok', rejected: 'er' }
 function formatDorm(value) {
   if (!value) return '-'
   if (typeof value === 'string') return value
+  if (value.text && typeof value.text === 'string') return value.text
   return [value.building || value.buildingName, value.room || value.roomNo, value.bed || value.bedNo].filter(Boolean).join(' ')
 }
 

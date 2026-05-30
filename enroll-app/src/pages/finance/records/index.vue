@@ -57,7 +57,7 @@
         <view
           class="record-item"
           v-for="item in filteredList"
-          :key="item.id"
+          :key="activeTab + '-' + filterVersion + '-' + item.id"
           @click="openDetail(item)"
         >
           <view class="item-left">
@@ -129,6 +129,7 @@ export default {
   data() {
     return {
       activeTab: 'all',
+      filterVersion: 0,
       list: [],
       filters: { keyword: '', dateFrom: '', dateTo: '' },
       methodIdx: 0,
@@ -175,7 +176,7 @@ export default {
   onUnload() {
     if (typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
-  onShow() { this.refresh() },
+  onShow() { this.filterVersion++; this.refresh() },
   methods: {
     refresh() {
       this.list = getPaymentRecordList()
@@ -216,7 +217,7 @@ export default {
       if (m === '预缴抵扣') return 'var(--ok)'
       return 'var(--brand)'
     },
-    onTabClick(key) { this.activeTab = key },
+    onTabClick(key) { if (this.activeTab === key) return; this.activeTab = key; this.filterVersion++ },
     onMethodChange(e) { this.methodIdx = Number(e.detail.value) },
     onCollegeChange(e) { this.collegeIdx = Number(e.detail.value) },
     onDateFromChange(e) { this.filters.dateFrom = e.detail.value },

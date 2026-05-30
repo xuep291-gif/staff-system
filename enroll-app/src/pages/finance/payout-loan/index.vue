@@ -1,10 +1,10 @@
 <template>
   <view class="page">
     <SNavBar title="助学贷款审核" :showBack="true" fallbackUrl="/pages/finance/home/index" />
-    <StatusTabs tabGroup="financePayoutLoan" :tabs="tabs" @change="onTabClick" />
+    <StatusTabs tabGroup="financePayoutLoan" :tabs="tabs" :modelValue="activeTab" @change="onTabClick" />
     <scroll-view scroll-y class="body">
       <view class="sc">
-        <view class="card" v-for="item in filteredList" :key="filterVersion + '-' + item.uid" @click="goDetail(item.uid)">
+        <view class="card" v-for="item in filteredList" :key="activeTab + '-' + filterVersion + '-' + item.uid" @click="goDetail(item.uid)">
           <view class="card-bd">
             <view class="li">
               <view class="li-ico" :style="{ background: item.bg, color: item.iconColor }">{{ item.avatar }}</view>
@@ -53,9 +53,6 @@ export default {
       return filterReviewByTab(this.list, 'finance', idx >= 0 ? idx : 0)
     }
   },
-  watch: {
-    activeTab() { this.filterVersion++ }
-  },
   onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
       if (collection === 'loans') this.refresh(true)
@@ -72,10 +69,7 @@ export default {
     this.activeTab = getActiveKey('financePayoutLoan', 'pending')
   },
   methods: {
-    onTabClick(key) {
-      this.activeTab = key
-      setActiveKey('financePayoutLoan', key)
-    },
+    onTabClick(key) { if (this.activeTab === key) return; this.activeTab = key; this.filterVersion++; setActiveKey('financePayoutLoan', key) },
     refresh(syncChangedTab = false) {
       const rows = getReviewList('loans')
       this.list = rows.map(item => ({
@@ -93,7 +87,7 @@ export default {
       this.lastSyncedChange = token
       const item = this.list.find(i => i.uid === change.uid) || change
       const idx = getReviewTabIndex(item, 'finance')
-      setActiveKey('financePayoutLoan', REVIEW_KEY_MAP[idx] || 'pending')
+      const key = REVIEW_KEY_MAP[idx] || 'pending'; this.activeTab = key; setActiveKey('financePayoutLoan', key)
     },
     goDetail(uid) {
       rememberStaffBackTarget('/pages/finance/payout-loan/index')

@@ -2,22 +2,27 @@
   <view class="page">
     <SNavBar title="换宿审核详情" :showBack="true" />
     <scroll-view scroll-y class="body">
-      <SCard v-if="item" title="学生信息">
-        <SInfoRow label="学生姓名" :value="item.name" />
-        <SInfoRow label="学号" :value="item.id" copyable />
-        <SInfoRow label="班级" :value="item.className" />
-        <SInfoRow label="联系电话" :value="item.phone" />
+      <!-- 学生信息 -->
+      <SCard v-if="item" title="学生信息" :padding="16">
+        <SInfoRow label="学生姓名">{{ item.name || '—' }}</SInfoRow>
+        <SInfoRow label="学号">{{ item.id || '—' }}</SInfoRow>
+        <SInfoRow label="班级">{{ item.className || '—' }}</SInfoRow>
+        <SInfoRow label="联系电话">{{ item.phone || '—' }}</SInfoRow>
       </SCard>
 
-      <SCard v-if="item" title="换宿信息">
-        <SInfoRow label="原宿舍" :value="item.oldDorm" />
-        <SInfoRow label="申请宿舍" :value="item.targetDorm" />
-        <SInfoRow label="换宿原因" :value="item.reason" />
-        <SInfoRow label="申请时间" :value="item.applyTime" />
-        <SInfoRow label="审核状态" :value="item.statusLabel" />
+      <!-- 换宿信息 -->
+      <SCard v-if="item" title="换宿信息" :padding="16">
+        <SInfoRow label="原宿舍">{{ item.oldDorm || '—' }}</SInfoRow>
+        <SInfoRow label="申请宿舍">{{ item.targetDorm || '—' }}</SInfoRow>
+        <SInfoRow label="换宿原因">{{ item.reason || '—' }}</SInfoRow>
+        <SInfoRow label="申请时间">{{ item.applyTime || '—' }}</SInfoRow>
+        <SInfoRow label="审核状态">
+          <SBadge :color="item.badgeColor">{{ item.statusLabel }}</SBadge>
+        </SInfoRow>
       </SCard>
 
-      <SCard v-if="item" title="审核记录">
+      <!-- 审核记录 -->
+      <SCard v-if="item" title="审核记录" :padding="16">
         <view v-if="item.logs && item.logs.length">
           <view class="log" v-for="(log, index) in item.logs" :key="index">
             <text class="log-title">{{ log.action || log.result || log.node }}</text>
@@ -28,10 +33,12 @@
         <SEmpty v-else text="暂无审核记录" />
       </SCard>
 
-      <SCard v-if="item && item.status === pendingStatus" title="审核意见">
+      <!-- 审核意见 -->
+      <SCard v-if="item && item.status === pendingStatus" title="审核意见" :padding="16">
         <textarea v-model="remark" class="textarea" placeholder="请输入审核意见" placeholder-class="ph" />
       </SCard>
 
+      <!-- 操作按钮 -->
       <view v-if="item && item.status === pendingStatus" class="actions">
         <view class="btn reject" @click="submit('rejected')">驳回</view>
         <view class="btn pass" @click="submit('approved')">通过</view>
@@ -46,13 +53,14 @@
 import SNavBar from '@/components/shared/SNavBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
+import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import { DORM_REVIEW_STATUS, getDormReviewItem, updateReview } from '@/utils/businessState.js'
 import { dormitoryApi } from '@/common/api/dormitory.js'
 
 export default {
   name: 'TeacherRoomChangeReview',
-  components: { SNavBar, SCard, SInfoRow, SEmpty },
+  components: { SNavBar, SCard, SInfoRow, SBadge, SEmpty },
   data() {
     return {
       uid: '',
@@ -65,23 +73,59 @@ export default {
   async onLoad(query) {
     this.uid = query.uid || ''
     this.apiId = query.apiId || this.uid
-    await this.refresh()
+
+    // 1. 先从本地业务状态加载，保证立即有数据显示
+    const localItem = getDormReviewItem('roomChanges', this.uid)
+    if (localItem) {
+      this.item = localItem
+    }
+
+    // 2. 再异步获取 API 最新数据
+    try {
+      const res = this.apiId ? await dormitoryApi.getRoomChangeDetail(this.apiId) : null
+      if (res?.data?.code === 0 && res.data.data) {
+        // 合并 API 数据到本地数据上
+        const apiData = res.data.data
+        this.item = {
+          ...(localItem || {}),
+          ...apiData,
+          // 确保关键字段以本地数据为准（API 可能缺失）
+          uid: this.uid,
+          id: apiData.id || (localItem && localItem.id) || apiData.sid || '',
+          name: apiData.name || (localItem && localItem.name) || '未知学生',
+          className: apiData.className || (localItem && localItem.className) || '',
+          phone: apiData.phone || (localItem && localItem.phone) || '',
+          oldDorm: apiData.oldDorm || (localItem && localItem.oldDorm) || '—',
+          targetDorm: apiData.targetDorm || (localItem && localItem.targetDorm) || '—',
+          reason: apiData.reason || (localItem && localItem.reason) || '—',
+          applyTime: apiData.applyTime || (localItem && localItem.applyTime) || '—',
+          statusLabel: apiData.statusLabel || (localItem && localItem.statusLabel) || '',
+          badgeColor: apiData.badgeColor || (localItem && localItem.badgeColor) || 'wa',
+          logs: apiData.logs || (localItem && localItem.logs) || [],
+          status: apiData.status || (localItem && localItem.status) || DORM_REVIEW_STATUS.PENDING
+        }
+      }
+    } catch (e) {
+      // API 失败，继续使用本地数据
+    }
   },
   methods: {
-    async refresh() {
-      const res = this.apiId ? await dormitoryApi.getRoomChangeDetail(this.apiId) : null
-      this.item = res?.data?.code === 0 ? res.data.data : getDormReviewItem('roomChanges', this.uid)
-    },
     async submit(type) {
       const status = type === 'approved' ? DORM_REVIEW_STATUS.APPROVED : DORM_REVIEW_STATUS.REJECTED
-      const action = type === 'approved' ? dormitoryApi.approveRoomChange : dormitoryApi.rejectRoomChange
-      await action(this.apiId, { remark: this.remark || (type === 'approved' ? '同意换宿申请' : '不符合换宿条件') })
+      try {
+        const action = type === 'approved' ? dormitoryApi.approveRoomChange : dormitoryApi.rejectRoomChange
+        await action(this.apiId, { remark: this.remark || (type === 'approved' ? '同意换宿申请' : '不符合换宿条件') })
+      } catch (e) {
+        // API 调用失败也继续更新本地状态
+      }
       updateReview('roomChanges', this.uid, status, {
         action: type === 'approved' ? '换宿审核通过' : '换宿审核驳回',
         operator: '班主任',
         remark: this.remark || (type === 'approved' ? '同意换宿申请' : '不符合换宿条件')
       })
-      await this.refresh()
+      // 刷新本地数据
+      const updated = getDormReviewItem('roomChanges', this.uid)
+      if (updated) this.item = updated
       uni.showToast({ title: type === 'approved' ? '已通过' : '已驳回', icon: 'success' })
       setTimeout(() => uni.navigateBack(), 450)
     }

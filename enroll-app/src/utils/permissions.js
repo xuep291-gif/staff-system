@@ -11,7 +11,6 @@ export const SUB_ROLES = {
   // 财务端
   FEE_COLLECTOR: 'fee_collector',
   FEE_APPROVER: 'fee_approver',
-  CHECKIN_STAFF: 'checkin_staff',
 
   // 政务端
   STUDENT_AFFAIRS: 'student_affairs',
@@ -23,7 +22,6 @@ export const SUB_ROLE_LABELS = {
   [SUB_ROLES.HEAD_TEACHER]: '班主任',
   [SUB_ROLES.FEE_COLLECTOR]: '收费专员',
   [SUB_ROLES.FEE_APPROVER]: '审批专员',
-  [SUB_ROLES.CHECKIN_STAFF]: '迎新工作人员',
   [SUB_ROLES.STUDENT_AFFAIRS]: '学工处负责人',
   [SUB_ROLES.COLLEGE_DEAN]: '学院负责人'
 }
@@ -59,11 +57,6 @@ export const PERMISSIONS = {
   'finance:loan-review': '贷款审批',
   'finance:stats': '统计查看',
 
-  // 财务端 - 迎新工作人员
-  'finance:verify': '缴费核验',
-  'finance:onsite': '现场收款',
-  'finance:checkin-stats': '报到统计',
-
   // 政务端 - 学工处
   'gov:overview': '政务概览',
   'gov:aid-final': '助学金终审',
@@ -87,7 +80,6 @@ export const PERMISSIONS = {
 export const SUB_ROLE_TODO_KEYS = {
   [SUB_ROLES.FEE_COLLECTOR]: ['collect', 'records', 'aid-payout', 'loan-payout', 'refund', 'diff', 'receipt', 'urge', 'processed'],
   [SUB_ROLES.FEE_APPROVER]: ['aid-review', 'loan-review', 'processed'],
-  [SUB_ROLES.CHECKIN_STAFF]: ['verify', 'onsite', 'checkin-stats'],
   [SUB_ROLES.STUDENT_AFFAIRS]: ['room-change', 'aid-home', 'loan-home'],
   [SUB_ROLES.COLLEGE_DEAN]: ['room-change', 'aid-home', 'loan-home'],
   [SUB_ROLES.HEAD_TEACHER]: ['doc-home', 'aid-home', 'fee-home', 'loan-home', 'room-change']
@@ -97,7 +89,6 @@ export const SUB_ROLE_TODO_KEYS = {
 export const SUB_ROLE_QUICK_KEYS = {
   [SUB_ROLES.FEE_COLLECTOR]: ['collect', 'records', 'refund', 'diff', 'receipt', 'urge', 'payout'],
   [SUB_ROLES.FEE_APPROVER]: ['aid-review', 'loan-review'],
-  [SUB_ROLES.CHECKIN_STAFF]: ['verify', 'onsite', 'checkin-stats'],
   [SUB_ROLES.STUDENT_AFFAIRS]: ['room-change', 'aid-home', 'loan-home', 'checkin', 'messages'],
   [SUB_ROLES.COLLEGE_DEAN]: ['room-change', 'aid-home', 'loan-home', 'checkin', 'messages'],
   [SUB_ROLES.HEAD_TEACHER]: ['fee-home', 'doc-home', 'loan-home', 'dorm-home', 'room-change', 'aid-home', 'uniform', 'checkin', 'messages']

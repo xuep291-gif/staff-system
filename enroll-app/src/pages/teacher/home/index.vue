@@ -78,6 +78,7 @@ import SBadge from '@/components/shared/SBadge.vue'
 import SProgressBar from '@/components/shared/SProgressBar.vue'
 import STabBar from '@/components/shared/STabBar.vue'
 import { getClassSummary, getUnreadCount } from '@/utils/businessState.js'
+import { applyTheme } from '@/utils/role.js'
 
 export default {
   name: 'TeacherHome',
@@ -123,6 +124,7 @@ export default {
     }
   },
   onShow() {
+    applyTheme('teacher')
     const summary = getClassSummary()
     const pending = {
       'doc-home': summary.documents.tabs[0].count,

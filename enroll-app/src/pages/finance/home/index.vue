@@ -82,6 +82,7 @@ import SCard from '@/components/shared/SCard.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import STabBar from '@/components/shared/STabBar.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
+import { applyTheme } from '@/utils/role.js'
 import {
   getClassSummary, getPaymentRecordList, getFeeList,
   getOfflineCollectionList, getRefundList, getDifferenceRefundList,
@@ -122,6 +123,7 @@ export default {
     todoTotal() { return this.todos.reduce((s, t) => s + t.count, 0) }
   },
   onShow() {
+    applyTheme('finance')
     this.unreadCount = getUnreadCount('finance')
 
     const summary = getClassSummary()

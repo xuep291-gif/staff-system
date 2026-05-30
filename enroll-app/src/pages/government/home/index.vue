@@ -83,6 +83,7 @@ import SProgressBar from '@/components/shared/SProgressBar.vue'
 import STabBar from '@/components/shared/STabBar.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import { getClassSummary, getUnreadCount } from '@/utils/businessState.js'
+import { applyTheme } from '@/utils/role.js'
 import { getSubRole, getDataScope, SUB_ROLES } from '@/utils/permissions.js'
 
 export default {
@@ -122,6 +123,7 @@ export default {
     }
   },
   onShow() {
+    applyTheme('government')
     let subRole = getSubRole()
     if (!subRole) {
       // 直接从独立 key 兜底

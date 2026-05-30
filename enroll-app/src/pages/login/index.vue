@@ -143,8 +143,7 @@ export default {
         { role: '教师端', account: '1001', password: '123456', phone: '13800138000' },
         { role: '财务端', account: '2001', password: '123456', phone: '13800138001' },
         { role: '政务端(学工处)', account: '3001', password: '123456', phone: '13800138002' },
-        { role: '政务端(学院)', account: '3002', password: '123456', phone: '13800138003' },
-        { role: '迎新工作人员', account: '2003', password: '123456', phone: '13800138004' }
+        { role: '政务端(学院)', account: '3002', password: '123456', phone: '13800138003' }
       ]
     }
   },
@@ -376,8 +375,6 @@ export default {
         '13800138001': { role: 'finance', type: 3, name: '陈美玲', userId: 'staff_finance_001', phone: '13800138001', subRole: 'fee_collector', permissions: ['finance:overview','finance:collect','finance:records','finance:refund','finance:diff','finance:receipt','finance:urge','finance:payout','finance:aid-review','finance:loan-review','finance:stats'], dataScope: { type: 'all' } },
         2002: { role: 'finance', type: 3, name: '王建国', userId: 'staff_finance_002', phone: '13800138005', subRole: 'fee_approver', permissions: ['finance:overview','finance:aid-review','finance:loan-review','finance:stats'], dataScope: { type: 'all' } },
         '13800138005': { role: 'finance', type: 3, name: '王建国', userId: 'staff_finance_002', phone: '13800138005', subRole: 'fee_approver', permissions: ['finance:overview','finance:aid-review','finance:loan-review','finance:stats'], dataScope: { type: 'all' } },
-        2003: { role: 'finance', type: 3, name: '赵迎新', userId: 'staff_checkin_001', phone: '13800138004', subRole: 'checkin_staff', permissions: ['finance:verify','finance:onsite','finance:checkin-stats'], dataScope: { type: 'all' } },
-        '13800138004': { role: 'finance', type: 3, name: '赵迎新', userId: 'staff_checkin_001', phone: '13800138004', subRole: 'checkin_staff', permissions: ['finance:verify','finance:onsite','finance:checkin-stats'], dataScope: { type: 'all' } },
         3001: { role: 'government', type: 5, name: '周婷婷', userId: 'staff_gov_001', phone: '13800138002', subRole: 'student_affairs', permissions: ['gov:overview','gov:aid-final','gov:loan-final','gov:dorm-review','gov:checkin-stats','gov:non-dorm','gov:stats-global'], dataScope: { type: 'all' } },
         government: { role: 'government', type: 5, name: '周婷婷', userId: 'staff_gov_001', phone: '13800138002', subRole: 'student_affairs', permissions: ['gov:overview','gov:aid-final','gov:loan-final','gov:dorm-review','gov:checkin-stats','gov:non-dorm','gov:stats-global'], dataScope: { type: 'all' } },
         a2026001: { role: 'government', type: 5, name: '周婷婷', userId: 'staff_gov_001', phone: '13800138002', subRole: 'student_affairs', permissions: ['gov:overview','gov:aid-final','gov:loan-final','gov:dorm-review','gov:checkin-stats','gov:non-dorm','gov:stats-global'], dataScope: { type: 'all' } },

@@ -113,6 +113,7 @@ export default {
           ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
         })
         const bom = '﻿'
+        // #ifdef H5
         const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' })
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
@@ -122,6 +123,10 @@ export default {
         a.click()
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
+        // #endif
+        // #ifdef MP-WEIXIN
+        uni.showToast({ title: '小程序端暂不支持导出CSV', icon: 'none' })
+        // #endif
         uni.showToast({ title: '导出成功', icon: 'success' })
       } catch (e) {
         uni.showToast({ title: '导出失败', icon: 'none' })

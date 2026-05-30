@@ -231,7 +231,7 @@ export function getRoleHomePage(role) {
 
 // 应用角色主题（设置 body class）
 export function applyTheme(role) {
-  // #ifdef H5
+  if (typeof document === 'undefined' || !document.body) return
   const config = PORTAL_CONFIG[role]
   if (!config) {
     document.body.className = ''
@@ -242,7 +242,6 @@ export function applyTheme(role) {
   if (config.themeClass) {
     document.body.classList.add(config.themeClass)
   }
-  // #endif
 }
 
 // ============================================================

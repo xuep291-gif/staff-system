@@ -558,8 +558,7 @@ function getPermissionsData(state, params) {
   const permissionsMap = {
     '1001': { subRole: 'head_teacher', permissions: ['teacher:overview','teacher:fee-list','teacher:student-detail','teacher:urge','teacher:aid-list','teacher:loan-list','teacher:doc-review','teacher:dorm-view','teacher:checkin'], dataScope: { type: 'class', classId: 'class-2026-1' } },
     '2001': { subRole: 'fee_collector', permissions: ['finance:overview','finance:collect','finance:records','finance:refund','finance:diff','finance:receipt','finance:urge','finance:payout','finance:aid-review','finance:loan-review','finance:stats'], dataScope: { type: 'all' } },
-    '2002': { subRole: 'checkin_staff', permissions: ['finance:verify','finance:onsite','finance:checkin-stats'], dataScope: { type: 'all' } },
-    'C2026002': { subRole: 'checkin_staff', permissions: ['finance:verify','finance:onsite','finance:checkin-stats'], dataScope: { type: 'all' } },
+    '2002': { subRole: 'fee_approver', permissions: ['finance:overview','finance:aid-review','finance:loan-review','finance:stats'], dataScope: { type: 'all' } },
     '3001': { subRole: 'student_affairs', permissions: ['gov:overview','gov:aid-final','gov:loan-final','gov:dorm-review','gov:checkin-stats','gov:non-dorm','gov:stats-global'], dataScope: { type: 'all' } },
     '3002': { subRole: 'college_dean', permissions: ['gov:overview','gov:aid-review','gov:loan-review','gov:dorm-review','gov:checkin-stats','gov:non-dorm','gov:stats-college'], dataScope: { type: 'college', collegeId: 'cs' } },
     'C2026001': { subRole: 'college_dean', permissions: ['gov:overview','gov:aid-review','gov:loan-review','gov:dorm-review','gov:checkin-stats','gov:non-dorm','gov:stats-college'], dataScope: { type: 'college', collegeId: 'cs' } }
@@ -620,7 +619,7 @@ function logVerify(state, params) {
     verifyTime: iso(),
     verifyMethod: params.verifyMethod || 'manual',
     operatorId: params.operatorId || 'staff_checkin_001',
-    operatorName: params.operatorName || '迎新工作人员'
+    operatorName: params.operatorName || '财务人员'
   }
   state.verifyLogs.unshift(log)
   return ok(log)

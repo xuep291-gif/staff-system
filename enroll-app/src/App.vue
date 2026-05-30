@@ -7,12 +7,6 @@ export default {
   onLaunch: function (e) {
     console.log('App Launch', e)
 
-    // 启动时根据存储的 token 解析角色并应用主题
-    const role = getRoleFromStorage()
-    if (role) {
-      applyTheme(role)
-    }
-
     // 异步清理过期的页面缓存（不阻塞启动）
     cleanExpiredPageCache().then(result => {
       console.log('[App] 过期缓存清理结果', result)
@@ -27,6 +21,11 @@ export default {
     this.$cacheMap.remove('tabList')
     this.$cacheMap.remove('fetchMsgList')
     this.$cacheMap.remove('noticeList')
+  },
+  mounted() {
+    // DOM 就绪后应用主题
+    const role = getRoleFromStorage()
+    if (role) applyTheme(role)
   },
   onShow: function () {
   },

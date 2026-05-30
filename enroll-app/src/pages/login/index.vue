@@ -157,6 +157,17 @@ export default {
     }
   },
   onLoad(options) {
+    // 登录页始终使用教师端蓝色，清除上次登录残留的主题色
+    try {
+      if (typeof document !== 'undefined' && document.documentElement) {
+        const root = document.documentElement
+        root.style.setProperty('--brand', '#2B6CB0')
+        root.style.setProperty('--banner-bg', '#2B6CB0')
+        root.style.setProperty('--navbar-bg', '#2B6CB0')
+        document.body.classList.remove('rf', 'ra')
+      }
+    } catch (e) { /* ignore */ }
+
     let forceLogin = false
     // #ifdef H5
     const urlParams = new URLSearchParams(window.location.search)

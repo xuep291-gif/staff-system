@@ -229,18 +229,29 @@ export function getRoleHomePage(role) {
   return config ? config.homePage : '/pages/home/index'
 }
 
-// 应用角色主题（设置 body class）
+// 应用角色主题（直接设置 CSS 变量 + body class）
 export function applyTheme(role) {
-  if (typeof document === 'undefined' || !document.body) return
   const config = PORTAL_CONFIG[role]
-  if (!config) {
-    document.body.className = ''
-    return
+  if (!config) return
+
+  // 设置 body class（兼容旧逻辑）
+  if (typeof document !== 'undefined' && document.body) {
+    document.body.classList.remove('rf', 'ra')
+    if (config.themeClass) document.body.classList.add(config.themeClass)
   }
-  // 清除旧主题 class
-  document.body.classList.remove('rf', 'ra')
-  if (config.themeClass) {
-    document.body.classList.add(config.themeClass)
+
+  // 直接在 :root 上设置 CSS 变量，确保生效
+  if (typeof document !== 'undefined' && document.documentElement) {
+    const root = document.documentElement
+    const themeColors = {
+      teacher:  { brand: '#2B6CB0', brandT: '#DBEAFE' },
+      finance:  { brand: '#16A34A', brandT: '#DCFCE7' },
+      government: { brand: '#7C3AED', brandT: '#EDE9FE' }
+    }
+    const colors = themeColors[role] || themeColors.teacher
+    root.style.setProperty('--brand', colors.brand)
+    root.style.setProperty('--banner-bg', colors.brand)
+    root.style.setProperty('--navbar-bg', colors.brand)
   }
 }
 

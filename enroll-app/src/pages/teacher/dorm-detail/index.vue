@@ -27,7 +27,6 @@ import SNavBar from '@/components/shared/SNavBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { getStudent } from '@/utils/businessState.js'
 import { dormitoryApi } from '@/common/api/dormitory.js'
 
 function parseDorm(dorm) {
@@ -49,7 +48,7 @@ export default {
     }
   },
   async onLoad(query) {
-    const localStudent = getStudent(query.sid)
+    const localStudent = {};try{var r=await dormitoryApi.getStudentDormSelection();if(r&&r.code===0)return r.data}catch(e){};{}
     const res = await dormitoryApi.getStudentDormSelection(query.id || query.sid)
     const apiStudent = res?.data?.code === 0 ? res.data.data : null
     this.student = apiStudent

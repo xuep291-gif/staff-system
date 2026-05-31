@@ -86,7 +86,6 @@ import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import SReviewProgress from '@/components/shared/SReviewProgress.vue'
-import { getReviewItem, updateReview, REVIEW_STATUS } from '@/utils/businessState.js'
 import { scholarshipApi } from '@/common/api/scholarship.js'
 
 function buildLoanSteps(status) {
@@ -149,13 +148,12 @@ export default {
     this.expectedStatus = options.status || ''
   },
   async onShow() {
-    const localItem = this.uid ? getReviewItem('loans', this.uid) : null
-    if (localItem) {
-      this.item = localItem
-      return
+    if (this.uid) {
+      try {
+        const res = await scholarshipApi.getLoanDetail(this.uid)
+        this.item = res?.code === 0 ? res.data : null
+      } catch (e) { this.item = null }
     }
-    const res = this.uid ? await scholarshipApi.getLoanDetail(this.uid) : null
-    this.item = res?.data?.code === 0 ? res.data.data : null
   },
   methods: {
     async onApprove() {
@@ -165,7 +163,7 @@ export default {
       this.showReject = false
       await scholarshipApi.approveLoan(this.uid, { opinion: this.opinion, targetStatus: REVIEW_STATUS.REVIEW_PASS })
       updateReview('loans', this.uid, REVIEW_STATUS.REVIEW_PASS, { node: '学院负责人复审', result: '复审通过', remark: this.opinion })
-      this.item = getReviewItem('loans', this.uid) || { ...this.item, status: REVIEW_STATUS.REVIEW_PASS }
+      this.item = localItem || { ...this.item, status: REVIEW_STATUS.REVIEW_PASS }
       uni.showToast({ title: '复审通过', icon: 'success' })
       setTimeout(() => uni.navigateBack(), 500)
     },
@@ -177,7 +175,7 @@ export default {
       const reason = this.rejectReason || '复审驳回'
       await scholarshipApi.rejectLoan(this.uid, { rejectReason: reason })
       updateReview('loans', this.uid, REVIEW_STATUS.REJECTED, { node: '学院负责人复审', result: '已驳回', remark: reason })
-      this.item = getReviewItem('loans', this.uid) || { ...this.item, status: REVIEW_STATUS.REJECTED }
+      this.item = localItem || { ...this.item, status: REVIEW_STATUS.REJECTED }
       uni.showToast({ title: '已驳回', icon: 'none' })
       setTimeout(() => uni.navigateBack(), 500)
     }

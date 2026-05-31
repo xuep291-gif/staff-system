@@ -136,7 +136,7 @@ import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import SReviewProgress from '@/components/shared/SReviewProgress.vue'
-import { getReceiptList, updateReceipt } from '@/utils/businessState.js'
+import { invoiceApi } from '@/common/api/invoice.js'
 
 export default {
   name: 'FinanceReceiptDetail',
@@ -183,7 +183,7 @@ export default {
   methods: {
     refresh() {
       if (this.itemId) {
-        const list = getReceiptList()
+        const list = []
         this.item = list.find(i => i.id === this.itemId) || null
       }
     },

@@ -30,7 +30,7 @@ import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { getLastBusinessChange, getReviewList, REVIEW_STATUS, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
+import { scholarshipApi } from '@/common/api/scholarship.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 export default {
@@ -64,52 +64,15 @@ export default {
   watch: {
     activeTab() { this.filterVersion++ }
   },
-  onLoad() {
-    this.onBusinessStateChange = ({ collection }) => {
-      if (collection === 'loans') this.refresh(true)
-    }
-    if (typeof uni.$on === 'function') uni.$on('business-state-change', this.onBusinessStateChange)
-  },
-  onUnload() {
-    if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
-  },
-  async onShow() {
-    this.filterVersion++
-    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
-    this.refresh(true)
-    this.activeTab = getActiveKey('govLoanFinalHome', 'pending')
-  },
-  methods: {
+  
+  
+  async onShow(){ this.filterVersion++; await this.refresh() }, methods:{
     onTabClick(key) {
       this.activeTab = key
       setActiveKey('govLoanFinalHome', key)
     },
-    refresh(syncChangedTab = false) {
-      const rows = getReviewList('loans')
-      this.list = rows.map(item => ({
-        ...item,
-        badgeColor: reviewStatusMeta[item.status]?.color || item.badgeColor,
-        bg: `var(--${reviewStatusMeta[item.status]?.color || 'wa'}-bg)`,
-        iconColor: `var(--${reviewStatusMeta[item.status]?.color || 'wa'})`
-      }))
-      if (syncChangedTab) this.syncActiveTabFromLastChange()
-    },
-    syncActiveTabFromLastChange() {
-      const change = getLastBusinessChange('loans')
-      const token = change ? `${change.uid}-${change.status}-${change.time}` : ''
-      if (!change || token === this.lastSyncedChange) return
-      this.lastSyncedChange = token
-      const item = this.list.find(i => i.uid === change.uid) || change
-      const key = item.status === REVIEW_STATUS.REVIEW_PASS ? 'pending' : item.status === REVIEW_STATUS.FINAL_PASS ? 'processing' : 'completed'
-      setActiveKey('govLoanFinalHome', key)
-    },
-    goReview(item) {
-      rememberStaffBackTarget('/pages/government/loan-final-home/index')
-      if (this.activeTab === 'pending' && item.status !== REVIEW_STATUS.REVIEW_PASS) return
-      uni.navigateTo({ url: '/pages/government/loan-final-review/index?uid=' + item.uid + '&status=' + item.status })
-    }
-  }
-}
+    async refresh(){ try{ var r=await scholarshipApi.getLoanList({pageNum:1,pageSize:200,tab:"processing",role:"government"}); if(r&&r.code===0) this.list=(r.data.items||[]).map(function(i){return Object.assign({},i,{uid:i.loanId})}) }catch(e){} },
+}}
 </script>
 
 <style lang="scss" scoped>

@@ -11,12 +11,14 @@ import staff from './routes/staff/index.js';
 
 const app = new Hono();
 
+// CORS — 全局应用，处理预检 OPTIONS 请求
 app.use(
-  '/api/*',
+  '*',
   cors({
     origin: '*',
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowHeaders: ['Content-Type', 'Authorization', 'X-App-Id', 'X-Client-Type', 'X-Role'],
+    maxAge: 86400,
   }),
 );
 

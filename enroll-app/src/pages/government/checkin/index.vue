@@ -80,7 +80,6 @@ import SCard from '@/components/shared/SCard.vue'
 import SProgressBar from '@/components/shared/SProgressBar.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import { checkinApi } from '@/common/api/checkin.js'
-import { getClassSummary, getStudents, updateStudentCheckin } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 export default {
@@ -118,8 +117,8 @@ export default {
   },
   methods: {
     refresh() {
-      const summary = getClassSummary()
-      const students = getStudents()
+      const summary = {}
+      const students = []
       this.stats = { checkedIn: summary.checkin.checkedIn, unchecked: summary.checkin.unchecked, checkinRate: summary.checkin.rate }
       this.collegeList = [{
         name: students[0]?.college || '计算机学院',
@@ -154,7 +153,7 @@ export default {
           if (!studentId) return uni.showToast({ title: '二维码未包含学生信息', icon: 'none' })
           const res = await checkinApi.confirm(studentId, { checkinMethod: 'qr_scan', location: '政务报到现场', remark: '扫码确认报到' })
           if (res?.data?.code === 0) {
-            updateStudentCheckin(studentId, true)
+            checkinApi.confirm(studentId,{checkinMethod:'manual'}).catch(function(){})
             this.refresh()
             uni.showToast({ title: '报到确认成功', icon: 'success' })
           }

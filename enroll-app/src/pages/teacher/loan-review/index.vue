@@ -4,10 +4,10 @@
     <scroll-view scroll-y class="body" v-if="item">
       <!-- Student Info Card -->
       <view class="student-card">
-        <view class="avatar">{{ item.avatar || item.name.charAt(0) }}</view>
+        <view class="avatar">{{ item.avatar }}</view>
         <view class="info">
           <text class="name">{{ item.name }}</text>
-          <text class="meta">{{ item.sid }} · 计算机学院 2026级1班</text>
+          <text class="meta">{{ item.id }} · {{ item.college }}</text>
         </view>
         <SBadge :color="item.badgeColor">{{ item.statusLabel }}</SBadge>
       </view>
@@ -15,7 +15,12 @@
       <!-- Status Steps -->
       <SCard title="审核进度" :padding="16">
         <view class="steps">
-          <view v-for="(step, idx) in statusSteps" :key="idx" class="step" :class="stepClass(idx)">
+          <view
+            v-for="(step, idx) in statusSteps"
+            :key="idx"
+            class="step"
+            :class="stepClass(idx)"
+          >
             <view class="step-dot" :class="stepClass(idx)">
               <text v-if="step.done" class="step-check">✓</text>
               <text v-else class="step-num">{{ idx + 1 }}</text>
@@ -34,7 +39,7 @@
         <SInfoRow label="贷款金额">
           <text class="amount-red">¥{{ item.amount }}</text>
         </SInfoRow>
-        <SInfoRow label="贷款类型">{{ item.type || '生源地助学贷款' }}</SInfoRow>
+        <SInfoRow label="贷款类型">生源地助学贷款</SInfoRow>
         <SInfoRow label="贷款银行">国家开发银行</SInfoRow>
         <SInfoRow label="申请时间">2026-05-20 09:15</SInfoRow>
         <SInfoRow label="申请原因">
@@ -68,19 +73,7 @@
         </view>
       </SCard>
 
-      <!-- Review Opinion -->
-      <SCard title="审核意见" :padding="16" v-if="canReview">
-        <view class="form-group">
-          <textarea class="opinion-textarea" v-model="opinion" placeholder="请输入审核意见…" />
-        </view>
-      </SCard>
-
     </scroll-view>
-
-    <view class="action-row" v-if="canReview">
-      <view class="btn-e-outline" @click="showReject = true"><text>不予通过</text></view>
-      <view class="btn-p" @click="onApprove"><text>{{ approveLabel }}</text></view>
-    </view>
 
     <view v-if="showPreview" class="ovl on" @click="showPreview = false">
       <view class="sheet" @click.stop>
@@ -95,21 +88,6 @@
         </view>
       </view>
     </view>
-
-    <view v-if="showReject" class="ovl on" @click="showReject = false">
-      <view class="sheet" @click.stop>
-        <view class="shandle" />
-        <text class="stitle">退回原因</text>
-        <view class="sbody2">
-          <text class="smsg">请输入退回原因，方便学生修改后重新提交</text>
-          <textarea class="sheet-textarea" v-model="rejectReason" placeholder="请输入退回原因…" />
-          <view class="brow">
-            <view class="btn-e" @click="showReject = false"><text>取消</text></view>
-            <view class="btn-p" @click="onReject"><text>确认退回</text></view>
-          </view>
-        </view>
-      </view>
-    </view>
   </view>
 </template>
 <script>
@@ -117,20 +95,8 @@ import SNavBar from '@/components/shared/SNavBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SBadge from '@/components/shared/SBadge.vue'
-import { adaptReviewStatus, buildFundingReviewSteps, getReviewItem, updateReview, REVIEW_STATUS } from '@/utils/businessState.js'
+import { adaptReviewStatus, buildFundingReviewSteps, REVIEW_STATUS } from '@/utils/businessState.js'
 import { scholarshipApi } from '@/common/api/scholarship.js'
-
-const STORAGE_KEY = 'teacher_loan_list'
-
-function loadItem(uid) {
-  try {
-    const raw = uni.getStorageSync(STORAGE_KEY)
-    if (raw) {
-      return JSON.parse(raw).find(i => i.uid === uid) || null
-    }
-  } catch (e) { /* ignore */ }
-  return null
-}
 
 export default {
   name: 'TeacherLoanReview',
@@ -139,44 +105,29 @@ export default {
     return {
       item: null,
       showPreview: false,
-      showReject: false,
-      opinion: '',
-      rejectReason: '',
-      submitting: false,
       statusSteps: []
     }
   },
   computed: {
-    canReview() {
-      if (!this.item) return false
-      return this.item.status === REVIEW_STATUS.PENDING
-    },
-    approveLabel() {
-      return '初审通过'
-    },
     lockedMessage() {
       if (!this.item) return ''
-      if (this.canReview) return ''
       if ([REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(this.item.status)) return '流程已完结，仅供查看。'
       if (this.item.status === REVIEW_STATUS.REJECTED) return '申请已驳回，仅供查看。'
-      return '当前阶段为学院复审或后续流程，请等待其他角色处理。'
+      return '教师端仅查看本班助学贷款进度，审批操作由授权职工完成。'
     }
   },
   async onLoad(options) {
     const uid = options.uid
-    const localItem = uid ? getReviewItem('loans', uid) : null
-    if (uid) this.item = adaptReviewStatus(localItem || loadItem(uid) || { name: '孙文浩', sid: '2026010039', uid: 'loan-1', type: '生源地助学贷款', amount: '8,000', avatar: '孙', status: REVIEW_STATUS.PENDING })
     if (uid) {
-      const detailRes = await scholarshipApi.getLoanDetail(uid)
-      if (!localItem && detailRes?.data?.code === 0 && detailRes.data.data) this.item = adaptReviewStatus(detailRes.data.data)
+      try {
+        const r = await scholarshipApi.getLoanDetail(uid)
+        if (r?.code === 0 && r.data) this.item = adaptReviewStatus(r.data)
+      } catch (e) {}
+    }
+    if (!this.item) {
+      this.item = { uid, name: '暂无', status: REVIEW_STATUS.PENDING, loanId: uid, amount: '0', type: '', date: '', className: '', college: '', logs: [] }
     }
     if (this.item) {
-      if (this.item.status !== REVIEW_STATUS.PENDING) {
-        uni.showToast({ title: '该申请不在辅导员初审阶段', icon: 'none' })
-        setTimeout(() => uni.navigateBack(), 800)
-        return
-      }
-      this.opinion = '辅导员初审通过，提交学院负责人复审。'
       this.statusSteps = buildFundingReviewSteps(this.item)
     }
   },
@@ -184,32 +135,6 @@ export default {
     stepClass(idx) {
       const s = this.statusSteps[idx]
       return { done: s.done, cur: s.current }
-    },
-    async onApprove() {
-      if (this.submitting) return
-      this.submitting = true
-      this.showPreview = false
-      this.showReject = false
-      const targetStatus = REVIEW_STATUS.FIRST_PASS
-      await scholarshipApi.approveLoan(this.item.uid, { opinion: this.opinion, targetStatus })
-      updateReview('loans', this.item.uid, targetStatus, { node: '辅导员初审', result: '初审通过', remark: this.opinion })
-      this.item = getReviewItem('loans', this.item.uid) || { ...this.item, status: targetStatus }
-      this.statusSteps = buildFundingReviewSteps(this.item)
-      uni.showToast({ title: '初审通过', icon: 'success' })
-      setTimeout(() => uni.navigateBack(), 500)
-    },
-    async onReject() {
-      if (this.submitting) return
-      this.submitting = true
-      this.showReject = false
-      this.showPreview = false
-      const reason = this.rejectReason || '审核不通过'
-      await scholarshipApi.rejectLoan(this.item.uid, { rejectReason: reason })
-      updateReview('loans', this.item.uid, REVIEW_STATUS.REJECTED, { node: '辅导员初审', result: '已驳回', remark: reason })
-      this.item = getReviewItem('loans', this.item.uid) || { ...this.item, status: REVIEW_STATUS.REJECTED }
-      this.statusSteps = buildFundingReviewSteps(this.item)
-      uni.showToast({ title: '已驳回', icon: 'none' })
-      setTimeout(() => uni.navigateBack(), 500)
     }
   }
 }
@@ -262,7 +187,7 @@ export default {
 }
 
 .result-head { display: flex; flex-direction: column; align-items: flex-start; }
-.result-head > view + view { margin-top: 16rpx; }
+.result-head > * + * { margin-top: 16rpx; }
 .result-message { font-size: var(--fs-12); color: var(--N500); line-height: 1.6; }
 .logs { margin-top: 24rpx; padding-top: 24rpx; border-top: 1px solid var(--N200); }
 .log + .log { margin-top: 20rpx; }
@@ -270,24 +195,8 @@ export default {
 .log-time { display: block; margin-top: 4rpx; font-size: var(--fs-11); color: var(--N400); }
 .log-remark { display: block; margin-top: 6rpx; font-size: var(--fs-12); color: var(--N500); line-height: 1.5; }
 
-/* ── Review Actions ── */
-.form-group { display: flex; flex-direction: column; }
-.form-label { font-size: var(--fs-13); font-weight: 600; color: var(--N700); margin-bottom: 12rpx; }
-.opinion-textarea, .sheet-textarea { width: 100%; min-height: 144rpx; padding: 20rpx 24rpx; border: 1.5px solid var(--N200); border-radius: 24rpx; font-size: var(--fs-13); color: var(--N900); background: var(--white); box-sizing: border-box; }
-.action-row { display: flex; margin: 28rpx; }
-.action-row > view { flex: 1; }
-.action-row > view + view { margin-left: 20rpx; }
-.btn-p { height: 96rpx; background: var(--brand); color: #fff; border-radius: 24rpx; font-size: var(--fs-15); font-weight: 600; display: flex; align-items: center; justify-content: center; transition: background .3s, transform .2s; }
-.btn-p:active { background: var(--brand-d); transform: scale(0.97); }
-.btn-e-outline { height: 96rpx; border-radius: 24rpx; border: 2px solid var(--er); color: var(--er); font-size: var(--fs-15); font-weight: 600; display: flex; align-items: center; justify-content: center; background: var(--white); transition: background .2s; }
-.btn-e-outline:active { background: var(--er-bg); }
-.btn-e { flex: 1; height: 96rpx; border-radius: 24rpx; background: var(--er-bg); color: var(--er); font-size: var(--fs-15); font-weight: 600; border: 1px solid var(--er-bd); display: flex; align-items: center; justify-content: center; }
-.btn-e:active { background: var(--er); color: #fff; }
-.brow { display: flex; }
-.brow > view + view { margin-left: 16rpx; }
-
 .preview-entry { display: flex; align-items: center; min-height: 96rpx; }
-.preview-entry > view + view { margin-left: 20rpx; }
+.preview-entry > * + * { margin-left: 20rpx; }
 .preview-icon { width: 72rpx; height: 72rpx; border-radius: var(--r-12); background: var(--brand-t); color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: var(--fs-20); }
 .preview-main { flex: 1; min-width: 0; }
 .preview-title { display: block; font-size: var(--fs-14); color: var(--N900); font-weight: 600; }
@@ -308,6 +217,6 @@ export default {
 .shandle { width: 72rpx; height: 8rpx; background: var(--N200); border-radius: 4rpx; margin: 20rpx auto 0; }
 .stitle { font-size: var(--fs-16); font-weight: 600; color: var(--N900); padding: 28rpx 32rpx 24rpx; border-bottom: 1px solid var(--N50); display: block; text-align: center; }
 .sbody2 { padding: 32rpx; display: flex; flex-direction: column; }
-.sbody2 > view + view { margin-top: 24rpx; }
+.sbody2 > * + * { margin-top: 24rpx; }
 .smsg { font-size: var(--fs-13); color: var(--N500); text-align: center; line-height: 1.6; display: block; }
 </style>

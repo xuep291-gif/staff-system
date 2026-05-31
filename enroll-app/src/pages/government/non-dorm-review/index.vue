@@ -88,7 +88,7 @@
 import SNavBar from '@/components/shared/SNavBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
-import { getDormReviewItem, updateReview } from '@/utils/businessState.js'
+import { dormitoryApi } from '@/common/api/dormitory.js'
 
 export default {
   name: 'GovernmentNonDormReview',
@@ -118,7 +118,7 @@ export default {
   onLoad(options) {
     const uid = options.uid
     if (uid) {
-      this.item = getDormReviewItem('nonDorm', uid) || { uid, name: '赵刚', id: '2026010008', address: '校园路12号', avatar: '赵' }
+      this.item = item || { uid, name: '赵刚', id: '2026010008', address: '校园路12号', avatar: '赵' }
     } else {
       this.item = { uid: 'gnd-1', name: '赵刚', id: '2026010008', address: '校园路12号', avatar: '赵' }
     }

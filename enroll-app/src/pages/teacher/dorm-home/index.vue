@@ -64,7 +64,7 @@
 import SNavBar from '@/components/shared/SNavBar.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { getStudents } from '@/utils/businessState.js'
+import { dormitoryApi } from '@/common/api/dormitory.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 function parseDorm(dorm) {
@@ -100,27 +100,7 @@ export default {
       )
     }
   },
-  onLoad() {
-    this.onBusinessStateChange = ({ collection }) => {
-      if (collection === 'students') this.loadList()
-    }
-    if (typeof uni.$on === 'function') uni.$on('business-state-change', this.onBusinessStateChange)
-  },
-  onUnload() {
-    if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
-  },
-  onShow() {
-    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
-    this.loadList()
-  },
-  methods: {
-    loadList() {
-      this.list = getStudents().map(student => ({
-        ...student,
-        ...parseDorm(student.dorm)
-      }))
-    },
-    goDetail(item) {
+  async onShow() { this.filterVersion++; await this.refresh() }, methods:{ async refresh(){ try{ const res=await dormitoryApi.getDormitoryList({pageNum:1,pageSize:200}); if(res?.code===0) this.students=(res.data.items||[]).map(s=>({...s,studentId:s.studentId||s.studentNo})) }catch(e){} }, goDetail(item) {
       rememberStaffBackTarget('/pages/teacher/dorm-home/index')
       uni.navigateTo({ url: `/pages/teacher/dorm-detail/index?sid=${item.sid}` })
     }

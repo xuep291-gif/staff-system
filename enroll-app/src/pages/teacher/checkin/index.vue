@@ -116,7 +116,6 @@ import SProgressBar from '@/components/shared/SProgressBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import { checkinApi } from '@/common/api/checkin.js'
 import { reminderApi } from '@/common/api/reminder.js'
-import { getClassSummary, getStudents, updateStudentCheckin, updateStudentDelay } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 export default {
@@ -142,7 +141,7 @@ export default {
       filterVersion: 0
     }
   },
-  onLoad() {
+  async onLoad() {
     this.onBusinessStateChange = ({ collection }) => {
       if (collection === 'students') this.refresh()
     }
@@ -158,8 +157,8 @@ export default {
   },
   methods: {
     refresh() {
-      const summary = getClassSummary()
-      const students = getStudents()
+      const summary = { totalStudents:0, checkedIn:0, unchecked:0, checkinRate:0 }
+      
       this.stats = summary.checkin
       this.checkinRate = summary.checkin.rate
       this.className = students[0]?.className || this.className
@@ -218,7 +217,7 @@ export default {
         reason: '学生申请延期报到',
         expectedCheckinDate
       }).catch(() => {})
-      updateStudentDelay(student.studentId, true)
+      checkinApi.delay(student.studentId, { reason: "延期报到", expectedCheckinDate: new Date(Date.now()+7*86400000).toISOString().slice(0,10) }).catch(()=>{})
       this.filterVersion++
       this.refresh()
       uni.showToast({ title: '已办理延期报到', icon: 'success' })
@@ -239,7 +238,7 @@ export default {
             remark: '扫码确认报到'
           })
           if (res?.data?.code === 0) {
-            updateStudentCheckin(studentId, true)
+            checkinApi.confirm(studentId, { checkinMethod: "manual" }).catch(()=>{})
             this.filterVersion++
             this.refresh()
             uni.showToast({ title: '报到确认成功', icon: 'success' })

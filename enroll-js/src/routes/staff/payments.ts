@@ -7,15 +7,59 @@ import { okCtx, failCtx } from '../../lib/response.js';
 const payments = new Hono();
 
 // ---------------------------------------------------------------------------
-// Default reference bill items
+// Default reference bill items (hardcoded fallback)
 // ---------------------------------------------------------------------------
-const DEFAULT_BILLS = [
+const HARDCODED_BILLS = [
   { billNo: 'BILL_TUITION',  itemName: '学费',       itemType: 'tuition',       receivableAmount: 5200, priority: 1 },
   { billNo: 'BILL_DORM',     itemName: '住宿费',     itemType: 'accommodation',  receivableAmount: 1200, priority: 2 },
   { billNo: 'BILL_BOOK',     itemName: '教材费',     itemType: 'textbook',       receivableAmount:  800, priority: 3 },
   { billNo: 'BILL_MEDICAL',  itemName: '体检费',     itemType: 'physical_exam',  receivableAmount:  180, priority: 4 },
   { billNo: 'BILL_UNIFORM',  itemName: '军训服装费', itemType: 'uniform',        receivableAmount:  300, priority: 5 },
 ];
+
+let _cachedFeeItems: typeof HARDCODED_BILLS | null = null;
+
+async function loadFeeItems(): Promise<typeof HARDCODED_BILLS> {
+  if (_cachedFeeItems) return _cachedFeeItems;
+  try {
+    const rows = await db.execute(sql`
+      SELECT
+        fi.item_name AS "itemName",
+        fi.item_code AS "itemType",
+        fi.priority,
+        CAST(COALESCE(fs.amount, 0) AS integer) AS "receivableAmount"
+      FROM t_data_fee_item fi
+      JOIN t_data_fee_standard fs ON fs.item_id = fi.id
+        AND fs.standard_type = 'major'
+        AND fs.delete_flag = 0
+        AND fs.disabled = 0
+      WHERE fi.disabled = 0 AND fi.delete_flag = 0
+        AND fi.item_code NOT ILIKE '%AUDIT%'
+        AND fi.item_code NOT ILIKE '%DELETE%'
+        AND fi.item_name NOT ILIKE '%audit%'
+      ORDER BY fi.priority, fi.id
+    `);
+    const items = (rows as any[]).filter((r: any) => r.itemName && r.receivableAmount > 0);
+    if (items.length > 0) {
+      _cachedFeeItems = items.map((r: any, i: number) => ({
+        billNo: r.itemType || `BILL_${i + 1}`,
+        itemName: r.itemName || `费用项目${i + 1}`,
+        itemType: r.itemType || `item_${i + 1}`,
+        receivableAmount: Number(r.receivableAmount) || 0,
+        priority: Number(r.priority) || i + 1,
+      }));
+      return _cachedFeeItems;
+    }
+  } catch { /* fall through */ }
+  return HARDCODED_BILLS;
+}
+
+function getBillsRef(): typeof HARDCODED_BILLS {
+  return _cachedFeeItems || HARDCODED_BILLS;
+}
+
+// Preload fee standards from DB at startup
+loadFeeItems();
 
 const STATUS_LABELS: Record<string, string> = {
   paid:          '已缴清',
@@ -87,26 +131,23 @@ payments.get('/payments/class-stats', async (c) => {
     const rows = await db.execute(sql`
       SELECT
         s.id,
-        s.green_channel,
-        COALESCE(SUM(b.receivable_amount), 0) AS receivable_amt,
-        COALESCE(SUM(b.paid_amount), 0)       AS paid_amt,
-        COALESCE(SUM(b.unpaid_amount), 0)     AS unpaid_amt,
-        MAX(b.due_date)                       AS due_date
+        COALESCE(SUM(b.amount), 0) AS receivable_amt,
+        COALESCE(SUM(CASE WHEN b.pay_status = 'paid' THEN b.amount ELSE 0 END), 0) AS paid_amt
       FROM t_data_student s
-      LEFT JOIN t_data_billing b ON s.id = b.student_id
-      WHERE s.delete_flag = 0
-        ${classId ? sql`AND s.class_id = ${classId}` : sql``}
-        ${termId  ? sql`AND (b.term_id = ${termId} OR b.term_id IS NULL)` : sql``}
+      LEFT JOIN t_data_billing b ON s.student_no = b.student_no
+      ${classId ? sql`WHERE s.class_id = ${classId}` : sql``}
       GROUP BY s.id
     `);
 
+    const defaultReceivable = getBillsRef().reduce((s: number, b: any) => s + b.receivableAmount, 0)
     const students = rows as any[];
     for (const s of students) {
       totalStudents++;
-      const receivable = Number(s.receivable_amt) || 0;
-      const paid       = Number(s.paid_amt)       || 0;
-      const unpaid     = Number(s.unpaid_amt)     || 0;
-      const status = computePaymentStatus(receivable, paid, s.green_channel, s.due_date);
+      const dbAmt = Number(s.receivable_amt) || 0;
+      const receivable = dbAmt > 0 ? dbAmt : defaultReceivable;
+      const paid       = dbAmt > 0 ? (Number(s.paid_amt) || 0) : 0;
+      const unpaid     = Math.max(0, receivable - paid);
+      const status = computePaymentStatus(receivable, paid, 0, null);
 
       totalReceivableAmount += receivable;
       totalPaidAmount       += paid;
@@ -172,17 +213,16 @@ payments.get('/payments/students', async (c) => {
         s.student_no,
         s.name,
         s.class_name,
-        s.green_channel,
-        COALESCE(SUM(b.receivable_amount), 0)       AS receivable_amount,
-        COALESCE(SUM(b.paid_amount), 0)             AS paid_amount,
-        COALESCE(SUM(b.unpaid_amount), 0)           AS unpaid_amount,
-        COALESCE(SUM(b.discount_amount), 0)         AS discount_amount,
-        MAX(b.due_date)                             AS due_date,
-        COALESCE(MAX(b.urge_count), 0)              AS urge_count,
-        MAX(b.last_urge_at)                         AS last_urge_at
+        0                                           AS green_channel,
+        COALESCE(SUM(b.amount), 0)                  AS receivable_amount,
+        COALESCE(SUM(CASE WHEN b.pay_status = 'paid' THEN b.amount ELSE 0 END), 0) AS paid_amount,
+        0                                           AS discount_amount,
+        NULL                                        AS due_date,
+        0                                           AS urge_count,
+        NULL                                        AS last_urge_at
       FROM t_data_student s
-      LEFT JOIN t_data_billing b ON s.id = b.student_id
-      WHERE s.delete_flag = 0
+      LEFT JOIN t_data_billing b ON s.student_no = b.student_no
+      WHERE 1=1
         ${classId ? sql`AND s.class_id = ${classId}` : sql``}
         ${keyword ? sql`AND (s.name ILIKE ${'%' + keyword + '%'} OR s.student_no ILIKE ${'%' + keyword + '%'})` : sql``}
       GROUP BY s.id
@@ -191,10 +231,16 @@ payments.get('/payments/students', async (c) => {
 
     const students = rows as any[];
 
+    // Default fee total all students owe (sum of DB fee standards)
+    const DEFAULT_RECEIVABLE = getBillsRef().reduce((s: number, b: any) => s + b.receivableAmount, 0)
+
     allItems = students.map((s: any) => {
-      const receivable = Number(s.receivable_amount) || 0;
-      const paid       = Number(s.paid_amount)       || 0;
-      const unpaid     = Number(s.unpaid_amount)     || 0;
+      const dbReceivable = Number(s.receivable_amount) || 0;
+      const dbPaid       = Number(s.paid_amount)       || 0;
+      // Use default fee standard for students with no billing records
+      const receivable = dbReceivable > 0 ? dbReceivable : DEFAULT_RECEIVABLE;
+      const paid       = dbReceivable > 0 ? dbPaid : 0;
+      const unpaid     = Math.max(0, receivable - paid);
       const status     = computePaymentStatus(receivable, paid, s.green_channel, s.due_date);
       const overdueDays = computeOverdueDays(s.due_date);
 
@@ -268,9 +314,10 @@ payments.get('/payments/students/:studentId', async (c) => {
 
   try {
     const studentRows = await db.execute(sql`
-      SELECT id, student_no, name, class_name, class_id, phone, id_card, green_channel, created_at
+      SELECT id, student_no, name, class_name, class_id, phone, created_at
       FROM t_data_student
-      WHERE id = ${Number(studentId)} AND delete_flag = 0
+      WHERE (id = ${Number.isFinite(Number(studentId)) ? Number(studentId) : 0} OR student_no = ${studentId})
+        AND disabled = 0
       LIMIT 1
     `);
     const s = (studentRows as any[])[0];
@@ -282,8 +329,8 @@ payments.get('/payments/students/:studentId', async (c) => {
         className:    s.class_name || '',
         classId:      s.class_id || '',
         phone:        s.phone || '',
-        idCard:       s.id_card || '',
-        greenChannel: Number(s.green_channel) === 1,
+        idCard:       '',
+        greenChannel: false,
         createdAt:    s.created_at || '',
       };
     }
@@ -297,18 +344,23 @@ payments.get('/payments/students/:studentId', async (c) => {
   let billingRows: any[] = [];
   try {
     billingRows = await db.execute(sql`
-      SELECT * FROM t_data_billing WHERE student_id = ${Number(studentId)}
+      SELECT * FROM t_data_billing WHERE student_no = ${student.studentNo}
     `) as any[];
   } catch {
     billingRows = [];
   }
 
   // --- Summary ---
-  const receivable = billingRows.reduce((sum: number, b: any) => sum + (Number(b.receivable_amount) || 0), 0);
-  const paid       = billingRows.reduce((sum: number, b: any) => sum + (Number(b.paid_amount) || 0), 0);
-  const discount   = billingRows.reduce((sum: number, b: any) => sum + (Number(b.discount_amount) || 0), 0);
-  const unpaid     = receivable - paid - discount;
-  const status = computePaymentStatus(receivable, paid, student.greenChannel ? 1 : 0, null);
+  const dbReceivable = billingRows.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+  const dbPaid       = billingRows.reduce((sum: number, b: any) => sum + (b.pay_status === 'paid' ? (Number(b.amount) || 0) : 0), 0);
+  const defaultTotal = getBillsRef().reduce((s: number, it: any) => s + it.receivableAmount, 0);
+  // Use DB billing data if present, otherwise default fee standard
+  const hasBilling   = dbReceivable > 0;
+  const receivable   = hasBilling ? dbReceivable : defaultTotal;
+  const paid         = hasBilling ? dbPaid : 0;
+  const discount     = 0;
+  const unpaid       = Math.max(0, receivable - paid);
+  const status = computePaymentStatus(receivable, paid, 0, null);
 
   const summary = {
     receivableAmount: receivable,
@@ -326,13 +378,13 @@ payments.get('/payments/students/:studentId', async (c) => {
     if (key) billingMap.set(key, b);
   }
 
-  const bills = DEFAULT_BILLS.map((def, idx) => {
+  const bills = getBillsRef().map((def, idx) => {
     const dbBill = billingMap.get(def.itemType);
     const billId    = dbBill ? String(dbBill.id) : `bill_${idx + 1}`;
-    const dueDate   = dbBill?.due_date || null;
-    const recvAmt   = dbBill ? (Number(dbBill.receivable_amount) || def.receivableAmount) : def.receivableAmount;
-    const paidAmt   = dbBill ? (Number(dbBill.paid_amount) || 0) : 0;
-    const discAmt   = dbBill ? (Number(dbBill.discount_amount) || 0) : 0;
+    const dueDate   = null;
+    const recvAmt   = dbBill ? (Number(dbBill.amount) || def.receivableAmount) : def.receivableAmount;
+    const paidAmt   = dbBill && dbBill.pay_status === 'paid' ? (Number(dbBill.amount) || 0) : 0;
+    const discAmt   = 0;
     const unpaidAmt = Math.max(0, recvAmt - paidAmt - discAmt);
     let billStatus   = 'unpaid';
     if (unpaidAmt <= 0) billStatus = 'paid';
@@ -355,11 +407,11 @@ payments.get('/payments/students/:studentId', async (c) => {
   });
 
   // --- Records (payment records from billing table) ---
-  const paidBills = billingRows.filter((b: any) => b.pay_status === 'paid' || Number(b.paid_amount) > 0);
+  const paidBills = billingRows.filter((b: any) => b.pay_status === 'paid');
   const records = paidBills.map((b: any, idx: number) => ({
     recordId:     String(b.id) || `rec_${idx + 1}`,
     paymentNo:    b.billing_no || `PAY${String(b.id || idx).padStart(6, '0')}`,
-    amount:       Number(b.paid_amount) || Number(b.amount) || 0,
+    amount:       Number(b.amount) || 0,
     method:       b.pay_method || 'wx',
     channel:      b.pay_channel || '微信支付',
     paidAt:       b.pay_time || b.paid_at || '',
@@ -469,10 +521,10 @@ payments.get('/payments/students/:studentId/bills', async (c) => {
   // Fetch billing records for this student
   let billingRows: any[] = [];
   try {
+    const studentNo = studentId; // param may be student_no string or numeric id
     const rows = await db.execute(sql`
       SELECT * FROM t_data_billing
-      WHERE student_id = ${Number(studentId)}
-        ${termId ? sql`AND term_id = ${termId}` : sql``}
+      WHERE student_no = ${studentNo}
     `);
     billingRows = rows as any[];
   } catch {
@@ -487,13 +539,13 @@ payments.get('/payments/students/:studentId/bills', async (c) => {
   }
 
   // Merge default bill items with DB data
-  let bills = DEFAULT_BILLS.map((def, idx) => {
+  let bills = getBillsRef().map((def, idx) => {
     const dbBill = billingMap.get(def.itemType);
     const billId    = dbBill ? String(dbBill.id) : `bill_${idx + 1}`;
-    const dueDate   = dbBill?.due_date || null;
-    const recvAmt   = dbBill ? (Number(dbBill.receivable_amount) || def.receivableAmount) : def.receivableAmount;
-    const paidAmt   = dbBill ? (Number(dbBill.paid_amount) || 0) : 0;
-    const discAmt   = dbBill ? (Number(dbBill.discount_amount) || 0) : 0;
+    const dueDate   = null;
+    const recvAmt   = dbBill ? (Number(dbBill.amount) || def.receivableAmount) : def.receivableAmount;
+    const paidAmt   = dbBill && dbBill.pay_status === 'paid' ? (Number(dbBill.amount) || 0) : 0;
+    const discAmt   = 0;
     const unpaidAmt = Math.max(0, recvAmt - paidAmt - discAmt);
 
     let billStatus = 'unpaid';
@@ -517,15 +569,15 @@ payments.get('/payments/students/:studentId/bills', async (c) => {
   });
 
   // If there are DB-only bill items that don't map to defaults, add them
-  const mappedTypes = new Set(DEFAULT_BILLS.map((d) => d.itemType));
+  const mappedTypes = new Set(getBillsRef().map((d) => d.itemType));
   for (const b of billingRows) {
     const bType = b.fee_type || b.item_type || '';
     if (bType && !mappedTypes.has(bType)) {
-      const recvAmt   = Number(b.receivable_amount) || Number(b.amount) || 0;
-      const paidAmt   = Number(b.paid_amount) || 0;
-      const discAmt   = Number(b.discount_amount) || 0;
-      const unpaidAmt = Math.max(0, recvAmt - paidAmt - discAmt);
-      const dueDate   = b.due_date || null;
+      const recvAmt   = Number(b.amount) || 0;
+      const paidAmt   = b.pay_status === 'paid' ? (Number(b.amount) || 0) : 0;
+      const discAmt   = 0;
+      const unpaidAmt = Math.max(0, recvAmt - paidAmt);
+      const dueDate   = null;
 
       let billStatus = 'unpaid';
       if (unpaidAmt <= 0) billStatus = 'paid';
@@ -576,19 +628,16 @@ payments.get('/payments/students/:studentId/records', async (c) => {
       SELECT
         id,
         billing_no,
-        paid_amount,
         amount,
         pay_method,
         pay_channel,
         pay_time,
-        paid_at,
         operator_name,
         invoice_id,
         source_type
       FROM t_data_billing
-      WHERE student_id = ${Number(studentId)}
-        AND (pay_status = 'paid' OR paid_amount > 0)
-        ${termId    ? sql`AND term_id = ${termId}` : sql``}
+      WHERE student_no = ${studentId}
+        AND pay_status = 'paid'
         ${startDate ? sql`AND pay_time >= ${startDate}::timestamptz` : sql``}
         ${endDate   ? sql`AND pay_time <= ${endDate}::timestamptz` : sql``}
       ORDER BY pay_time DESC
@@ -597,7 +646,7 @@ payments.get('/payments/students/:studentId/records', async (c) => {
     records = (rows as any[]).map((b: any, idx: number) => ({
       recordId:     String(b.id) || `rec_${idx + 1}`,
       paymentNo:    b.billing_no || `PAY${String(b.id || idx + 1).padStart(6, '0')}`,
-      amount:       Number(b.paid_amount) || Number(b.amount) || 0,
+      amount:       Number(b.amount) || 0,
       method:       b.pay_method || 'wx',
       channel:      b.pay_channel || '微信支付',
       paidAt:       b.pay_time || b.paid_at || '',

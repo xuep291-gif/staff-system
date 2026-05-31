@@ -798,13 +798,11 @@ export function getFeeList() {
 }
 
 const FEE_ITEMS_CONFIG = [
-  { name: '学费', priority: 1, required: true, amount: 5000 },
+  { name: '学费', priority: 1, required: true, amount: 5200 },
   { name: '住宿费', priority: 2, required: false, amount: 1200 },
-  { name: '教材费', priority: 3, required: true, amount: 320 },
-  { name: '体检费', priority: 4, required: false, amount: 80 },
-  { name: '商业保险费', priority: 5, required: false, amount: 60 },
-  { name: '军训服装费', priority: 6, required: false, amount: 180 },
-  { name: '床上用品费', priority: 7, required: false, amount: 350 }
+  { name: '教材费', priority: 3, required: true, amount: 800 },
+  { name: '体检费', priority: 4, required: false, amount: 180 },
+  { name: '军训服装费', priority: 5, required: false, amount: 300 }
 ]
 
 export function getStudentFeeItems(sid) {

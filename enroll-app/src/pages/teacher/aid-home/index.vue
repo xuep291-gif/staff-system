@@ -30,7 +30,8 @@ import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
+import { scholarshipApi } from '@/common/api/scholarship.js'
+import { buildReviewTabs, filterReviewByTab } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const REVIEW_KEY_MAP = ['pending', 'processing', 'completed']
@@ -61,47 +62,7 @@ export default {
   watch: {
     activeTab() { this.filterVersion++ }
   },
-  onLoad() {
-    this.onBusinessStateChange = ({ collection }) => {
-      if (collection === 'aids') this.refresh(true)
-    }
-    if (typeof uni.$on === 'function') uni.$on('business-state-change', this.onBusinessStateChange)
-  },
-  onUnload() {
-    if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
-  },
-  async onShow() {
-    this.filterVersion++
-    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
-    this.refresh(true)
-    this.activeTab = getActiveKey('teacherAidHome', 'pending')
-  },
-  methods: {
-    onTabClick(key) {
-      console.log('[aid-home] onTabClick key=', key)
-      this.activeTab = key
-      setActiveKey('teacherAidHome', key)
-    },
-    refresh(syncChangedTab = false) {
-      const rows = getReviewList('aids')
-      this.list = rows.map(item => ({
-        ...item,
-        badgeColor: reviewStatusMeta[item.status]?.color || item.badgeColor,
-        bg: `var(--${reviewStatusMeta[item.status]?.color || 'wa'}-bg)`,
-        iconColor: `var(--${reviewStatusMeta[item.status]?.color || 'wa'})`
-      }))
-      if (syncChangedTab) this.syncActiveTabFromLastChange()
-    },
-    syncActiveTabFromLastChange() {
-      const change = getLastBusinessChange('aids')
-      const token = change ? `${change.uid}-${change.status}-${change.time}` : ''
-      if (!change || token === this.lastSyncedChange) return
-      this.lastSyncedChange = token
-      const item = this.list.find(i => i.uid === change.uid) || change
-      const idx = getReviewTabIndex(item, 'teacher')
-      setActiveKey('teacherAidHome', REVIEW_KEY_MAP[idx] || 'pending')
-    },
-    goReview(item) {
+  async onShow() { this.filterVersion++; try{uni.removeStorageSync("staff_back_target")}catch(e){} await this.refresh(); this.activeTab=getActiveKey("teacherAidHome","todo") }, methods:{ onTabClick(key){ this.activeTab=key; setActiveKey("teacherAidHome",key) }, async refresh(){ try{ const res=await scholarshipApi.getScholarshipList({pageNum:1,pageSize:200,role:"teacher"}); if(res?.code===0) this.list=(res.data.items||[]).map(i=>({...i,uid:i.scholarshipId||i.uid})) }catch(e){} }, goReview(item) {
       rememberStaffBackTarget('/pages/teacher/aid-home/index')
       uni.navigateTo({ url: '/pages/teacher/aid-review/index?uid=' + item.uid })
     }

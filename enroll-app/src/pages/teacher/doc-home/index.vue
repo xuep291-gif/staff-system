@@ -34,7 +34,7 @@ import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { getLastBusinessChange, getMaterialTabIndex, getReviewList, materialStatusMeta } from '@/utils/businessState.js'
+import { documentApi } from '@/common/api/document.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const DOC_KEY_STATUS_MAP = {
@@ -67,49 +67,7 @@ export default {
   watch: {
     activeTab() { this.filterVersion++ }
   },
-  onLoad() {
-    this.onBusinessStateChange = ({ collection }) => {
-      if (collection === 'documents') this.refresh(true)
-    }
-    if (typeof uni.$on === 'function') uni.$on('business-state-change', this.onBusinessStateChange)
-  },
-  onUnload() {
-    if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
-  },
-  onShow() {
-    this.filterVersion++
-    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
-    this.refresh(true)
-    this.activeTab = getActiveKey('teacherDocHome', 'pending')
-  },
-  methods: {
-    onTabClick(key) {
-      console.log('[doc-home] onTabClick key=', key)
-      this.activeTab = key
-      setActiveKey('teacherDocHome', key)
-    },
-    refresh(syncChangedTab = false) {
-      this.list = getReviewList('documents').map(item => {
-        const meta = materialStatusMeta[item.status] || {}
-        return {
-          ...item,
-          badgeColor: meta.color || item.badgeColor,
-          bg: `var(--${meta.color || 'wa'}-bg)`,
-          iconColor: `var(--${meta.color || 'wa'})`
-        }
-      })
-      if (syncChangedTab) this.syncActiveTabFromLastChange()
-    },
-    syncActiveTabFromLastChange() {
-      const change = getLastBusinessChange('documents')
-      const token = change ? `${change.uid}-${change.status}-${change.time}` : ''
-      if (!change || token === this.lastSyncedChange) return
-      this.lastSyncedChange = token
-      const item = this.list.find(i => i.uid === change.uid) || change
-      const idx = getMaterialTabIndex(item)
-      setActiveKey('teacherDocHome', DOC_TAB_KEYS[idx] || 'pending')
-    },
-    goReview(item) {
+  async onShow() { this.filterVersion++; try{uni.removeStorageSync("staff_back_target")}catch(e){} await this.refresh(); this.activeTab=getActiveKey("teacherDocHome","pending") }, methods:{ onTabClick(key){ this.activeTab=key; setActiveKey("teacherDocHome",key) }, async refresh(){ try{ const res=await documentApi.getReviewList({pageNum:1,pageSize:200}); if(res?.code===0) this.list=(res.data.items||[]).map(i=>({...i,uid:i.documentReviewId||i.uid,badgeColor:i.status==="pending"?"wa":i.status==="rejected"?"er":"ok"})) }catch(e){} }, goReview(item) {
       rememberStaffBackTarget('/pages/teacher/doc-home/index')
       uni.navigateTo({ url: '/pages/teacher/doc-review/index?uid=' + item.uid })
     }

@@ -78,7 +78,7 @@ export default defineConfig({
     cors: true,
     proxy: {
       '/api': {
-        target: 'https://house.cloud.smallsaas.cn',
+        target: 'http://localhost:3100',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path

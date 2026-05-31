@@ -1,59 +1,52 @@
 <template>
   <view class="page">
-    <SNavBar title="助学金审核" :showBack="true" fallbackUrl="/pages/finance/home/index" />
-    <StatusTabs tabGroup="financePayoutAid" :tabs="tabs" :modelValue="activeTab" @change="onTabClick" />
+    <SNavBar title="助学金审核" :showBack="true" />
+    <STabs :tabs="tabs" :model-value="activeTab" storage-key="finance-aid-review" @change="selectTab" />
     <scroll-view scroll-y class="body">
-      <view class="sc">
-        <view class="card" v-for="item in filteredList" :key="activeTab + '-' + filterVersion + '-' + item.uid" @click="goDetail(item.uid)">
-          <view class="card-bd">
-            <view class="li">
-              <view class="li-info">
-                <text class="li-name">{{ item.name }}</text>
-                <text class="li-meta">{{ item.id }} · {{ item.college }}</text>
-                <text class="li-amount">¥{{ item.amount }} · {{ item.type }}</text>
-              </view>
-              <text class="li-arrow">›</text>
+      <view v-if="filteredList.length" class="list">
+        <SListItem v-for="item in filteredList" :key="item.uid" clickable @click="goDetail(item.uid)">
+          <template #avatar><view class="avatar">{{ item.avatar || item.name.charAt(0) }}</view></template>
+          <view class="row-main">
+            <view class="row-top">
+              <text class="name">{{ item.name }}</text>
+              <SBadge :color="item.badgeColor">{{ item.statusLabel }}</SBadge>
             </view>
+            <text class="meta">{{ item.sid }} · {{ item.type || '国家助学金' }}</text>
+            <text class="amount">¥{{ item.amount }}</text>
           </view>
-        </view>
-        <SEmpty v-if="filteredList.length === 0" text="暂无补助打款任务" />
+        </SListItem>
       </view>
+      <SEmpty v-else text="当前暂无助学金打款任务" />
     </scroll-view>
   </view>
 </template>
 
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
-import StatusTabs from '@/components/shared/StatusTabs.vue'
-import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
+import STabs from '@/components/shared/STabs.vue'
+import SListItem from '@/components/shared/SListItem.vue'
+import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { FINANCE_AID_TAB_GROUPS, getLastBusinessChange, getReviewList, matchesStatusGroup, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
+import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
-
-const REVIEW_KEY_MAP = ['pending', 'completed']
+import { guardStaffFeature } from '@/utils/staffAccess.js'
 
 export default {
   name: 'FinancePayoutAid',
-  components: { SNavBar, StatusTabs, SEmpty },
+  components: { SNavBar, STabs, SListItem, SBadge, SEmpty },
   data() {
-    return { activeTab: 'pending', filterVersion: 0, list: [], lastSyncedChange: '' }
+    return { activeTab: 0, list: [], lastSyncedChange: '' }
   },
   computed: {
     tabs() {
-      return FINANCE_AID_TAB_GROUPS.map((group, i) => ({
-        label: group.label,
-        count: this.list.filter(item => matchesStatusGroup(item, group.statuses)).length,
-        color: group.color,
-        key: REVIEW_KEY_MAP[i] || `tab-${i}`
-      }))
+      return buildReviewTabs(this.list, 'finance')
     },
     filteredList() {
-      const idx = REVIEW_KEY_MAP.indexOf(this.activeTab)
-      const group = FINANCE_AID_TAB_GROUPS[idx] || FINANCE_AID_TAB_GROUPS[0]
-      return this.list.filter(item => matchesStatusGroup(item, group.statuses))
+      return filterReviewByTab(this.list, 'finance', this.activeTab)
     }
   },
   onLoad() {
+    if (!guardStaffFeature('payout')) return
     this.onBusinessStateChange = ({ collection }) => {
       if (collection === 'aids') this.refresh(true)
     }
@@ -63,19 +56,14 @@ export default {
     if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   async onShow() {
-    this.filterVersion++
-    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     this.refresh(true)
-    this.activeTab = getActiveKey('financePayoutAid', 'pending')
   },
   methods: {
-    onTabClick(key) { if (this.activeTab === key) return; this.activeTab = key; this.filterVersion++; setActiveKey('financePayoutAid', key) },
+    selectTab(index) {
+      this.activeTab = Number(index) || 0
+    },
     refresh(syncChangedTab = false) {
-      const rows = getReviewList('aids')
-      this.list = rows.map(item => ({
-        ...item,
-        badgeColor: reviewStatusMeta[item.status]?.color || item.badgeColor
-      }))
+      this.list = getReviewList('aids')
       if (syncChangedTab) this.syncActiveTabFromLastChange()
     },
     syncActiveTabFromLastChange() {
@@ -83,10 +71,8 @@ export default {
       const token = change ? `${change.uid}-${change.status}-${change.time}` : ''
       if (!change || token === this.lastSyncedChange) return
       this.lastSyncedChange = token
-      const status = change.status
-      const key = status === 'payment_pending' ? 'pending' : 'completed'
-      this.activeTab = key
-      setActiveKey('financePayoutAid', key)
+      const item = this.list.find(i => i.uid === change.uid) || change
+      this.activeTab = getReviewTabIndex(item, 'finance')
     },
     goDetail(uid) {
       rememberStaffBackTarget('/pages/finance/payout-aid/index')
@@ -99,16 +85,13 @@ export default {
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }
 .body { height: 0; flex: 1; }
-
-.sc { padding: 20rpx 28rpx 28rpx; display: flex; flex-direction: column; }
-.sc > view + view { margin-top: 20rpx; }
-.card { background: var(--white); border-radius: var(--r-14); box-shadow: var(--card-shadow); overflow: hidden; }
-.card-bd { padding: var(--card-body-padding); }
-.li { display: flex; align-items: center; }
-.li > view + view { margin-left: 20rpx; }
-.li-info { flex: 1; min-width: 0; }
-.li-name { font-size: var(--fs-14); font-weight: 600; color: var(--N900); display: block; }
-.li-meta { font-size: var(--fs-11); color: var(--N500); display: block; margin-top: 4rpx; }
-.li-amount { font-size: var(--fs-11); color: var(--brand); display: block; margin-top: 4rpx; font-weight: 500; }
-.li-arrow { font-size: 28rpx; color: var(--N400); flex-shrink: 0; }
+.list { padding: 24rpx 28rpx 48rpx; display: flex; flex-direction: column; }
+.list > * + * { margin-top: 20rpx; }
+.avatar { width: 80rpx; height: 80rpx; border-radius: 50%; background: var(--ok-bg); color: var(--ok); display: flex; align-items: center; justify-content: center; font-size: var(--fs-15); font-weight: 600; }
+.row-main { flex: 1; min-width: 0; }
+.row-top { display: flex; align-items: center; justify-content: space-between; }
+.row-top > * + * { margin-left: 16rpx; }
+.name { font-size: var(--fs-15); font-weight: 600; color: var(--N900); }
+.meta, .amount { display: block; margin-top: 8rpx; font-size: var(--fs-12); color: var(--N500); }
+.amount { color: var(--er); font-weight: 700; }
 </style>

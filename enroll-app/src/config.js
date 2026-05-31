@@ -1,7 +1,7 @@
 // 是否是开发环境
 // 开发环境中的api需要在manifest.json中的源码视图>h5>devServer>proxy中添加路径即可
 
-const staffApiEndpoint = import.meta.env.VITE_STAFF_API_BASE_URL || 'http://localhost:3100'
+const staffApiEndpoint = import.meta.env.VITE_STAFF_API_BASE_URL ?? 'http://localhost:3100'
 const useMockApi = import.meta.env.VITE_USE_MOCK === 'true'
 
 // H5 环境可通过 VITE_STAFF_API_BASE_URL 与 VITE_USE_MOCK 切换接口来源。

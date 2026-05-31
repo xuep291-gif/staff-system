@@ -167,7 +167,7 @@ import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import SReviewProgress from '@/components/shared/SReviewProgress.vue'
-import { getOfflineCollectionList, confirmOfflineCollection, voidOfflineCollection, generateReceiptNumber } from '@/utils/businessState.js'
+import { offlinePaymentApi } from '@/common/api/offlinePayment.js'
 import { hasPermission } from '@/utils/permissions.js'
 
 export default {
@@ -221,7 +221,7 @@ export default {
   methods: {
     refresh() {
       if (this.itemId) {
-        const list = getOfflineCollectionList()
+        const list = []
         this.item = list.find(i => i.id === this.itemId) || null
       }
     },
@@ -263,7 +263,7 @@ export default {
         this.successData = {
           name: this.item.name,
           amount: this.item.amount,
-          receiptNo: this.item.receiptNo || generateReceiptNumber()
+          receiptNo: this.item.receiptNo || 'RCP'+Date.now()
         }
         this.showSuccess = true
       } catch (e) {

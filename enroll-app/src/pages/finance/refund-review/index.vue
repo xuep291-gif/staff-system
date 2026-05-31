@@ -109,8 +109,8 @@ import SCard from '@/components/shared/SCard.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { getRefundItem, updateRefund, REFUND_STATUS } from '@/utils/businessState.js'
 import { refundApi } from '@/common/api/refund.js'
+import { REFUND_STATUS, updateRefund } from '@/utils/businessState.js'
 
 export default {
   name: 'FinanceRefundReview',
@@ -138,12 +138,9 @@ export default {
       return this.item && this.item.status === REFUND_STATUS.PROCESSING
     }
   },
-  onLoad(options) {
+  async onLoad(options) {
     this.uid = options.uid || ''
-    // 先从本地加载
-    const local = this.uid ? getRefundItem(this.uid) : null
-    if (local) this.item = local
-    this.refresh()
+    await this.refresh()
   },
   methods: {
     async refresh() {
@@ -179,7 +176,7 @@ export default {
         result: '已提交第三方退款接口，处理中',
         remark: this.opinion
       })
-      this.item = getRefundItem(this.uid) || this.item
+      await this.refresh()
       this.submitting = false
       uni.showToast({ title: '已提交退款处理', icon: 'success' })
       setTimeout(() => uni.navigateBack(), 500)
@@ -198,7 +195,7 @@ export default {
         result: '退款失败',
         remark: this.rejectReason || '财务审核驳回'
       })
-      this.item = getRefundItem(this.uid) || this.item
+      await this.refresh()
       this.submitting = false
       uni.showToast({ title: '已驳回', icon: 'none' })
       setTimeout(() => uni.navigateBack(), 500)
@@ -215,7 +212,7 @@ export default {
         node: '财务重新发起退款',
         result: '重新提交第三方退款接口，处理中'
       })
-      this.item = getRefundItem(this.uid) || this.item
+      await this.refresh()
       this.submitting = false
       uni.showToast({ title: '已重新发起退款', icon: 'success' })
       setTimeout(() => uni.navigateBack(), 500)

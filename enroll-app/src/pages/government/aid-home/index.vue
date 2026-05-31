@@ -30,7 +30,7 @@ import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { getLastBusinessChange, getReviewList, REVIEW_STATUS, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
+import { scholarshipApi } from '@/common/api/scholarship.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 export default {
@@ -64,52 +64,15 @@ export default {
   watch: {
     activeTab() { this.filterVersion++ }
   },
-  onLoad() {
-    this.onBusinessStateChange = ({ collection }) => {
-      if (collection === 'aids') this.refresh(true)
-    }
-    if (typeof uni.$on === 'function') uni.$on('business-state-change', this.onBusinessStateChange)
-  },
-  onUnload() {
-    if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
-  },
-  async onShow() {
-    this.filterVersion++
-    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
-    this.refresh(true)
-    this.activeTab = getActiveKey('govAidHome', 'pending')
-  },
-  methods: {
+  
+  
+  async onShow(){ this.filterVersion++; await this.refresh() }, methods:{
     onTabClick(key) {
       this.activeTab = key
       setActiveKey('govAidHome', key)
     },
-    refresh(syncChangedTab = false) {
-      const rows = getReviewList('aids')
-      this.list = rows.map(item => ({
-        ...item,
-        badgeColor: reviewStatusMeta[item.status]?.color || item.badgeColor,
-        bg: `var(--${reviewStatusMeta[item.status]?.color || 'wa'}-bg)`,
-        iconColor: `var(--${reviewStatusMeta[item.status]?.color || 'wa'})`
-      }))
-      if (syncChangedTab) this.syncActiveTabFromLastChange()
-    },
-    syncActiveTabFromLastChange() {
-      const change = getLastBusinessChange('aids')
-      const token = change ? `${change.uid}-${change.status}-${change.time}` : ''
-      if (!change || token === this.lastSyncedChange) return
-      this.lastSyncedChange = token
-      const item = this.list.find(i => i.uid === change.uid) || change
-      const key = item.status === REVIEW_STATUS.FIRST_PASS ? 'pending' : item.status === REVIEW_STATUS.REVIEW_PASS ? 'processing' : 'completed'
-      setActiveKey('govAidHome', key)
-    },
-    goReview(item) {
-      rememberStaffBackTarget('/pages/government/aid-home/index')
-      if (this.activeTab === 'pending' && item.status !== REVIEW_STATUS.FIRST_PASS) return
-      uni.navigateTo({ url: '/pages/government/aid-review/index?uid=' + item.uid + '&status=' + item.status })
-    }
-  }
-}
+    async refresh(){ try{ var r=await scholarshipApi.getScholarshipList({pageNum:1,pageSize:200,tab:"todo",role:"government"}); if(r&&r.code===0) this.list=(r.data.items||[]).map(function(i){return Object.assign({},i,{uid:i.scholarshipId})}) }catch(e){} },
+}}
 </script>
 
 <style lang="scss" scoped>

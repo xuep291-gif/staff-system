@@ -32,9 +32,6 @@
           <view class="item-right">
             <text class="item-amount">退 ¥{{ item.amount }}</text>
             <SBadge :color="item.badgeColor">{{ item.statusLabel }}</SBadge>
-            <view v-if="item.status === 'pending'" class="confirm-btn" @click.stop="onQuickConfirm(item)">
-              <text>确认处理</text>
-            </view>
           </view>
         </view>
       </view>
@@ -80,6 +77,7 @@ import SBadge from '@/components/shared/SBadge.vue'
 import SBottomSheet from '@/components/shared/SBottomSheet.vue'
 import SButton from '@/components/shared/SButton.vue'
 import { confirmDifferenceRefund, getDifferenceRefundList } from '@/utils/businessState.js'
+import { guardStaffFeature } from '@/utils/staffAccess.js'
 
 export default {
   name: 'FinanceDiff',
@@ -96,6 +94,9 @@ export default {
     pendingCount() {
       return this.list.filter(item => item.status === 'pending').length
     }
+  },
+  onLoad() {
+    guardStaffFeature('diff')
   },
   onShow() {
     this.refresh()
@@ -115,20 +116,6 @@ export default {
       this.showSheet = false
       this.refresh()
       uni.showToast({ title: '退款已确认', icon: 'success' })
-    },
-    onQuickConfirm(item) {
-      uni.showModal({
-        title: '确认退款',
-        content: `确认 ${item.studentName}（${item.studentNo}）的补差退款 ¥${item.amount}？`,
-        confirmText: '确认',
-        success: (res) => {
-          if (res.confirm) {
-            confirmDifferenceRefund(item.id)
-            this.refresh()
-            uni.showToast({ title: '退款已确认', icon: 'success' })
-          }
-        }
-      })
     }
   }
 }
@@ -186,7 +173,7 @@ export default {
   min-width: 0;
 }
 
-.item-left > view + view {
+.item-left > * + * {
   margin-left: 24rpx;
 }
 
@@ -211,7 +198,7 @@ export default {
   min-width: 0;
 }
 
-.item-info > view + view {
+.item-info > * + * {
   margin-top: 8rpx;
 }
 
@@ -220,7 +207,7 @@ export default {
   align-items: center;
 }
 
-.item-name-row > view + view {
+.item-name-row > * + * {
   margin-left: 16rpx;
 }
 
@@ -252,7 +239,7 @@ export default {
   margin-left: 24rpx;
 }
 
-.item-right > view + view {
+.item-right > * + * {
   margin-top: 8rpx;
 }
 
@@ -262,26 +249,13 @@ export default {
   color: var(--ok);
 }
 
-.confirm-btn {
-  margin-top: 4rpx;
-  padding: 6rpx 16rpx;
-  background: var(--brand);
-  border-radius: var(--r-20);
-}
-.confirm-btn:active { background: var(--brand-d); }
-.confirm-btn text {
-  font-size: var(--fs-10);
-  color: #fff;
-  font-weight: 600;
-}
-
 /* ── BottomSheet Info ── */
 .sheet-info {
   display: flex;
   flex-direction: column;
 }
 
-.sheet-info > view + view {
+.sheet-info > * + * {
   margin-top: 24rpx;
 }
 
@@ -321,11 +295,11 @@ export default {
   display: flex;
 }
 
-.sheet-actions > view {
+.sheet-actions > * {
   flex: 1;
 }
 
-.sheet-actions > view + view {
+.sheet-actions > * + * {
   margin-left: 24rpx;
 }
 </style>

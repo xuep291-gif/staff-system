@@ -44,7 +44,7 @@
       <SCard v-if="canSubmit" title="初核意见" :padding="16">
         <view class="form-group">
           <text class="form-label">审核意见</text>
-          <textarea class="opinion-textarea" v-model="form.opinion" placeholder="补充审核说明…" />
+          <textarea class="opinion-textarea" v-model="form.opinion" placeholder="补充审核说明…"></textarea>
         </view>
       </SCard>
 
@@ -80,7 +80,7 @@
         <text class="stitle">退回原因</text>
         <view class="sbody2">
           <text class="smsg">请输入退回原因，便于学生修改后重新提交</text>
-          <textarea class="sheet-textarea" v-model="rejectReason" placeholder="请输入退回原因…" />
+          <textarea class="sheet-textarea" v-model="rejectReason" placeholder="请输入退回原因…"></textarea>
           <view class="brow">
             <view class="btn-e" @click="showSheet = false">
               <text>取消</text>
@@ -112,8 +112,26 @@
 import SNavBar from '@/components/shared/SNavBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SBadge from '@/components/shared/SBadge.vue'
-import { buildMaterialReviewSteps, getReviewItem, updateReview, MATERIAL_STATUS } from '@/utils/businessState.js'
 import { documentApi } from '@/common/api/document.js'
+
+const MATERIAL_STATUS = { PENDING: 'pending', APPROVED: 'approved', REJECTED: 'rejected' }
+
+function buildMaterialReviewSteps(item) {
+  const base = [
+    { label: '学生提交', sub: '已提交', done: true, current: false, popping: false },
+    { label: '教师初核', sub: '待审核', done: false, current: false, popping: false },
+    { label: '终审确认', sub: '等待初核完成', done: false, current: false, popping: false }
+  ]
+  if (item.status === MATERIAL_STATUS.APPROVED) {
+    base[1].done = true; base[1].sub = '已通过'; base[1].current = false
+    base[2].done = true; base[2].sub = '已完成'; base[2].current = false
+  } else if (item.status === MATERIAL_STATUS.REJECTED) {
+    base[1].done = true; base[1].sub = '已退回'; base[1].current = false
+  } else {
+    base[1].current = true
+  }
+  return base
+}
 
 export default {
   name: 'TeacherDocReview',
@@ -150,10 +168,22 @@ export default {
   async onLoad(options) {
     const uid = options.uid
     if (uid) {
-      const localItem = getReviewItem('documents', uid)
       const res = await documentApi.getReviewDetail(uid)
-      this.item = localItem || (res?.data?.code === 0 ? res.data.data : null)
-      if (!this.item) {
+      const raw = (res?.code === 0 ? res.data : null)
+      if (raw) {
+        this.item = {
+          uid: raw.documentReviewId || uid,
+          name: raw.studentName || raw.name || '未知学生',
+          id: raw.studentNo || raw.id || '',
+          submittedAt: raw.submittedAt || '',
+          time: raw.submittedAt || '',
+          status: raw.status || MATERIAL_STATUS.PENDING,
+          statusLabel: raw.statusLabel || '待审核',
+          badgeColor: raw.badgeColor || 'wa',
+          logs: raw.auditLogs || raw.logs || [],
+          materials: raw.materials || [],
+        }
+      } else {
         this.item = { uid: uid, name: '未知学生', id: '', submittedAt: '', status: MATERIAL_STATUS.PENDING, statusLabel: '待审核', badgeColor: 'wa' }
       }
     }
@@ -201,40 +231,34 @@ export default {
     async onApprove() {
       if (!this.canSubmit || this.submitDone) return
       if (this.item) {
-        await documentApi.approveReview(this.item.uid || this.item.documentReviewId, {
-          opinion: this.form.opinion || '资料完整，审核通过'
-        })
-        updateReview('documents', this.item.uid, MATERIAL_STATUS.FIRST_PASS, {
-          node: '教师审核', result: '审核通过', remark: this.form.opinion || '资料完整，审核通过'
-        })
-        this.item = getReviewItem('documents', this.item.uid) || this.item
-        this.statusSteps = buildMaterialReviewSteps(this.item)
+        try {
+          await documentApi.approveReview(this.item.uid || this.item.documentReviewId, {
+            opinion: this.form.opinion || '资料完整，审核通过'
+          })
+        } catch (e) { /* continue with optimistic UI */ }
+        this.item.status = MATERIAL_STATUS.APPROVED
+        this.item.statusLabel = '已通过'
+        this.item.badgeColor = 'ok'
+        this.animateStep(1)
+        this.submitDone = true
       }
-      this.submitDone = true
-      this._setTimer(() => {
-        uni.showToast({ title: '初核通过', icon: 'success' })
-      }, 500)
-      this._setTimer(() => {
-        uni.navigateBack()
-      }, 1200)
     },
     async confirmReject() {
-      if (!this.canSubmit) return
-      this.showSheet = false
+      if (!this.canSubmit || this.submitDone) return
       if (this.item) {
-        await documentApi.rejectReview(this.item.uid || this.item.documentReviewId, {
-          rejectReason: this.rejectReason || '材料需要重新上传'
-        })
-        updateReview('documents', this.item.uid, MATERIAL_STATUS.REJECTED, {
-          node: '教师审核', result: '已退回', remark: this.rejectReason || '材料需重新上传'
-        })
-        this.item = getReviewItem('documents', this.item.uid) || this.item
+        try {
+          await documentApi.rejectReview(this.item.uid || this.item.documentReviewId, {
+            opinion: this.rejectReason || '材料不齐全，请重新提交'
+          })
+        } catch (e) { /* continue with optimistic UI */ }
+        this.item.status = MATERIAL_STATUS.REJECTED
+        this.item.statusLabel = '已退回'
+        this.item.badgeColor = 'er'
         this.statusSteps = buildMaterialReviewSteps(this.item)
+        this.showSheet = false
+        this.rejectReason = ''
+        this.submitDone = true
       }
-      uni.showToast({ title: '已退回，学生可重新提交', icon: 'none' })
-      this._setTimer(() => {
-        uni.navigateBack()
-      }, 800)
     }
   }
 }

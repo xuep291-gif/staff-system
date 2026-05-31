@@ -65,7 +65,7 @@ export const PORTAL_CONFIG = {
     label: '后台管理端'
   },
   [ROLES.STUDENT]: {
-    homePage: '/pages/home/index',
+    homePage: '/pages/teacher/home/index',
     theme: '',
     themeClass: '',
     navMode: 'tabbar',
@@ -119,14 +119,14 @@ function readCachedUserInfo() {
 export function resolveRole(userInfo) {
   if (!userInfo) return ROLES.STUDENT
 
-  // 多角色支持：typeList 是后端返回的角色数组
+  // 多角色支持：typeList 是后端返回的角色数组（可能是数字 type 或字符串角色名）
   const typeList = userInfo.typeList || userInfo.userTypeList || []
   if (typeList.length > 0) {
-    // 优先级：admin > finance > teacher > student
-    if (typeList.includes(5) || typeList.includes('5')) return ROLES.GOVERNMENT
-    if (typeList.includes(4) || typeList.includes('4')) return ROLES.ADMIN
-    if (typeList.includes(3) || typeList.includes('3')) return ROLES.FINANCE
-    if (typeList.includes(2) || typeList.includes('2')) return ROLES.TEACHER
+    // 优先级：government > admin > finance > teacher > student
+    if (typeList.includes(5) || typeList.includes('5') || typeList.includes('government')) return ROLES.GOVERNMENT
+    if (typeList.includes(4) || typeList.includes('4') || typeList.includes('admin')) return ROLES.ADMIN
+    if (typeList.includes(3) || typeList.includes('3') || typeList.includes('finance')) return ROLES.FINANCE
+    if (typeList.includes(2) || typeList.includes('2') || typeList.includes('teacher')) return ROLES.TEACHER
     return ROLES.STUDENT
   }
 
@@ -145,7 +145,7 @@ export function resolveAllRoles(userInfo) {
 
   const typeList = userInfo.typeList || userInfo.userTypeList || []
   if (typeList.length > 0) {
-    return typeList.map(t => ROLE_TYPE_MAP[t] || ROLES.STUDENT).filter(Boolean)
+    return typeList.map(t => ROLE_TYPE_MAP[t] || t || ROLES.STUDENT).filter(Boolean)
   }
 
   const type = userInfo.type
@@ -168,7 +168,7 @@ export function getRoleFromStorage() {
 
     return resolveRole({
       type: claims.type,
-      typeList: claims.typeList || claims.userTypeList
+      typeList: claims.typeList || claims.userTypeList || claims.roles
     })
   } catch (e) {
     console.warn('[role] getRoleFromStorage failed:', e)
@@ -226,7 +226,7 @@ export function isAdmin(userInfo) {
 
 export function getRoleHomePage(role) {
   const config = PORTAL_CONFIG[role]
-  return config ? config.homePage : '/pages/home/index'
+  return config ? config.homePage : '/pages/teacher/home/index'
 }
 
 // 应用角色主题（直接设置 CSS 变量 + body class）

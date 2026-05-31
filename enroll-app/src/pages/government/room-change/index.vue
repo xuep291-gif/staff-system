@@ -28,7 +28,7 @@ import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildDormReviewTabs, filterDormReviewByTab, getDormReviewList, getLastBusinessChange } from '@/utils/businessState.js'
+import { dormitoryApi } from '@/common/api/dormitory.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const DORM_KEY_MAP = ['pending', 'approved', 'rejected']
@@ -52,49 +52,15 @@ export default {
       return filterDormReviewByTab(this.list, idx >= 0 ? idx : 0)
     }
   },
-  onLoad() {
-    this.onBusinessStateChange = ({ collection }) => {
-      if (collection === 'roomChanges') this.refresh(true)
-    }
-    if (typeof uni.$on === 'function') uni.$on('business-state-change', this.onBusinessStateChange)
-  },
-  onUnload() {
-    if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
-  },
-  onShow() {
-    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
-    this.refresh(true)
-  },
-  methods: {
+  
+  
+  async onShow(){ this.filterVersion++; await this.refresh() }, methods:{
     onTabChange(key) {
       setActiveKey('govRoomChange', key)
       console.log('政务换宿切换:', key)
     },
-    refresh(syncChangedTab = false) {
-      this.list = getDormReviewList('roomChanges').map(item => ({
-        ...item,
-        from: item.oldDorm,
-        to: item.targetDorm,
-        bg: `var(--${item.badgeColor}-bg)`,
-        iconColor: `var(--${item.badgeColor})`
-      }))
-      if (syncChangedTab) this.syncActiveTabFromLastChange()
-    },
-    syncActiveTabFromLastChange() {
-      const change = getLastBusinessChange('roomChanges')
-      const token = change ? `${change.uid}-${change.status}-${change.time}` : ''
-      if (!change || token === this.lastSyncedChange) return
-      this.lastSyncedChange = token
-      const item = this.list.find(i => i.uid === change.uid) || change
-      const index = item.status === 'approved' ? 1 : item.status === 'rejected' ? 2 : 0
-      setActiveKey('govRoomChange', DORM_KEY_MAP[index] || 'pending')
-    },
-    goReview(item) {
-      rememberStaffBackTarget('/pages/government/room-change/index')
-      uni.navigateTo({ url: `/pages/government/dorm-review/index?uid=${item.uid}&apiId=${item.applicationId || item.uid}` })
-    }
-  }
-}
+    async refresh(){ try{ var r=await dormitoryApi.getRoomChangeApplications({pageNum:1,pageSize:200,role:"government"}); if(r&&r.code===0) this.list=(r.data.items||[]).map(function(i){return Object.assign({},i,{uid:i.applicationId})}) }catch(e){} },
+}}
 </script>
 <style lang="scss" scoped>
 .page { min-height: 100vh; background: var(--N50); display: flex; flex-direction: column; }

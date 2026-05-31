@@ -82,7 +82,7 @@
       <!-- Review Opinion -->
       <SCard title="审核意见" :padding="16" v-if="canReview">
         <view class="form-group">
-          <textarea class="opinion-textarea" v-model="opinion" placeholder="请输入审核意见…" />
+          <textarea class="opinion-textarea" v-model="opinion" placeholder="请输入审核意见…"></textarea>
         </view>
       </SCard>
 
@@ -113,7 +113,7 @@
         <text class="stitle">退回原因</text>
         <view class="sbody2">
           <text class="smsg">请输入退回原因，方便学生修改后重新提交</text>
-          <textarea class="sheet-textarea" v-model="rejectReason" placeholder="请输入退回原因…" />
+          <textarea class="sheet-textarea" v-model="rejectReason" placeholder="请输入退回原因…"></textarea>
           <view class="brow">
             <view class="btn-e" @click="showReject = false"><text>取消</text></view>
             <view class="btn-p" @click="onReject"><text>确认退回</text></view>
@@ -129,8 +129,8 @@ import SNavBar from '@/components/shared/SNavBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SBadge from '@/components/shared/SBadge.vue'
-import { adaptReviewStatus, buildFundingReviewSteps, getReviewItem, updateReview, REVIEW_STATUS } from '@/utils/businessState.js'
 import { scholarshipApi } from '@/common/api/scholarship.js'
+import { buildFundingReviewSteps, adaptReviewStatus, updateReview } from '@/utils/businessState.js'
 
 const STORAGE_KEY = 'teacher_aid_list'
 
@@ -144,7 +144,7 @@ function loadItem(uid) {
   return null
 }
 
-export default {
+const REVIEW_STATUS={PENDING:"pending",FIRST_PASS:"first_pass",REVIEW_PASS:"review_pass",FINAL_PASS:"final_pass",PAYMENT_PENDING:"payment_pending",PAID:"paid",COMPLETED:"completed",REJECTED:"rejected"}; export default {
   name: 'TeacherAidReview',
   components: { SNavBar, SCard, SInfoRow, SBadge },
   data() {
@@ -178,11 +178,14 @@ export default {
   },
   async onLoad(options) {
     const uid = options.uid
-    const localItem = uid ? getReviewItem('aids', uid) : null
-    if (uid) this.item = adaptReviewStatus(localItem || loadItem(uid) || { name: '孙文浩', sid: '2026010039', uid: 'aid-1', type: '国家一等助学金', amount: '4,000', avatar: '孙', status: REVIEW_STATUS.PENDING })
     if (uid) {
-      const detailRes = await scholarshipApi.getScholarshipDetail(uid)
-      if (!localItem && detailRes?.data?.code === 0 && detailRes.data.data) this.item = adaptReviewStatus(detailRes.data.data)
+      try {
+        const r = await scholarshipApi.getScholarshipDetail(uid)
+        if (r?.code === 0 && r.data) this.item = adaptReviewStatus(r.data)
+      } catch (e) {}
+    }
+    if (!this.item) {
+      this.item = { uid, name: '暂无', status: REVIEW_STATUS.PENDING, scholarshipId: uid, amount: '0', type: '', date: '', className: '', college: '', logs: [] }
     }
     if (this.item) {
       if (this.item.status !== REVIEW_STATUS.PENDING) {
@@ -211,7 +214,7 @@ export default {
       const targetStatus = REVIEW_STATUS.FIRST_PASS
       await scholarshipApi.approveScholarship(this.item.uid, { opinion: this.opinion, targetStatus })
       updateReview('aids', this.item.uid, targetStatus, { node: '辅导员初审', result: '初审通过', remark: this.opinion })
-      this.item = getReviewItem('aids', this.item.uid) || { ...this.item, status: targetStatus }
+      this.item.status=targetStatus
       this.statusSteps = buildFundingReviewSteps(this.item)
       uni.showToast({ title: '初审通过', icon: 'success' })
       setTimeout(() => uni.navigateBack(), 500)
@@ -224,7 +227,7 @@ export default {
       const reason = this.rejectReason || '审核不通过'
       await scholarshipApi.rejectScholarship(this.item.uid, { rejectReason: reason })
       updateReview('aids', this.item.uid, REVIEW_STATUS.REJECTED, { node: '辅导员初审', result: '已驳回', remark: reason })
-      this.item = getReviewItem('aids', this.item.uid) || { ...this.item, status: REVIEW_STATUS.REJECTED }
+      this.item.status = REVIEW_STATUS.REJECTED
       this.statusSteps = buildFundingReviewSteps(this.item)
       uni.showToast({ title: '已驳回', icon: 'none' })
       setTimeout(() => uni.navigateBack(), 500)

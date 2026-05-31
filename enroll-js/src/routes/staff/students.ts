@@ -37,7 +37,8 @@ const defaultClassInfo: Record<string, { college: string; major: string; classNa
 };
 
 const defaultStudents = [
-  { id: 1, student_no: '20240001', name: '张伟',    gender: '男', id_no: '330102200001011234', phone: '13800010001', parent_phone: '13900010001', address: '浙江省杭州市西湖区文三路123号', dorm_text: '博学楼 A101-1号床', checkin_status: 'checked-in', class_id: '1' },
+  { id: 1, student_no: '2024001',  name: '张同学',  gender: '男', id_no: '330102200001011234', phone: '13800000001', parent_phone: '13900010001', address: '浙江省杭州市西湖区文三路123号', dorm_text: '博学楼 A101-1号床', checkin_status: 'checked-in', class_id: '1' },
+  { id: 4, student_no: '20240001', name: '张伟',    gender: '男', id_no: '330102200001011234', phone: '13800010001', parent_phone: '13900010001', address: '浙江省杭州市西湖区文三路123号', dorm_text: '博学楼 A101-1号床', checkin_status: 'checked-in', class_id: '1' },
   { id: 2, student_no: '20240002', name: '李娜',    gender: '女', id_no: '330102200002022345', phone: '13800010002', parent_phone: '13900010002', address: '浙江省杭州市拱墅区莫干山路456号', dorm_text: '', checkin_status: 'pending', class_id: '1' },
   { id: 3, student_no: '20240003', name: '王强',    gender: '男', id_no: '330102200003033456', phone: '13800010003', parent_phone: '13900010003', address: '浙江省宁波市海曙区中山路789号', dorm_text: '明德楼 B202-3号床', checkin_status: 'checked-in', class_id: '2' },
   { id: 4, student_no: '20240004', name: '赵敏',    gender: '女', id_no: '330102200004044567', phone: '13800010004', parent_phone: '13900010004', address: '浙江省温州市鹿城区人民路101号', dorm_text: '', checkin_status: 'pending', class_id: '2' },
@@ -121,7 +122,7 @@ students.get('/students/search', async (c) => {
            s.student_no,
            s.name,
            s.gender,
-           COALESCE(c.college_id, '') AS college_id,
+           CAST(COALESCE(c.college_id, 0) AS text) AS college_id,
            c.id          AS class_id,
            c.name        AS class_name,
            s.phone,
@@ -348,7 +349,7 @@ students.get('/classes/:classId/students', async (c) => {
            s.student_no,
            s.name,
            s.gender,
-           COALESCE(c.college_id, '') AS college_id,
+           CAST(COALESCE(c.college_id, 0) AS text) AS college_id,
            c.id          AS class_id,
            c.name        AS class_name,
            s.phone,
@@ -530,29 +531,30 @@ students.get('/students/:studentId', async (c) => {
   const studentId = c.req.param('studentId');
 
   try {
+    const safeId = studentId.replace(/'/g, "''")
     const rows = await db.execute(
       sql.raw(
         `SELECT
            s.id             AS student_id,
            s.student_no,
            s.name,
-           s.gender,
-           s.id_no,
-           s.phone,
-           s.parent_phone,
-           s.address,
-           s.dorm_text,
-           s.checkin_status,
-           s.checkin_time,
-           s.checkin_operator,
-           COALESCE(c.college_id, '') AS college_id,
-           c.id             AS class_id,
-           c.name           AS class_name,
-           c.grade
+           CASE WHEN s.gender = 1 THEN '女' WHEN s.gender = 0 THEN '男' ELSE '' END AS gender,
+           COALESCE(s.phone, us.phone, '') AS phone,
+           NULL             AS id_no,
+           NULL             AS parent_phone,
+           COALESCE(s.address, '') AS address,
+           NULL             AS dorm_text,
+           NULL             AS checkin_status,
+           NULL             AS checkin_time,
+           NULL             AS checkin_operator,
+           COALESCE(col.name, '--') AS college_name,
+           COALESCE(cc.name, '') AS class_name,
+           us.major_id      AS major_id
          FROM t_data_student s
-         LEFT JOIN t_data_org_user_student us ON us.student_id = s.id
-         LEFT JOIN t_data_org_college_class c ON c.id = us.class_id
-         WHERE s.id = ${studentId}`
+         LEFT JOIN t_data_org_user_student us ON us.student_no = s.student_no
+         LEFT JOIN t_data_org_college_class cc ON cc.id = us.class_id
+         LEFT JOIN t_data_college col ON col.id = us.college_id
+         WHERE s.student_no = '${safeId}' OR s.id::text = '${safeId}'`
       )
     );
 
@@ -597,8 +599,8 @@ students.get('/students/:studentId', async (c) => {
         idNoMasked: maskIdNo(dbStudent.id_no),
         phone: dbStudent.phone || '',
         parentPhone: dbStudent.parent_phone || '',
-        college: dbStudent.college_id || '未知学院',
-        major: '',
+        college: dbStudent.college_name || '--',
+        major: dbStudent.major_id ? String(dbStudent.major_id) : '',
         className: dbStudent.class_name || '',
         address: dbStudent.address || '',
         dormitory,
@@ -647,7 +649,7 @@ students.get('/students/:studentId', async (c) => {
   }
 
   // Mock data fallback for student detail
-  const mockStudent = defaultStudents.find((s) => String(s.id) === studentId);
+  const mockStudent = defaultStudents.find((s) => String(s.id) === studentId || s.student_no === studentId);
   if (!mockStudent) return failCtx(c, '学生不存在', 40400, 404);
 
   const cls = defaultClassInfo[mockStudent.class_id] || { college: '未知学院', major: '', className: '未知班级' };

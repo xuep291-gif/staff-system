@@ -29,7 +29,8 @@ import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildReviewTabs, filterReviewByTab, getLastBusinessChange, getReviewList, getReviewTabIndex, statusMeta as reviewStatusMeta } from '@/utils/businessState.js'
+import { scholarshipApi } from '@/common/api/scholarship.js'
+import { adaptReviewStatus, statusMeta, buildReviewTabs, filterReviewByTab, getLastBusinessChange } from '@/utils/businessState.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const REVIEW_KEY_MAP = ['pending', 'processing', 'completed']
@@ -81,14 +82,22 @@ export default {
       this.activeTab = key
       setActiveKey('teacherLoanHome', key)
     },
-    refresh(syncChangedTab = false) {
-      const rows = getReviewList('loans')
-      this.list = rows.map(item => ({
-        ...item,
-        badgeColor: reviewStatusMeta[item.status]?.color || item.badgeColor,
-        bg: `var(--${reviewStatusMeta[item.status]?.color || 'wa'}-bg)`,
-        iconColor: `var(--${reviewStatusMeta[item.status]?.color || 'wa'})`
-      }))
+    async refresh(syncChangedTab = false) {
+      try {
+        const res = await scholarshipApi.getLoanList({ pageNum: 1, pageSize: 200, role: 'teacher' })
+        if (res?.code === 0) {
+          this.list = (res.data.items || []).map(item => {
+            const adapted = adaptReviewStatus(item)
+            return {
+              ...item,
+              ...adapted,
+              badgeColor: statusMeta[item.status]?.color || 'wa',
+              bg: `var(--${statusMeta[item.status]?.color || 'wa'}-bg)`,
+              iconColor: `var(--${statusMeta[item.status]?.color || 'wa'})`
+            }
+          })
+        }
+      } catch (e) { /* fallback empty */ }
       if (syncChangedTab) this.syncActiveTabFromLastChange()
     },
     syncActiveTabFromLastChange() {

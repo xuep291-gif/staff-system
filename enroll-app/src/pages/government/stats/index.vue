@@ -127,7 +127,7 @@
 <script>
 import SNavBar from '@/components/shared/SNavBar.vue'
 import SProgressBar from '@/components/shared/SProgressBar.vue'
-import { getClassSummary } from '@/utils/businessState.js'
+import { dashboardApi } from '@/common/api/dashboard.js'
 import { getSubRole, getDataScope, SUB_ROLES } from '@/utils/permissions.js'
 
 export default {
@@ -148,7 +148,7 @@ export default {
   onShow() {
     const subRole = getSubRole()
     const scope = getDataScope()
-    const summary = getClassSummary()
+    const summary = {}
 
     if (subRole === SUB_ROLES.COLLEGE_DEAN) {
       this.scopeLabel = scope.collegeId ? `本院数据（${scope.collegeId}）` : '本院数据'

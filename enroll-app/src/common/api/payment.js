@@ -6,7 +6,7 @@ const BASE = globalConfig.endpoint
 const PAYMENT_COLORS = { overdue: 'er', unpaid: 'wa', partial: 'in', paid: 'ok', green_channel: 'pu', channel: 'pu' }
 
 function normalizePaymentList(res) {
-  const data = res?.data?.data
+  const data = res?.data
   const rows = data?.list || data?.items
   if (!data || !Array.isArray(rows)) return res
   data.list = rows.map(item => {
@@ -23,6 +23,7 @@ function normalizePaymentList(res) {
       avatarBg: `var(--${PAYMENT_COLORS[payStatus] || 'wa'}-bg)`
     }
   })
+  data.items = data.list
   return res
 }
 

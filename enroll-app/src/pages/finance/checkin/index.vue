@@ -124,13 +124,13 @@ import SBadge from '@/components/shared/SBadge.vue'
 import SProgressBar from '@/components/shared/SProgressBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { getClassSummary, getStudents, updateStudentCheckin } from '@/utils/businessState.js'
+import { checkinApi } from '@/common/api/checkin.js'
 
 export default {
   name: 'FinanceCheckin',
   components: { SNavBar, SBadge, SProgressBar, SCard, SEmpty },
   data() {
-    const students = getStudents()
+    const students = []
     const colleges = [...new Set(students.map(s => s.college).filter(Boolean))]
     const majors = [...new Set(students.map(s => s.major).filter(Boolean))]
     return {
@@ -181,8 +181,8 @@ export default {
   },
   methods: {
     refresh() {
-      const summary = getClassSummary()
-      const students = getStudents()
+      const summary = {}
+      const students = []
       this.stats = summary.checkin
       this.checkinRate = summary.checkin.rate
       this.className = students[0]?.className || '2026级1班'
@@ -250,7 +250,7 @@ export default {
             uni.showToast({ title: student.name + ' 已报到', icon: 'none' })
             return
           }
-          updateStudentCheckin(studentId, true)
+          checkinApi.confirm(studentId,{checkinMethod:'manual'}).catch(function(){})
           this.refresh()
           uni.showToast({ title: '报到确认成功', icon: 'success' })
         },
@@ -264,7 +264,7 @@ export default {
     switchDim(key) {
       this.dimKey = key
       this.dimIdx = 0
-      const students = getStudents()
+      const students = []
       if (key === 'college') {
         this.dimOptions = ['全部', ...this.allColleges]
       } else if (key === 'major') {

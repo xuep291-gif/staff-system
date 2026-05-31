@@ -82,7 +82,7 @@ import SCard from '@/components/shared/SCard.vue'
 import SProgressBar from '@/components/shared/SProgressBar.vue'
 import STabBar from '@/components/shared/STabBar.vue'
 import SBadge from '@/components/shared/SBadge.vue'
-import { getClassSummary, getUnreadCount } from '@/utils/businessState.js'
+import { dashboardApi } from '@/common/api/dashboard.js'
 import { applyTheme } from '@/utils/role.js'
 import { getSubRole, getDataScope, SUB_ROLES } from '@/utils/permissions.js'
 
@@ -122,7 +122,7 @@ export default {
       ]
     }
   },
-  onShow() {
+  async onShow() {
     applyTheme('government')
     let subRole = getSubRole()
     if (!subRole) {
@@ -131,13 +131,13 @@ export default {
     }
     const scope = getDataScope()
     this.isSchool = subRole === SUB_ROLES.STUDENT_AFFAIRS
-    const summary = getClassSummary()
+    var summary={};try{var r=await dashboardApi.getGovernmentDashboard();if(r&&r.code===0)summary=r.data}catch(e){}
     const pending = {
       'room-change': summary.roomChanges.tabs[0].count,
       'aid-home': summary.aids.tabs[0].count,
       'loan-home': summary.loans.tabs[0].count
     }
-    this.unreadCount = getUnreadCount('government')
+    this.unreadCount = 0
     this.checkinStats = summary.checkin
 
     // 按子角色动态配置

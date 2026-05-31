@@ -98,7 +98,15 @@ interface ScholarshipRecord {
   submittedAt: string;
   currentNode: string;
   student: StudentRecord;
+  familySize: number;
+  familyMembers: string;
+  familyIncome: string;
+  difficultyLevel: string;
+  reason: string;
+  applyDate: string;
   materials: { fileId: string; fileName: string; fileType: string }[];
+  proofFileUrl: string;
+  householdFileUrl: string;
   auditLogs: AuditLogEntry[];
   payout: PayoutRecord | null;
 }
@@ -142,9 +150,8 @@ async function ensureStore(): Promise<void> {
     const rows = (await db.execute(
       sql`
         SELECT
-          id, student_no, name, class_name, college_name, college_id, class_id, phone
+          id, student_no, name, class_name, class_id, phone
         FROM t_data_student
-        WHERE delete_flag = 0
         LIMIT 80
       `,
     )) as any[];
@@ -155,8 +162,8 @@ async function ensureStore(): Promise<void> {
         studentNo: r.student_no ?? `STU${Date.now()}`,
         name: r.name ?? '未知',
         className: r.class_name ?? '',
-        department: r.college_name ?? '',
-        departmentId: String(r.college_id ?? ''),
+        department: '',
+        departmentId: '',
         classId: String(r.class_id ?? ''),
         phone: r.phone ?? '',
       }));
@@ -165,232 +172,93 @@ async function ensureStore(): Promise<void> {
     // fall through to mock generation
   }
 
-  // If DB returned nothing, generate mock students
-  if (students.length === 0) {
-    const mockNames = [
-      '张三', '李四', '王五', '赵六', '孙七', '周八', '吴九', '郑十',
-      '钱一', '陈二', '刘明', '黄丽', '林强', '何静', '郭峰', '杨洋',
-      '梁宇', '宋雨', '唐磊', '韩雪', '冯涛', '曹芳', '许刚', '沈敏',
-      '曾伟', '彭娜', '潘龙', '袁媛', '邓凯', '崔洁', '苏博', '魏文',
-      '蒋华', '蔡云', '贾雷', '丁琳', '薛涛', '叶倩', '阎武', '余秀',
-      '潘越', '戴军', '夏冰', '钟勇', '汪艳', '田超', '任菲', '姜鹏',
-      '范梅', '方杰', '石英', '姚瑞', '谭波', '廖婷', '邹翔', '熊丽',
-      '金磊', '陆萍', '郝刚', '白晶', '崔亮', '康燕', '毛远', '邱玉',
-      '秦峰', '江珊', '史健', '顾颖', '侯浩', '邵琪', '孟达', '龙慧',
-      '万强', '段红', '雷猛', '钱坤', '汤圆', '尹军', '黎彬', '易欢',
-    ];
-    const depts = [
-      { name: '计算机科学与技术学院', id: '1' },
-      { name: '电子信息工程学院', id: '2' },
-      { name: '机械工程学院', id: '3' },
-      { name: '经济管理学院', id: '4' },
-      { name: '外国语学院', id: '5' },
-      { name: '数学与统计学院', id: '6' },
-    ];
-    const classes = [
-      '软件工程2101班', '计算机科学2102班', '电子信息2101班',
-      '机械设计2101班', '工商管理2101班', '英语2101班',
-      '数学与应用数学2101班', '物联网工程2101班',
-    ];
+// Load scholarship applications from DB
+  try {
+    const appRows = (await db.execute(sql`
+      SELECT a.*, s.name AS student_name, s.class_name, s.phone AS student_phone
+      FROM t_data_scholarship_application a
+      LEFT JOIN t_data_student s ON a.student_no = s.student_no
+      ORDER BY a.id
+    `)) as any[];
 
-    for (let i = 0; i < 60; i++) {
-      const dept = depts[i % depts.length];
-      students.push({
-        id: String(1000 + i),
-        studentNo: `2024${String(i + 1).padStart(4, '0')}`,
-        name: mockNames[i] ?? `学生${i + 1}`,
-        className: classes[i % classes.length],
-        department: dept.name,
-        departmentId: dept.id,
-        classId: String(i % classes.length + 1),
-        phone: `138${String(randomInt(10000000, 99999999))}`,
-      });
-    }
-  }
-
-  // Generate scholarship applications from students
-  const BASE_TIME = Date.now();
-  const statusPool: ScholarshipStatus[] = [
-    'pending', 'pending', 'pending', 'pending',
-    'first_pass', 'first_pass', 'first_pass',
-    'review_pass', 'review_pass',
-    'final_pass', 'final_pass',
-    'payment_pending', 'payment_pending',
-    'paid', 'paid',
-    'completed', 'completed', 'completed',
-    'rejected',
-  ];
-
-  const operatorNames = ['张老师', '李老师', '王处长', '赵处长', '刘会计', '陈财务'];
-  const operatorRoles = ['teacher', 'teacher', 'government', 'government', 'finance', 'finance'];
-
-  for (let i = 0; i < students.length; i++) {
-    const student = students[i];
-    const status = statusPool[i % statusPool.length];
-    const type = SCHOLARSHIP_TYPES[i % SCHOLARSHIP_TYPES.length];
-    const amount =
-      type === '国家助学金（一等）'
-        ? 5000
-        : type === '国家助学金（二等）'
-          ? 3000
-          : type === '学校困难补助'
-            ? 2000
-            : randomPick([5000, 8000, 10000]);
-    const approvedAmount = status === 'pending' || status === 'rejected' ? 0 : amount;
-
-    const sid = String(i + 1).padStart(3, '0');
-    const scholarshipId = `SCO_${BASE_TIME}_${sid}`;
-    const applicationNo = `SCH${new Date().getFullYear()}${String(i + 1).padStart(5, '0')}`;
-
-    // Build audit logs based on status progression
-    const auditLogs: AuditLogEntry[] = [];
-    const submittedAt = new Date(
-      BASE_TIME - randomInt(7, 30) * 86400000,
-    ).toISOString();
-
-    auditLogs.push({
-      operator: student.name,
-      operatorRole: 'student',
-      action: '提交申请',
-      opinion: '家庭经济困难，申请助学金',
-      operatedAt: submittedAt,
-    });
-
-    // Progress tracking
-    const progressOrder = [
-      'pending',
-      'first_pass',
-      'review_pass',
-      'final_pass',
-      'payment_pending',
-      'paid',
-    ];
-    const currentIdx = progressOrder.indexOf(status);
-    const progressedCount =
-      currentIdx >= 0 ? currentIdx : status === 'completed' ? 6 : status === 'rejected' ? 1 : 0;
-
-    if (progressedCount >= 1 || status === 'completed' || status === 'rejected') {
-      // teacher初审
-      if (progressedCount >= 1 || status === 'rejected') {
-        const idx = i % 2;
-        auditLogs.push({
-          operator: operatorNames[idx],
-          operatorRole: 'teacher',
-          action:
-            status === 'rejected' && progressedCount === 1 ? '驳回' : '初审通过',
-          opinion:
-            status === 'rejected' && progressedCount === 1
-              ? '材料不完整，请补充后重新提交'
-              : '材料齐全，情况属实，建议通过',
-          operatedAt: new Date(
-            new Date(submittedAt).getTime() + randomInt(1, 3) * 86400000,
-          ).toISOString(),
-        });
-      }
-    }
-
-    if (progressedCount >= 2 || status === 'completed') {
-      // government复审
-      const idx = 2 + (i % 2);
-      auditLogs.push({
-        operator: operatorNames[idx],
-        operatorRole: 'government',
-        action: '复审通过',
-        opinion: '符合资助条件，同意资助',
-        operatedAt: new Date(
-          new Date(submittedAt).getTime() + randomInt(4, 7) * 86400000,
-        ).toISOString(),
-      });
-    }
-
-    if (progressedCount >= 3 || status === 'completed') {
-      // teacher终审
-      auditLogs.push({
-        operator: operatorNames[i % 2],
-        operatorRole: 'teacher',
-        action: '终审通过',
-        opinion: `批准资助金额 ${approvedAmount} 元`,
-        operatedAt: new Date(
-          new Date(submittedAt).getTime() + randomInt(8, 12) * 86400000,
-        ).toISOString(),
-      });
-    }
-
-    // payout record
-    let payout: PayoutRecord | null = null;
-    if (
-      status === 'paid' ||
-      status === 'completed' ||
-      status === 'payment_pending'
-    ) {
-      payout = {
-        status:
-          status === 'payment_pending'
-            ? 'pending'
-            : status === 'paid' || status === 'completed'
-              ? 'paid'
-              : 'pending',
-        amount: approvedAmount,
-        method: 'bank_transfer',
-        paidAt:
-          status === 'paid' || status === 'completed'
-            ? new Date(
-                new Date(submittedAt).getTime() + randomInt(12, 16) * 86400000,
-              ).toISOString()
-            : '',
-        operatorName: operatorNames[4],
+    for (const r of appRows) {
+      const student: StudentRecord = {
+        id: String(r.student_no ?? ''),
+        studentNo: r.student_no ?? '',
+        name: r.student_name ?? '未知',
+        className: r.class_name ?? '',
+        department: '',
+        departmentId: '',
+        classId: '',
+        phone: r.student_phone ?? '',
       };
-      const payIdx = 4 + (i % 2);
-      if (status === 'paid' || status === 'completed') {
-        auditLogs.push({
-          operator: operatorNames[payIdx],
-          operatorRole: 'finance',
-          action: '财务打款',
-          opinion: `已通过银行转账发放 ${approvedAmount} 元`,
-          operatedAt: payout.paidAt,
-        });
-      }
+      const status: ScholarshipStatus = (r.status as ScholarshipStatus) ?? 'pending';
+      const record: ScholarshipRecord = {
+        scholarshipId: r.application_id ?? `SCO_${Date.now()}`,
+        applicationNo: r.application_id ?? '',
+        studentId: student.id,
+        studentNo: student.studentNo,
+        studentName: student.name,
+        type: r.type ?? '国家助学金（一等）',
+        amount: Number(r.amount ?? 0),
+        approvedAmount: status === 'pending' || status === 'rejected' ? 0 : Number(r.amount ?? 0),
+        status,
+        statusLabel: STATUS_LABELS[status] ?? status,
+        submittedAt: r.created_at ?? new Date().toISOString(),
+        currentNode: r.current_node ?? CURRENT_NODE_MAP[status] ?? '',
+        student,
+        familySize: Number(r.family_size ?? 0),
+        familyMembers: r.family_members ?? '',
+        familyIncome: String(r.income ?? ''),
+        difficultyLevel: r.level ?? '',
+        reason: r.reason ?? '',
+        applyDate: r.apply_date ?? '',
+        proofFileUrl: r.proof_file_url ?? '',
+        householdFileUrl: r.household_file_url ?? '',
+        materials: [],
+        auditLogs: Array.isArray(r.audit_logs) ? r.audit_logs : [],
+        payout: r.payout ?? null,
+      };
+      scholarshipStore.set(record.scholarshipId, record);
     }
-
-    const record: ScholarshipRecord = {
-      scholarshipId,
-      applicationNo,
-      studentId: student.id,
-      studentNo: student.studentNo,
-      studentName: student.name,
-      type,
-      amount,
-      approvedAmount,
-      status,
-      statusLabel: STATUS_LABELS[status] ?? status,
-      submittedAt,
-      currentNode: CURRENT_NODE_MAP[status] ?? '',
-      student,
-      materials: [
-        {
-          fileId: `file_${scholarshipId}_1`,
-          fileName: '家庭情况调查表.pdf',
-          fileType: 'pdf',
-        },
-        {
-          fileId: `file_${scholarshipId}_2`,
-          fileName: '家庭经济困难证明.pdf',
-          fileType: 'pdf',
-        },
-        {
-          fileId: `file_${scholarshipId}_3`,
-          fileName: '申请书.docx',
-          fileType: 'docx',
-        },
-      ],
-      auditLogs,
-      payout,
-    };
-
-    scholarshipStore.set(scholarshipId, record);
+  } catch(e) {
+    console.error('Failed to load scholarships from DB:', e);
   }
 
   storeInitialised = true;
+}
+
+async function syncNewFromDB() {
+  try {
+    const appRows = (await db.execute(sql`
+      SELECT a.*, s.name AS student_name, s.class_name, s.phone AS student_phone
+      FROM t_data_scholarship_application a
+      LEFT JOIN t_data_student s ON a.student_no = s.student_no
+      WHERE a.application_id NOT IN ${sql(scholarshipStore.size > 0 ? [...scholarshipStore.keys()] : [''])}
+      ORDER BY a.id
+    `)) as any[];
+    for (const r of appRows) {
+      const student: StudentRecord = {
+        id: String(r.student_no ?? ''), studentNo: r.student_no ?? '',
+        name: r.student_name ?? '未知', className: r.class_name ?? '',
+        department: '', departmentId: '', classId: '', phone: r.student_phone ?? '',
+      };
+      const st: ScholarshipStatus = (r.status as ScholarshipStatus) ?? 'pending';
+      const record: ScholarshipRecord = {
+        scholarshipId: r.application_id ?? `SCO_${Date.now()}`, applicationNo: r.application_id ?? '',
+        studentId: student.id, studentNo: student.studentNo, studentName: student.name,
+        type: r.type ?? '国家助学金（一等）', amount: Number(r.amount ?? 0),
+        approvedAmount: st === 'pending' || st === 'rejected' ? 0 : Number(r.amount ?? 0),
+        status: st, statusLabel: STATUS_LABELS[st] ?? st,
+        submittedAt: r.created_at ?? new Date().toISOString(), currentNode: r.current_node ?? CURRENT_NODE_MAP[st] ?? '',
+        student, familySize: Number(r.family_size ?? 0), familyMembers: r.family_members ?? '',
+        familyIncome: String(r.income ?? ''), difficultyLevel: r.level ?? '',
+        reason: r.reason ?? '', applyDate: r.apply_date ?? '', proofFileUrl: r.proof_file_url ?? '', householdFileUrl: r.household_file_url ?? '', materials: [],
+        auditLogs: Array.isArray(r.audit_logs) ? r.audit_logs : [], payout: r.payout ?? null,
+      };
+      scholarshipStore.set(record.scholarshipId, record);
+    }
+  } catch(e) { console.error('syncNewFromDB failed:', e); }
 }
 
 // ── Helper: build progress steps for a given record ──────────────────────────
@@ -592,6 +460,14 @@ scholarships.get('/scholarships/:scholarshipId', async (c) => {
     status: record.status,
     statusLabel: record.statusLabel,
     currentNode: record.currentNode,
+    familySize: record.familySize,
+    familyMembers: record.familyMembers,
+    familyIncome: record.familyIncome,
+    difficultyLevel: record.difficultyLevel,
+    reason: record.reason,
+    applyDate: record.applyDate,
+    proofFileUrl: record.proofFileUrl,
+    householdFileUrl: record.householdFileUrl,
     materials: record.materials,
     progressSteps,
     auditLogs: record.auditLogs,
@@ -721,6 +597,17 @@ scholarships.post('/scholarships/:scholarshipId/approve', async (c) => {
   record.statusLabel = STATUS_LABELS[newStatus] ?? newStatus;
   record.currentNode = CURRENT_NODE_MAP[newStatus] ?? '';
 
+  // Persist to DB
+  try {
+    await db.execute(sql`
+      UPDATE t_data_scholarship_application
+      SET status = ${newStatus}, current_node = ${record.currentNode},
+          audit_logs = ${JSON.stringify(record.auditLogs)}::jsonb,
+          updated_at = now()
+      WHERE application_id = ${scholarshipId}
+    `);
+  } catch {}
+
   const stats = computeStatistics(actingRole ?? auth.role);
 
   return okCtx(c, {
@@ -781,6 +668,17 @@ scholarships.post('/scholarships/:scholarshipId/reject', async (c) => {
   record.status = 'rejected';
   record.statusLabel = STATUS_LABELS.rejected;
   record.currentNode = '';
+
+  // Persist to DB
+  try {
+    await db.execute(sql`
+      UPDATE t_data_scholarship_application
+      SET status = 'rejected', current_node = '',
+          audit_logs = ${JSON.stringify(record.auditLogs)}::jsonb,
+          updated_at = now()
+      WHERE application_id = ${scholarshipId}
+    `);
+  } catch {}
 
   const stats = computeStatistics(auth.role);
 
@@ -852,6 +750,18 @@ scholarships.post('/scholarships/:scholarshipId/disburse', async (c) => {
     operatorName: auth.name,
     ...(bankAccountId ? { bankAccountId } : {}),
   };
+
+  // Persist to DB
+  try {
+    await db.execute(sql`
+      UPDATE t_data_scholarship_application
+      SET status = 'completed', current_node = '',
+          payout = ${JSON.stringify(record.payout)}::jsonb,
+          audit_logs = ${JSON.stringify(record.auditLogs)}::jsonb,
+          updated_at = now()
+      WHERE application_id = ${scholarshipId}
+    `);
+  } catch {}
 
   const payoutMethodLabel =
     payoutMethod === 'bank_transfer'

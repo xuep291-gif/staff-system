@@ -55,7 +55,6 @@ import SCard from '@/components/shared/SCard.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { DORM_REVIEW_STATUS, getDormReviewItem, updateReview } from '@/utils/businessState.js'
 import { dormitoryApi } from '@/common/api/dormitory.js'
 
 export default {
@@ -75,7 +74,7 @@ export default {
     this.apiId = query.apiId || this.uid
 
     // 1. 先从本地业务状态加载，保证立即有数据显示
-    const localItem = getDormReviewItem('roomChanges', this.uid)
+    const localItem = item
     if (localItem) {
       this.item = localItem
     }
@@ -121,7 +120,7 @@ export default {
         operator: '政务处',
         remark: this.remark || (type === 'approved' ? '同意换宿申请' : '不符合换宿条件')
       })
-      const updated = getDormReviewItem('roomChanges', this.uid)
+      const updated = item
       if (updated) this.item = updated
       uni.showToast({ title: type === 'approved' ? '已通过' : '已驳回', icon: 'success' })
       setTimeout(() => uni.navigateBack(), 450)

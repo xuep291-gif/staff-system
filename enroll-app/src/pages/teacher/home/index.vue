@@ -14,7 +14,7 @@
     </SBanner>
 
     <!-- §6.5 浮动卡片 FloatCard -->
-    <SFloatCard>
+    <SFloatCard :key="'float-' + renderKey">
       <view class="fc-stats">
         <view class="fc-stat">
           <text class="fc-num">{{ teacher.totalStudents }}</text>
@@ -29,7 +29,7 @@
           <text class="fc-lbl">未报到</text>
         </view>
       </view>
-      <view class="fc-prog">
+      <view class="fc-prog" :key="'prog-' + renderKey">
         <SProgressBar
           :percent="checkinRate"
           color="brand"
@@ -42,7 +42,7 @@
     <!-- §7.1 内容区 -->
     <view class="sc">
       <!-- §6.14 待办事项卡片 -->
-      <SCard title="待办事项" :actionText="'共' + todoTotal + '项'">
+      <SCard title="待办事项" :actionText="'共' + todoTotal + '项'" :key="'todo-' + renderKey">
         <view class="todo-item" v-for="todo in todos" :key="todo.key" @click="goTodo(todo.key)">
           <view class="todo-ico" :style="{ background: todo.bg }">{{ todo.icon }}</view>
           <view class="todo-body">
@@ -55,7 +55,7 @@
       </SCard>
 
       <!-- §6.12 快捷功能卡片（分隔线网格模式 B） -->
-      <SCard title="快捷功能">
+      <SCard title="快捷功能" :key="'quick-' + renderKey">
         <view class="grid-3">
           <view class="grid-item" v-for="fn in quickFns" :key="fn.key" @click="goTodo(fn.key)">
             <text class="grid-ico">{{ fn.icon }}</text>
@@ -77,8 +77,9 @@ import SCard from '@/components/shared/SCard.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SProgressBar from '@/components/shared/SProgressBar.vue'
 import STabBar from '@/components/shared/STabBar.vue'
-import { getClassSummary, getUnreadCount } from '@/utils/businessState.js'
 import { applyTheme } from '@/utils/role.js'
+import { dashboardApi } from '@/common/api/dashboard.js'
+import { messageApi } from '@/common/api/message.js'
 
 export default {
   name: 'TeacherHome',
@@ -87,6 +88,7 @@ export default {
     return {
       activeTab: 0,
       unreadCount: 0,
+      renderKey: 0,
       teacher: {
         avatar: '刘',
         name: '刘晓华',
@@ -123,30 +125,38 @@ export default {
       ]
     }
   },
-  onShow() {
+  async onShow() {
     applyTheme('teacher')
-    const summary = getClassSummary()
-    const pending = {
-      'doc-home': summary.documents.tabs[0].count,
-      'aid-home': summary.aids.tabs[0].count,
-      'fee-home': summary.fees.overdue,
-      'loan-home': summary.loans.tabs[0].count,
-      'room-change': summary.roomChanges.tabs[0].count
-    }
-    this.unreadCount = getUnreadCount('teacher')
-    this.teacher.totalStudents = summary.totalStudents
-    this.checkinStats = summary.checkin
-    this.todos = this.todos.map(todo => ({
-      ...todo,
-      count: pending[todo.key] ?? todo.count,
-      desc: `${pending[todo.key] ?? todo.count} 名同学等待处理`
-    }))
-    this.tabItems = this.tabItems.map((item, index) => {
-      if (index === 1) return { ...item, badge: String(summary.fees.tabs[0].count + summary.fees.tabs[1].count) }
-      if (index === 2) return { ...item, badge: String(summary.documents.tabs[0].count) }
-      if (index === 3) return { ...item, badge: String(summary.aids.tabs[0].count) }
-      return item
-    })
+    try {
+      const res = await dashboardApi.getTeacherDashboard()
+      if (res?.code === 0) {
+        // 深拷贝避免 uni-app Vue 3 冻结对象导致 slot 更新报错
+        const d = JSON.parse(JSON.stringify(res.data))
+        const cs = d.classStats || {}
+        const todo = d.todo || {}
+        this.teacher = {
+          avatar: this.teacher.avatar,
+          name: d.teacher?.name || '刘晓华',
+          subtitle: (d.teacher?.workNo || '') + ' · ' + (d.teacher?.department || '') + ' · ' + (d.teacher?.class || ''),
+          totalStudents: cs.totalStudents || 0
+        }
+        this.checkinStats = { checkedIn: cs.checkedIn || 0, unchecked: cs.unchecked || 0 }
+        this.todos = this.todos.map((t, i) => ({
+          key: t.key,
+          label: t.label,
+          desc: t.desc,
+          icon: t.icon,
+          bg: t.bg,
+          badgeColor: t.badgeColor,
+          count: todo[t.key === 'doc-home' ? 'docPending' : t.key === 'aid-home' ? 'aidPending' : t.key === 'fee-home' ? 'feeOverdue' : t.key === 'loan-home' ? 'loanPending' : 'roomChangePending'] ?? t.count
+        }))
+        this.renderKey++
+      }
+    } catch (e) { console.error('dashboard failed:', e) }
+    try {
+      const ur = await messageApi.getUnreadCount({ role: 'teacher' })
+      this.unreadCount = ur?.data?.count || 0
+    } catch (e) { /* ignore */ }
   },
   computed: {
     checkinRate() {

@@ -62,7 +62,7 @@ export const request = (method, url, params = {}, header = {}, timeout = 15000) 
   return Promise.race([requestPromise, timeoutPromise])
     .catch(error => {
       // 隐藏 loading
-      uni.hideLoading()
+      // uni.hideLoading() -- handled in finally
 
       // 处理超时错误
       if (error.message === '请求超时，请检查网络连接后重试') {

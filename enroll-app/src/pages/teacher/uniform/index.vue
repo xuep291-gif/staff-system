@@ -60,7 +60,7 @@
 import SNavBar from '@/components/shared/SNavBar.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { getSizeList, SIZE_STATUS } from '@/utils/businessState.js'
+import { uniformApi } from '@/common/api/uniform.js'
 
 export default {
   name: 'TeacherUniform',
@@ -86,8 +86,8 @@ export default {
       return this.list.filter(item => item.name.includes(kw) || item.sid.includes(kw))
     }
   },
-  onShow() {
-    this.list = getSizeList()
+  async onShow() {
+    this.list = []
   },
   methods: {
     goDetail(item) {

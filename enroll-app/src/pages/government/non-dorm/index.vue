@@ -29,7 +29,7 @@ import StatusTabs from '@/components/shared/StatusTabs.vue'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
-import { buildDormReviewTabs, dormReviewStatusMeta, filterDormReviewByTab, getDormReviewList, getLastBusinessChange } from '@/utils/businessState.js'
+import { dormitoryApi } from '@/common/api/dormitory.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 
 const DORM_KEY_MAP = ['pending', 'approved', 'rejected']
@@ -55,53 +55,15 @@ export default {
   watch: {
     activeTab() { this.filterVersion++ }
   },
-  onLoad() {
-    this.onBusinessStateChange = ({ collection }) => {
-      if (collection === 'nonDorm') this.refresh(true)
-    }
-    if (typeof uni.$on === 'function') uni.$on('business-state-change', this.onBusinessStateChange)
-  },
-  onUnload() {
-    if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
-  },
-  async onShow() {
-    this.filterVersion++
-    try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
-    this.refresh(true)
-    this.activeTab = getActiveKey('govNonDorm', 'pending')
-  },
-  methods: {
+  
+  
+  async onShow(){ this.filterVersion++; await this.refresh() }, methods:{
     onTabClick(key) {
       this.activeTab = key
       setActiveKey('govNonDorm', key)
     },
-    refresh(syncChangedTab = false) {
-      this.list = getDormReviewList('nonDorm').map(item => {
-        const meta = dormReviewStatusMeta[item.status] || {}
-        return {
-          ...item,
-          bg: `var(--${meta.color || 'wa'}-bg)`,
-          iconColor: `var(--${meta.color || 'wa'})`
-        }
-      })
-      if (syncChangedTab) this.syncActiveTabFromLastChange()
-    },
-    syncActiveTabFromLastChange() {
-      const change = getLastBusinessChange('nonDorm')
-      const token = change ? `${change.uid}-${change.status}-${change.time}` : ''
-      if (!change || token === this.lastSyncedChange) return
-      this.lastSyncedChange = token
-      const item = this.list.find(i => i.uid === change.uid) || change
-      const status = item.status || item.filterKey
-      const index = status === 'approved' ? 1 : status === 'rejected' ? 2 : 0
-      setActiveKey('govNonDorm', DORM_KEY_MAP[index] || 'pending')
-    },
-    goReview(item) {
-      rememberStaffBackTarget('/pages/government/non-dorm/index')
-      uni.navigateTo({ url: '/pages/government/non-dorm-review/index?uid=' + item.uid })
-    }
-  }
-}
+    async refresh(){ try{ var r=await dormitoryApi.getWithdrawApplications({pageNum:1,pageSize:200,role:"government"}); if(r&&r.code===0) this.list=(r.data.items||[]).map(function(i){return Object.assign({},i,{uid:i.applicationId})}) }catch(e){} },
+}}
 </script>
 
 <style lang="scss" scoped>

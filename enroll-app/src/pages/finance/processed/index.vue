@@ -25,6 +25,7 @@ import SNavBar from '@/components/shared/SNavBar.vue'
 import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import { getReviewList, getRefundList, REVIEW_STATUS, REFUND_STATUS } from '@/utils/businessState.js'
+import { guardStaffFeature } from '@/utils/staffAccess.js'
 import { scholarshipApi } from '@/common/api/scholarship.js'
 import { refundApi } from '@/common/api/refund.js'
 
@@ -33,6 +34,9 @@ export default {
   components: { SNavBar, SBadge, SEmpty },
   data() {
     return { records: [] }
+  },
+  onLoad() {
+    guardStaffFeature('processed')
   },
   async onShow() {
     const [aidRes, loanRes, refundRes] = await Promise.all([

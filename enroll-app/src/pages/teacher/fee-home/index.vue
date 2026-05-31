@@ -102,8 +102,8 @@ import SButton from '@/components/shared/SButton.vue'
 import SProgressBar from '@/components/shared/SProgressBar.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import SCheckbox from '@/components/shared/SCheckbox.vue'
-import { getFeeList, getPaymentSummary, urgeStudents } from '@/utils/businessState.js'
 import { reminderApi } from '@/common/api/reminder.js'
+import { paymentApi } from '@/common/api/payment.js'
 import { rememberStaffBackTarget } from '@/utils/staffNavigation.js'
 import { getActiveKey, setActiveKey } from '@/utils/tabState.js'
 
@@ -140,8 +140,16 @@ export default {
         { key: 'green', label: '绿色通道', count: this.allStudents.filter(s => PAYMENT_KEY_STATUS_MAP.green.includes(s.payStatus)).length }
       ]
     },
-    stats() { return getPaymentSummary(this.allStudents) },
-    payRate() { return this.stats.payRate },
+    payRate() {
+      const total = this.allStudents.length
+      if (!total) return 0
+      const paid = this.allStudents.filter(s => s.payStatus === 'paid').length
+      return parseFloat(((paid / total) * 100).toFixed(1))
+    },
+    formattedOutstanding() {
+      const unpaid = this.allStudents.reduce((s, stu) => s + (stu.unpaidAmount || 0), 0)
+      return this.formatMoney(unpaid)
+    },
     filteredStudents() {
       const statuses = PAYMENT_KEY_STATUS_MAP[this.activeTab] || PAYMENT_KEY_STATUS_MAP.unpaid
       const result = this.allStudents.filter(s => statuses.includes(s.payStatus))
@@ -153,17 +161,7 @@ export default {
       if (selectable.length === 0) return '无可选'
       return this.selectedIds.length === selectable.length ? '取消全选' : '全选可催缴'
     },
-    formattedOutstanding() { return this.formatMoney(this.stats.outstandingAmount) },
     urgeCount() { return this.allStudents.filter(this.isUrgeEligible).length }
-  },
-  onLoad() {
-    this.onBusinessStateChange = ({ collection }) => {
-      if (collection === 'fees') this.refresh()
-    }
-    if (typeof uni.$on === 'function') uni.$on('business-state-change', this.onBusinessStateChange)
-  },
-  onUnload() {
-    if (this.onBusinessStateChange && typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
   },
   methods: {
     onPaymentTabChange(key) {
@@ -221,44 +219,44 @@ export default {
       }
       this.doSendUrge(targets)
     },
-    doSendUrge(targets) {
+    async doSendUrge(targets) {
       if (this.sending) return
       this.sending = true
-      urgeStudents(targets)
-      reminderApi.batchSendReminder({ studentIds: targets, channels: ['site', 'sms'], scope: 'selected' })
-        .catch(e => console.log('[fee-home] API 未就绪，本地已记录催缴:', e))
-      this.allStudents = getFeeList()
+      try { await reminderApi.batchSendReminder({ studentIds: targets, channels: ['site', 'sms'], scope: 'selected' }) } catch (e) { /* best-effort */ }
+      await this.refresh()
       this.selectedIds = []
       this.selectionVersion++
       this.sending = false
-      uni.hideLoading()
-      uni.showModal({
-        title: '催缴成功',
-        content: `已向 ${targets.length} 名学生发送缴费提醒通知`,
-        showCancel: false,
-        confirmText: '知道了'
-      })
+      uni.showModal({ title: '催缴成功', content: `已向 ${targets.length} 名学生发送缴费提醒通知`, showCancel: false, confirmText: '知道了' })
     },
     goDetail(stu) {
-      console.log('[fee-home] goDetail navigateTo student-detail')
       rememberStaffBackTarget('/pages/teacher/fee-home/index')
       uni.navigateTo({ url: `/pages/teacher/student-detail/index?sid=${stu.studentNo}` })
     },
-    refresh() {
-      const yearKey = this.activeYear.replace('学年', '')
-      this.allStudents = getFeeList().filter(s => !s.schoolYear || s.schoolYear === yearKey)
-      console.log('[fee-home] refresh done, allStudents count:', this.allStudents.length, 'activeTab:', this.activeTab, 'year:', yearKey)
+    async refresh() {
+      try {
+        const res = await paymentApi.getStudentPayments({ pageNum: 1, pageSize: 200 })
+        if (res?.code === 0) {
+          this.allStudents = (res.data.items || []).map(p => ({
+            studentNo: p.studentNo, name: p.name, className: p.className,
+            expectedAmount: p.receivableAmount, paidAmount: p.paidAmount,
+            unpaidAmount: p.unpaidAmount, payStatus: p.paymentStatus,
+            overdueDays: p.overdueDays, urgeCount: p.urgeCount,
+            canUrge: p.canUrge, avatarBg: 'var(--brand-t)',
+          }))
+        }
+      } catch (e) { console.error('fee-home refresh:', e) }
     },
     formatMoney(value) { return Number(value || 0).toLocaleString() }
   },
-  onShow() {
-    console.log('[fee-home] onShow fired')
+  async onShow() {
     this.activeTab = getActiveKey('feeHome', 'unpaid')
     this.filterVersion++
     this.contentKey++
+    this.selectionVersion++
     try { uni.removeStorageSync('staff_back_target') } catch (e) { /* optional */ }
     try { this.activeYear = uni.getStorageSync('teacher_fee_school_year') || this.activeYear } catch (e) { /* optional */ }
-    this.refresh()
+    await this.refresh()
     this.sending = false
   }
 }

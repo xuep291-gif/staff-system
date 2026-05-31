@@ -117,7 +117,7 @@ import SBadge from '@/components/shared/SBadge.vue'
 import SEmpty from '@/components/shared/SEmpty.vue'
 import SBottomSheet from '@/components/shared/SBottomSheet.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
-import { confirmPaymentRecord, getPaymentRecordList, getStudents } from '@/utils/businessState.js'
+import { paymentApi } from '@/common/api/payment.js'
 
 const STATUS_TABS = [
   { key: 'all', label: '全部', color: 'brand' },
@@ -168,85 +168,12 @@ export default {
       return this.filteredList.reduce((sum, item) => sum + Number(item.amount || 0), 0)
     }
   },
-  onLoad() {
-    try {
-      const sys = uni.getSystemInfoSync()
-      this.scrollH = sys.windowHeight - 420
-    } catch (e) { this.scrollH = 500 }
-    this.onBusinessStateChange = () => { this.refresh() }
-    if (typeof uni.$on === 'function') uni.$on('business-state-change', this.onBusinessStateChange)
-  },
-  onUnload() {
-    if (typeof uni.$off === 'function') uni.$off('business-state-change', this.onBusinessStateChange)
-  },
-  onShow() { this.filterVersion++; this.refresh() },
-  methods: {
-    refresh() {
-      this.list = getPaymentRecordList()
-      // Ensure all colleges are available
-      const students = getStudents()
-      this.list = this.list.map(item => {
-        if (!item.college || item.college === '未知学院') {
-          const s = students.find(st => st.sid === item.sid)
-          if (s) {
-            item.college = s.college || '计算机学院'
-            item.className = s.className || '2026级1班'
-          }
-        }
-        return item
-      })
-    },
-    fmt(v) {
-      const n = Number(v)
-      return isNaN(n) ? '0' : n.toLocaleString()
-    },
-    fmtTime(t) {
-      if (!t) return ''
-      return t.length > 10 ? t.slice(5, 16) : t.slice(5)
-    },
-    avatarBg(item) {
-      const m = item.method
-      if (m === '在线支付') return 'var(--in-bg)'
-      if (m === '线下收款') return 'var(--wa-bg)'
-      if (m === '银行批扣') return 'var(--pu-bg)'
-      if (m === '预缴抵扣') return 'var(--ok-bg)'
-      return 'var(--brand-t)'
-    },
-    avatarColor(item) {
-      const m = item.method
-      if (m === '在线支付') return 'var(--in)'
-      if (m === '线下收款') return 'var(--wa)'
-      if (m === '银行批扣') return 'var(--pu)'
-      if (m === '预缴抵扣') return 'var(--ok)'
-      return 'var(--brand)'
-    },
-    onTabClick(key) { if (this.activeTab === key) return; this.activeTab = key; this.filterVersion++ },
-    onMethodChange(e) { this.methodIdx = Number(e.detail.value) },
-    onCollegeChange(e) { this.collegeIdx = Number(e.detail.value) },
-    onDateFromChange(e) { this.filters.dateFrom = e.detail.value },
-    onDateToChange(e) { this.filters.dateTo = e.detail.value },
-    openDetail(item) {
-      this.detail = { ...item }
-      this.showDetail = true
-    },
-    onConfirmPayment(item) {
-      uni.showModal({
-        title: '确认收款',
-        content: `确认收到 ${item.studentName}（${item.studentNo}）的 ¥${this.fmt(item.amount)} 款项？`,
-        confirmText: '确认',
-        success: (res) => {
-          if (res.confirm) {
-            confirmPaymentRecord(item.id)
-            this.refresh()
-            this.filterVersion++
-            uni.showToast({ title: '已确认收款', icon: 'success' })
-          }
-        }
-      })
-    }
-  }
-}
-
+  
+  
+  async onShow(){ this.filterVersion++; await this.refresh() }, methods:{
+    async refresh(){ try{ var r=await paymentApi.getPaymentRecords({pageNum:1,pageSize:200}); if(r&&r.code===0) this.list=(r.data.items||r.data.list||[]) }catch(e){} },
+	}
+	}
 function applyBaseFilter(list, filters, method, college) {
   const kw = filters.keyword.trim().toLowerCase()
   const from = filters.dateFrom || ''

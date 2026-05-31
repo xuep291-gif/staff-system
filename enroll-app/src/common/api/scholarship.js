@@ -33,17 +33,24 @@ function normalizeReviewItem(item, type) {
 
 function normalizeReviewList(type) {
   return res => {
-    const data = res?.data?.data
-    if (!data || data.list || !Array.isArray(data.items)) return res
-    data.list = data.items.map(item => normalizeReviewItem(item, type))
+    const data = res?.data
+    if (!data) return res
+    const rawList = data.list || data.items || []
+    const normalized = rawList.map(item => normalizeReviewItem(item, type))
+    data.list = normalized
+    data.items = normalized
     return res
   }
 }
 
 function normalizeReviewDetail(type) {
   return res => {
-    const data = res?.data?.data
-    if (data) res.data.data = normalizeReviewItem(data, type)
+    let data = res?.data
+    if (!data) return res
+    if (data.data && !data.name && !data.studentNo && !data.scholarshipId && !data.loanId && !data.student) {
+      data = data.data
+    }
+    res.data = normalizeReviewItem(data, type)
     return res
   }
 }

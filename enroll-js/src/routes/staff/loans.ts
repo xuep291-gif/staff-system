@@ -101,6 +101,10 @@ interface LoanRecord {
   amount: number;
   receiptNo: string;
   receiptVerified: boolean;
+  bank: string;
+  code: string;
+  reason: string;
+  applyDate: string;
   status: LoanStatus;
   statusLabel: string;
   submittedAt: string;
@@ -171,287 +175,81 @@ async function ensureStore(): Promise<void> {
       }));
     }
   } catch {
-    // fall through to mock generation
   }
+  // Load loan applications from DB
+  try {
+    const appRows = (await db.execute(sql`
+      SELECT a.*, s.name AS student_name, s.class_name, s.phone AS student_phone
+      FROM t_data_loan_application a
+      LEFT JOIN t_data_student s ON a.student_no = s.student_no
+      ORDER BY a.id
+    `)) as any[];
 
-  // If DB returned nothing, generate mock students
-  if (students.length === 0) {
-    const mockNames = [
-      '张三', '李四', '王五', '赵六', '孙七', '周八', '吴九', '郑十',
-      '钱一', '陈二', '刘明', '黄丽', '林强', '何静', '郭峰', '杨洋',
-      '梁宇', '宋雨', '唐磊', '韩雪', '冯涛', '曹芳', '许刚', '沈敏',
-      '曾伟', '彭娜', '潘龙', '袁媛', '邓凯', '崔洁', '苏博', '魏文',
-      '蒋华', '蔡云', '贾雷', '丁琳', '薛涛', '叶倩', '阎武', '余秀',
-      '潘越', '戴军', '夏冰', '钟勇', '汪艳', '田超', '任菲', '姜鹏',
-      '范梅', '方杰', '石英', '姚瑞', '谭波', '廖婷', '邹翔', '熊丽',
-      '金磊', '陆萍', '郝刚', '白晶', '崔亮', '康燕', '毛远', '邱玉',
-      '秦峰', '江珊', '史健', '顾颖', '侯浩', '邵琪', '孟达', '龙慧',
-      '万强', '段红', '雷猛', '钱坤', '汤圆', '尹军', '黎彬', '易欢',
-    ];
-    const depts = [
-      { name: '计算机科学与技术学院', id: '1' },
-      { name: '电子信息工程学院', id: '2' },
-      { name: '机械工程学院', id: '3' },
-      { name: '经济管理学院', id: '4' },
-      { name: '外国语学院', id: '5' },
-      { name: '数学与统计学院', id: '6' },
-    ];
-    const classes = [
-      '软件工程2101班', '计算机科学2102班', '电子信息2101班',
-      '机械设计2101班', '工商管理2101班', '英语2101班',
-      '数学与应用数学2101班', '物联网工程2101班',
-    ];
-
-    for (let i = 0; i < 50; i++) {
-      const dept = depts[i % depts.length];
-      students.push({
-        id: String(1000 + i),
-        studentNo: `2024${String(i + 1).padStart(4, '0')}`,
-        name: mockNames[i] ?? `学生${i + 1}`,
-        className: classes[i % classes.length],
-        department: dept.name,
-        departmentId: dept.id,
-        classId: String(i % classes.length + 1),
-        phone: `138${String(randomInt(10000000, 99999999))}`,
-      });
-    }
-  }
-
-  // Generate loan applications from students
-  const BASE_TIME = Date.now();
-  const statusPool: LoanStatus[] = [
-    'pending', 'pending', 'pending', 'pending',
-    'first_pass', 'first_pass', 'first_pass',
-    'review_pass', 'review_pass',
-    'final_pass', 'final_pass',
-    'payment_pending', 'payment_pending',
-    'paid', 'paid',
-    'completed', 'completed', 'completed',
-    'rejected',
-  ];
-
-  const operatorNames = ['张老师', '李老师', '王处长', '赵处长', '刘会计', '陈财务'];
-  const operatorRoles = ['teacher', 'teacher', 'government', 'government', 'finance', 'finance'];
-
-  const banks = ['国家开发银行', '中国农业银行', '中国银行'];
-  const billNames = [
-    '2024学年学费',
-    '2024学年住宿费',
-    '2024学年教材费',
-    '2024学年体检费',
-  ];
-
-  for (let i = 0; i < students.length; i++) {
-    const student = students[i];
-    const status = statusPool[i % statusPool.length];
-    const loanType = LOAN_TYPES[i % LOAN_TYPES.length];
-    const receiptNo =
-      loanType === 'origin_place'
-        ? `YD${new Date().getFullYear()}${String(i + 1).padStart(4, '0')}`
-        : `XY${new Date().getFullYear()}${String(i + 1).padStart(4, '0')}`;
-    const amount = loanType === 'origin_place' ? randomPick([6000, 8000, 10000, 12000]) : randomPick([5000, 6000, 8000]);
-
-    const sid = String(i + 1).padStart(3, '0');
-    const loanId = `LOAN_${BASE_TIME}_${sid}`;
-    const applicationNo = `LON${new Date().getFullYear()}${String(i + 1).padStart(5, '0')}`;
-
-    // Build audit logs based on status progression
-    const auditLogs: AuditLogEntry[] = [];
-    const submittedAt = new Date(
-      BASE_TIME - randomInt(7, 30) * 86400000,
-    ).toISOString();
-
-    auditLogs.push({
-      operator: student.name,
-      operatorRole: 'student',
-      action: '提交申请',
-      opinion: `申请${LOAN_TYPE_LABELS[loanType]}，金额 ${amount} 元`,
-      operatedAt: submittedAt,
-    });
-
-    // Progress tracking
-    const progressOrder = [
-      'pending',
-      'first_pass',
-      'review_pass',
-      'final_pass',
-      'payment_pending',
-      'paid',
-    ];
-    const currentIdx = progressOrder.indexOf(status);
-    const progressedCount =
-      currentIdx >= 0
-        ? currentIdx
-        : status === 'completed'
-          ? 6
-          : status === 'rejected'
-            ? 1
-            : 0;
-
-    const receiptVerified =
-      status !== 'pending' && status !== 'rejected';
-
-    if (progressedCount >= 1 || status === 'completed' || status === 'rejected') {
-      // teacher初审
-      if (progressedCount >= 1 || status === 'rejected') {
-        const idx = i % 2;
-        auditLogs.push({
-          operator: operatorNames[idx],
-          operatorRole: 'teacher',
-          action:
-            status === 'rejected' && progressedCount === 1 ? '驳回' : '初审通过',
-          opinion:
-            status === 'rejected' && progressedCount === 1
-              ? '贷款材料不完整，回执单未提供'
-              : '材料齐全，回执单已验证，建议通过',
-          operatedAt: new Date(
-            new Date(submittedAt).getTime() + randomInt(1, 3) * 86400000,
-          ).toISOString(),
-        });
-      }
-    }
-
-    if (progressedCount >= 2 || status === 'completed') {
-      // government复审
-      const idx = 2 + (i % 2);
-      auditLogs.push({
-        operator: operatorNames[idx],
-        operatorRole: 'government',
-        action: '复审通过',
-        opinion: '符合贷款条件，同意发放',
-        operatedAt: new Date(
-          new Date(submittedAt).getTime() + randomInt(4, 7) * 86400000,
-        ).toISOString(),
-      });
-    }
-
-    if (progressedCount >= 3 || status === 'completed') {
-      // teacher终审
-      auditLogs.push({
-        operator: operatorNames[i % 2],
-        operatorRole: 'teacher',
-        action: '终审通过',
-        opinion: `批准贷款金额 ${amount} 元，回执号 ${receiptNo}`,
-        operatedAt: new Date(
-          new Date(submittedAt).getTime() + randomInt(8, 12) * 86400000,
-        ).toISOString(),
-      });
-    }
-
-    // payout record
-    let payout: PayoutRecord | null = null;
-    const billStatuses: BillStatus[] = [];
-    const isOffset = loanType === 'campus' && (i % 3 === 0); // some campus loans use offset
-
-    if (
-      status === 'paid' ||
-      status === 'completed' ||
-      status === 'payment_pending'
-    ) {
-      const payMethod = isOffset ? 'offset_bill' : 'bank_transfer';
-      payout = {
-        status:
-          status === 'payment_pending'
-            ? 'pending'
-            : status === 'paid' || status === 'completed'
-              ? 'paid'
-              : 'pending',
-        amount,
-        method: payMethod,
-        paidAt:
-          status === 'paid' || status === 'completed'
-            ? new Date(
-                new Date(submittedAt).getTime() + randomInt(12, 16) * 86400000,
-              ).toISOString()
-            : '',
-        operatorName: operatorNames[4],
+    for (const r of appRows) {
+      const student = {
+        id: String(r.student_no ?? ''), studentNo: r.student_no ?? '',
+        name: r.student_name ?? '未知', className: r.class_name ?? '',
+        department: '', departmentId: '', classId: '', phone: r.student_phone ?? '',
+        gender: '', college: '', major: '', dormText: '',
       };
-
-      const payIdx = 4 + (i % 2);
-      if (status === 'paid' || status === 'completed') {
-        const payLabel = isOffset ? '财务冲抵' : '财务打款';
-        const payOpinion = isOffset
-          ? `已冲抵相关账单，金额 ${amount} 元`
-          : `已通过银行转账发放 ${amount} 元`;
-        auditLogs.push({
-          operator: operatorNames[payIdx],
-          operatorRole: 'finance',
-          action: payLabel,
-          opinion: payOpinion,
-          operatedAt: payout.paidAt,
-        });
-      }
-
-      // Generate bill statuses for offset loans
-      if (isOffset) {
-        const offsetBills = billNames.slice(0, randomInt(1, 3));
-        let remaining = amount;
-        for (let b = 0; b < offsetBills.length; b++) {
-          const billAmount =
-            b === offsetBills.length - 1
-              ? remaining
-              : Math.min(remaining, randomPick([4800, 5000, 5600]));
-          remaining -= billAmount;
-          billStatuses.push({
-            billId: `BILL_${BASE_TIME}_${sid}_${b}`,
-            billName: offsetBills[b],
-            amount: billAmount,
-            status:
-              status === 'paid' || status === 'completed' ? 'offset' : 'pending',
-          });
-        }
-      }
+      const st = (r.status as any) ?? 'pending';
+      const record = {
+        loanId: r.application_id ?? `LOAN_${Date.now()}`,
+        applicationNo: r.application_id ?? '', studentId: student.id,
+        studentNo: student.studentNo, studentName: student.name,
+        loanType: r.loan_type ?? 'campus', loanTypeLabel: r.loan_type === 'origin_place' ? '生源地助学贷款' : '校园地助学贷款',
+        amount: Number(r.amount ?? 0), approvedAmount: Number(r.approved_amount ?? 0),
+        receiptNo: r.receipt_no ?? '', receiptVerified: !!r.receipt_no,
+        bank: r.bank ?? '', code: r.code ?? '', reason: r.reason ?? '', applyDate: r.apply_date ?? '',
+        status: st, statusLabel: STATUS_LABELS[st] ?? st,
+        submittedAt: r.created_at ?? new Date().toISOString(),
+        currentNode: r.current_node ?? CURRENT_NODE_MAP[st] ?? '',
+        student, materials: [],
+        auditLogs: Array.isArray(r.audit_logs) ? r.audit_logs : [],
+        payout: r.payout ?? null, billStatuses: [],
+      };
+      loanStore.set(record.loanId, record);
     }
-
-    const record: LoanRecord = {
-      loanId,
-      applicationNo,
-      studentId: student.id,
-      studentNo: student.studentNo,
-      studentName: student.name,
-      loanType,
-      loanTypeLabel: LOAN_TYPE_LABELS[loanType],
-      amount,
-      receiptNo,
-      receiptVerified:
-        !(status === 'pending' || status === 'rejected'),
-      status,
-      statusLabel: STATUS_LABELS[status] ?? status,
-      submittedAt,
-      currentNode: CURRENT_NODE_MAP[status] ?? '',
-      student,
-      materials: [
-        {
-          fileId: `file_${loanId}_1`,
-          fileName: '贷款申请表.pdf',
-          fileType: 'pdf',
-        },
-        {
-          fileId: `file_${loanId}_2`,
-          fileName: '家庭经济困难证明.pdf',
-          fileType: 'pdf',
-        },
-        {
-          fileId: `file_${loanId}_3`,
-          fileName:
-            loanType === 'origin_place' ? '生源地贷款回执单.pdf' : '校园地贷款合同.pdf',
-          fileType: 'pdf',
-        },
-        {
-          fileId: `file_${loanId}_4`,
-          fileName: '家长同意书.pdf',
-          fileType: 'pdf',
-        },
-      ],
-      auditLogs,
-      payout,
-      billStatuses,
-    };
-
-    loanStore.set(loanId, record);
-  }
+  } catch(e) { console.error('Failed to load loans from DB:', e); }
 
   storeInitialised = true;
+}
+
+async function syncNewLoansFromDB() {
+  try {
+    const appRows = (await db.execute(sql`
+      SELECT a.*, s.name AS student_name, s.class_name, s.phone AS student_phone
+      FROM t_data_loan_application a
+      LEFT JOIN t_data_student s ON a.student_no = s.student_no
+      WHERE a.application_id NOT IN ${sql(loanStore.size > 0 ? [...loanStore.keys()] : [''])}
+      ORDER BY a.id
+    `)) as any[];
+    for (const r of appRows) {
+      const student = {
+        id: String(r.student_no ?? ''), studentNo: r.student_no ?? '',
+        name: r.student_name ?? '未知', className: r.class_name ?? '',
+        department: '', departmentId: '', classId: '', phone: r.student_phone ?? '',
+        gender: '', college: '', major: '', dormText: '',
+      };
+      const st = (r.status as any) ?? 'pending';
+      const record = {
+        loanId: r.application_id ?? `LOAN_${Date.now()}`,
+        applicationNo: r.application_id ?? '', studentId: student.id,
+        studentNo: student.studentNo, studentName: student.name,
+        loanType: r.loan_type ?? 'campus', loanTypeLabel: r.loan_type === 'origin_place' ? '生源地助学贷款' : '校园地助学贷款',
+        amount: Number(r.amount ?? 0), approvedAmount: Number(r.approved_amount ?? 0),
+        receiptNo: r.receipt_no ?? '', receiptVerified: !!r.receipt_no,
+        bank: r.bank ?? '', code: r.code ?? '', reason: r.reason ?? '', applyDate: r.apply_date ?? '',
+        status: st, statusLabel: STATUS_LABELS[st] ?? st,
+        submittedAt: r.created_at ?? new Date().toISOString(),
+        currentNode: r.current_node ?? CURRENT_NODE_MAP[st] ?? '',
+        student, materials: [],
+        auditLogs: Array.isArray(r.audit_logs) ? r.audit_logs : [],
+        payout: r.payout ?? null, billStatuses: [],
+      };
+      loanStore.set(record.loanId, record);
+    }
+  } catch(e) { console.error('syncNewLoansFromDB failed:', e); }
 }
 
 // ── Helper: build progress steps for a given record ──────────────────────────
@@ -663,6 +461,11 @@ loans.get('/loans/:loanId', async (c) => {
     amount: record.amount,
     receiptNo: record.receiptNo,
     receiptVerified: record.receiptVerified,
+    bank: record.bank,
+    code: record.code,
+    reason: record.reason,
+    applyDate: record.applyDate,
+    approvedAmount: record.approvedAmount,
     status: record.status,
     statusLabel: record.statusLabel,
     currentNode: record.currentNode,
@@ -861,6 +664,11 @@ loans.post('/loans/:loanId/reject', async (c) => {
   record.status = 'rejected';
   record.statusLabel = STATUS_LABELS.rejected;
   record.currentNode = '';
+
+  try { await db.execute(sql`
+    UPDATE t_data_loan_application SET status = 'rejected', current_node = '', audit_logs = ${JSON.stringify(record.auditLogs)}::jsonb, updated_at = now()
+    WHERE application_id = ${loanId}
+  `); } catch {}
 
   const stats = computeStatistics(auth.role);
 

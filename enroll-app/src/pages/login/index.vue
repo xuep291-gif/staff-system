@@ -280,7 +280,7 @@ export default {
       uni.login({
         success: (res) => { this.login(_.get(res, 'code')) },
         fail: () => {
-          uni.hideLoading()
+          // uni.hideLoading() -- handled by caller
           uni.showToast({ title: '登录失败', icon: 'none' })
         }
       })
@@ -297,8 +297,8 @@ export default {
     // 密码登录
     async onPwdLogin() {
       const loginRes = await authApi.passwordLogin({ account: this.form.account, password: this.form.password, clientType: 'h5', appId: globalConfig.appId })
-      if (loginRes?.data?.code === 0) {
-        const data = loginRes.data.data
+      uni.removeStorageSync("token"); uni.removeStorageSync("userInfo"); console.log("[LOGIN DEBUG] loginRes:", JSON.stringify(loginRes)); if (loginRes?.code === 0) {
+        const data = loginRes.data
         this.saveUserInfo({ ...data.user, accessToken: data.accessToken })
         return
       }
@@ -322,8 +322,8 @@ export default {
     // 短信登录
     async onSmsLogin() {
       const loginRes = await authApi.smsLogin({ phone: this.form.phone, code: this.form.code, smsToken: this.smsToken, clientType: 'h5', appId: globalConfig.appId })
-      if (loginRes?.data?.code === 0) {
-        const data = loginRes.data.data
+      if (loginRes?.code === 0) {
+        const data = loginRes.data
         this.saveUserInfo({ ...data.user, accessToken: data.accessToken })
         return
       }
@@ -419,7 +419,7 @@ export default {
         uni.login({
           success: (res) => { this.login(_.get(res, 'code')) },
           fail: () => {
-            uni.hideLoading()
+            // uni.hideLoading() -- handled by caller
             uni.showToast({ title: '登录失败', icon: 'none' })
           }
         })
@@ -452,13 +452,13 @@ export default {
           if (_.get(res, 'data.code') === 200) {
             this.saveUserInfo(_.cloneDeep(_.get(res, 'data.data')) || {})
           } else {
-            uni.hideLoading()
+            // uni.hideLoading() -- handled by caller
             this.loading = false
             uni.showToast({ title: _.get(res, 'data.message') || '登录失败，请重试', icon: 'none', duration: 3000 })
           }
         },
         fail: () => {
-          uni.hideLoading()
+          // uni.hideLoading() -- handled by caller
           this.loading = false
           uni.showToast({ title: '网络错误，请检查网络连接', icon: 'none', duration: 3000 })
         }
@@ -519,7 +519,7 @@ export default {
         communityData: _.pick(query, ['communityId', 'orgId'])
       })
 
-      uni.hideLoading()
+      // uni.hideLoading() -- handled by caller
       this.loading = false
       this.goToHome(query)
     },

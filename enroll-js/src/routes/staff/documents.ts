@@ -135,7 +135,7 @@ async function seedStore(): Promise<void> {
   try {
     const rows = await db.execute(sql`
       SELECT s.id, s.student_no, s.name, s.major,
-             cc.class_name, co.name AS college_name
+             cc.name AS class_name, co.name AS college_name
       FROM t_data_student s
       LEFT JOIN t_data_org_college_class cc ON s.class_id = cc.id
       LEFT JOIN t_data_college co ON cc.college_id = co.id

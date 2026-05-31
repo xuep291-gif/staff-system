@@ -166,7 +166,7 @@ export const cache = (key, value, seconds = 3600 * 12) => {
 		//判断缓存是否已存在
 		const getCurrentValue = uni.getStorageSync(key)
 		if (getCurrentValue) {
-			let temp = getCurrentValue.indexOf('_|_') != -1 ? getCurrentValue.split('_|_') : getCurrentValue
+			let temp = (typeof getCurrentValue === 'string' ? getCurrentValue : JSON.stringify(getCurrentValue)).indexOf('_|_') != -1 ? (typeof getCurrentValue === 'string' ? getCurrentValue : JSON.stringify(getCurrentValue)).split('_|_') : [getCurrentValue, '0']
 			if (!temp[1] || temp[1] <= nowTime) {
 				uni.removeStorageSync(key)
 			} else {
@@ -180,7 +180,7 @@ export const cache = (key, value, seconds = 3600 * 12) => {
 		let val = uni.getStorageSync(key);
 		if (val) {
 			// 缓存存在，判断是否过期
-			let temp = val.indexOf('_|_') != -1 ? val.split('_|_') : val
+			const rawVal = typeof val === 'string' ? val : JSON.stringify(val); let temp = rawVal.indexOf('_|_') != -1 ? rawVal.split('_|_') : [rawVal, '0']
 			if (Array.isArray(temp)) {
 				if (!temp[1] || Number(temp[1]) <= nowTime) {
 					uni.removeStorageSync(key)

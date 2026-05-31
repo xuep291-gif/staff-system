@@ -37,6 +37,7 @@
 
       <SCard title="财务意见" :padding="16" v-if="canPay">
         <view class="form-group">
+          <text class="form-label">财务意见</text>
           <textarea class="opinion-textarea" v-model="opinion" placeholder="请输入财务意见…" />
         </view>
       </SCard>
@@ -112,34 +113,32 @@ import SEmpty from '@/components/shared/SEmpty.vue'
 import SReviewProgress from '@/components/shared/SReviewProgress.vue'
 import { getReviewItem, markPayment, updateReview, REVIEW_STATUS } from '@/utils/businessState.js'
 import { scholarshipApi } from '@/common/api/scholarship.js'
+import { guardStaffFeature } from '@/utils/staffAccess.js'
 
 function buildLoanSteps(status) {
   const steps = [
-    { label: '学生提交申请', sub: '2026-05-20', done: true, current: false, popping: false },
-    { label: '辅导员初审', sub: '待进行', done: false, current: false, popping: false },
-    { label: '学院负责人复审', sub: '待进行', done: false, current: false, popping: false },
-    { label: '学工处审批', sub: '待进行', done: false, current: false, popping: false },
-    { label: '财务打款', sub: '待进行', done: false, current: false, popping: false }
+    { label: '学生提交', sub: '2026-05-20', done: true, current: false, popping: false },
+    { label: '初审通过', sub: '当前步骤', done: false, current: true, popping: false },
+    { label: '政务复审', sub: '待进行', done: false, current: false, popping: false },
+    { label: '教师终审', sub: '待进行', done: false, current: false, popping: false },
+    { label: '待打款', sub: '待进行', done: false, current: false, popping: false },
+    { label: '已完成', sub: '待进行', done: false, current: false, popping: false }
   ]
   if (status === REVIEW_STATUS.FIRST_PASS) {
-    steps[1] = { label: '辅导员初审', sub: '已通过', done: true, current: false, popping: false }
-    steps[2] = { label: '学院负责人复审', sub: '当前步骤', done: false, current: true, popping: false }
+    steps[1] = { label: '初审通过', sub: '已通过', done: true, current: false, popping: false }
+    steps[2] = { label: '政务复审', sub: '待复审', done: false, current: true, popping: false }
   } else if (status === REVIEW_STATUS.REVIEW_PASS) {
-    steps[1] = { label: '辅导员初审', sub: '已通过', done: true, current: false, popping: false }
-    steps[2] = { label: '学院负责人复审', sub: '已通过', done: true, current: false, popping: false }
-    steps[3] = { label: '学工处审批', sub: '当前步骤', done: false, current: true, popping: false }
-  } else if ([REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING].includes(status)) {
-    steps[1] = { label: '辅导员初审', sub: '已通过', done: true, current: false, popping: false }
-    steps[2] = { label: '学院负责人复审', sub: '已通过', done: true, current: false, popping: false }
-    steps[3] = { label: '学工处审批', sub: '已通过', done: true, current: false, popping: false }
-    steps[4] = { label: '财务打款', sub: '待打款', done: false, current: true, popping: false }
-  } else if ([REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(status)) {
-    steps[1] = { label: '辅导员初审', sub: '已通过', done: true, current: false, popping: false }
-    steps[2] = { label: '学院负责人复审', sub: '已通过', done: true, current: false, popping: false }
-    steps[3] = { label: '学工处审批', sub: '已通过', done: true, current: false, popping: false }
-    steps[4] = { label: '财务打款', sub: '已完成', done: true, current: false, popping: false }
+    steps[1] = { label: '初审通过', sub: '已通过', done: true, current: false, popping: false }
+    steps[2] = { label: '政务复审', sub: '已通过', done: true, current: false, popping: false }
+    steps[3] = { label: '教师终审', sub: '当前步骤', done: false, current: true, popping: false }
+  } else if ([REVIEW_STATUS.FINAL_PASS, REVIEW_STATUS.PAYMENT_PENDING, REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(status)) {
+    steps[1] = { label: '初审通过', sub: '已通过', done: true, current: false, popping: false }
+    steps[2] = { label: '政务复审', sub: '已通过', done: true, current: false, popping: false }
+    steps[3] = { label: '教师终审', sub: '已通过', done: true, current: false, popping: false }
+    steps[4] = { label: '待打款', sub: status === REVIEW_STATUS.PAYMENT_PENDING ? '当前步骤' : '已进入财务', done: status !== REVIEW_STATUS.PAYMENT_PENDING, current: status === REVIEW_STATUS.PAYMENT_PENDING, popping: false }
+    steps[5] = { label: '已完成', sub: [REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(status) ? '已打款' : '待进行', done: [REVIEW_STATUS.PAID, REVIEW_STATUS.COMPLETED].includes(status), current: false, popping: false }
   } else if (status === REVIEW_STATUS.REJECTED) {
-    steps[1] = { label: '辅导员初审', sub: '已退回', done: false, current: false, popping: false }
+    steps[1] = { label: '初审通过', sub: '已驳回', done: false, current: false, popping: false }
   }
   return steps
 }
@@ -159,13 +158,16 @@ export default {
     }
   },
   onLoad(options) {
+    if (!guardStaffFeature('payout')) return
     this.uid = options.uid || ''
   },
   async onShow() {
-    const localItem = this.uid ? getReviewItem('loans', this.uid) : null
-    this.item = localItem
-    const res = this.uid ? await scholarshipApi.getLoanDetail(this.uid) : null
-    if (!localItem && res?.data?.code === 0 && res.data.data) this.item = res.data.data
+    if (this.uid) {
+      try {
+        const res = await scholarshipApi.getLoanDetail(this.uid)
+        this.item = res?.code === 0 ? res.data : null
+      } catch (e) { this.item = null }
+    }
   },
   methods: {
     async onPay() {
@@ -211,7 +213,7 @@ export default {
 .amount-red { color: var(--er); font-weight: 700; font-size: var(--fs-15); }
 .reason-text { color: var(--N500); font-size: var(--fs-12); line-height: 1.6; }
 .preview-entry { display: flex; align-items: center; min-height: 96rpx; }
-.preview-entry > view + view { margin-left: 20rpx; }
+.preview-entry > * + * { margin-left: 20rpx; }
 .preview-icon { width: 72rpx; height: 72rpx; border-radius: var(--r-12); background: var(--brand-t); color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: var(--fs-20); }
 .preview-main { flex: 1; min-width: 0; }
 .preview-title { display: block; font-size: var(--fs-14); color: var(--N900); font-weight: 600; }
@@ -223,13 +225,13 @@ export default {
 .form-label { font-size: var(--fs-13); font-weight: 600; color: var(--N700); margin-bottom: 12rpx; }
 .opinion-textarea, .sheet-textarea { width: 100%; min-height: 144rpx; padding: 20rpx 24rpx; border: 1.5px solid var(--N200); border-radius: 24rpx; font-size: var(--fs-13); color: var(--N900); background: var(--white); box-sizing: border-box; }
 .action-row { display: flex; margin: 28rpx; }
-.action-row > view { flex: 1; }
-.action-row > view + view { margin-left: 20rpx; }
-.btn-p { height: 96rpx; background: var(--brand); color: #fff; border-radius: 24rpx; font-size: var(--fs-15); font-weight: 600; display: flex; align-items: center; justify-content: center; transition: background .3s, transform .2s; }
+.action-row > * { flex: 1; }
+.action-row > * + * { margin-left: 20rpx; }
+.btn-p { height: var(--btn-h); background: var(--brand); color: var(--white); border-radius: var(--btn-radius); font-size: var(--fs-14); font-weight: 600; display: flex; align-items: center; justify-content: center; transition: background .3s, transform .2s; }
 .btn-p:active { background: var(--brand-d); transform: scale(0.97); }
-.btn-e-outline { height: 96rpx; border-radius: 24rpx; border: 2px solid var(--er); color: var(--er); font-size: var(--fs-15); font-weight: 600; display: flex; align-items: center; justify-content: center; background: var(--white); transition: background .2s; }
+.btn-e-outline { height: var(--btn-h); border-radius: var(--btn-radius); border: 1.5px solid var(--er); color: var(--er); font-size: var(--fs-14); font-weight: 600; display: flex; align-items: center; justify-content: center; background: var(--white); transition: background .2s; }
 .btn-e-outline:active { background: var(--er-bg); }
-.btn-e { flex: 1; height: 96rpx; border-radius: 24rpx; background: var(--er-bg); color: var(--er); font-size: var(--fs-15); font-weight: 600; border: 1px solid var(--er-bd); display: flex; align-items: center; justify-content: center; }
+.btn-e { flex: 1; height: var(--btn-h); border-radius: var(--btn-radius); background: var(--er-bg); color: var(--er); font-size: var(--fs-14); font-weight: 600; border: 1px solid var(--er-bd); display: flex; align-items: center; justify-content: center; }
 .btn-e:active { background: var(--er); color: #fff; }
 .log + .log { margin-top: 20rpx; }
 .log-title { display: block; font-size: var(--fs-13); font-weight: 600; color: var(--N900); }
@@ -242,8 +244,8 @@ export default {
 .shandle { width: 72rpx; height: 8rpx; background: var(--N200); border-radius: 4rpx; margin: 20rpx auto 0; }
 .stitle { font-size: var(--fs-16); font-weight: 600; color: var(--N900); padding: 28rpx 32rpx 24rpx; border-bottom: 1px solid var(--N50); display: block; text-align: center; }
 .sbody2 { padding: 32rpx; display: flex; flex-direction: column; }
-.sbody2 > view + view { margin-top: 24rpx; }
+.sbody2 > * + * { margin-top: 24rpx; }
 .smsg { font-size: var(--fs-13); color: var(--N500); text-align: center; line-height: 1.6; display: block; }
 .brow { display: flex; }
-.brow > view + view { margin-left: 16rpx; }
+.brow > * + * { margin-left: 16rpx; }
 </style>

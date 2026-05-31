@@ -86,43 +86,15 @@ import SNavBar from '@/components/shared/SNavBar.vue'
 import SCard from '@/components/shared/SCard.vue'
 import SInfoRow from '@/components/shared/SInfoRow.vue'
 import SBadge from '@/components/shared/SBadge.vue'
-import { getStudent, getFeeList, getStudentFeeItems, computePaymentStatus } from '@/utils/businessState.js'
 import { studentApi } from '@/common/api/student.js'
 import { paymentApi } from '@/common/api/payment.js'
-
-
-const STORAGE_KEYS = ['teacher_doc_list', 'teacher_aid_list', 'teacher_loan_list', 'teacher_nondorm_list']
-
-const DEFAULT_STUDENT = {
-  name: '王明辉', sid: '2026010001', college: '计算机学院', className: '2026级1班',
-  gender: '男', phone: '13875615678', parentPhone: '13984564321',
-  address: '湖南省长沙市岳麓区麓山南路932号中南大学校本部15栋302室',
-  bankName: '中国工商银行', bankCard: '6222 0219 0301 2453 091',
-  dorm: '3号楼 305室(6人间)', checkinStatus: '未报到', overdue: 12,
-  feeTuition: '5,800.00', feeDorm: '1,200.00', feeBook: '320.00',
-  tuitionUnpaid: true, totalDue: '5,800.00'
-}
-
-function searchStorage(uid, sid) {
-  for (const key of STORAGE_KEYS) {
-    try {
-      const raw = uni.getStorageSync(key)
-      if (raw) {
-        const list = JSON.parse(raw)
-        const found = list.find(i => i.uid === uid || i.id === sid || i.sid === sid)
-        if (found) return found
-      }
-    } catch (e) { /* ignore */ }
-  }
-  return null
-}
 
 export default {
   name: 'TeacherStudentDetail',
   components: { SNavBar, SCard, SInfoRow, SBadge },
   data() {
     return {
-      student: { ...DEFAULT_STUDENT },
+      student: { name:'--', sid:'', college:'--', className:'--', gender:'--', phone:'--', idNo:'--', address:'--', dorm:'--', checkinStatus:'--', tuitionUnpaid: false, totalDue:'0' },
       fee: null,
       feeItems: []
     }
@@ -133,86 +105,61 @@ export default {
       return id.length > 10 ? `${id.slice(0, 6)}********${id.slice(-4)}` : id
     },
     feeTotal() {
-      const items = this.feeItems
-      if (!items.length) return { expected: 0, paid: 0, due: 0, statusLabel: '未缴', statusColor: 'wa' }
-      // 与列表页 getFeeList 保持一致：金额用 fee 记录，状态用 computePaymentStatus
-      const expected = this.fee?.expectedAmount || items.reduce((s, i) => s + i.amount, 0)
-      const paid = this.fee?.paidAmount || 0
-      const due = expected - paid
-      const result = computePaymentStatus(items)
-      // fee 记录的特殊状态优先（逾期、绿通），其余用 computePaymentStatus 结果
-      if (this.fee?.payStatus === 'channel') {
-        return { expected, paid, due, statusLabel: '绿通', statusColor: 'pu' }
-      }
-      if (this.fee?.payStatus === 'overdue' && result.payStatus === 'unpaid') {
-        return { expected, paid, due, statusLabel: '逾期', statusColor: 'er' }
-      }
-      return { expected, paid, due, statusLabel: result.statusLabel, statusColor: result.statusColor }
+      const f = this.fee || {}
+      const expected = Number(f.expectedAmount || f.receivableAmount || 0)
+      const paid = Number(f.paidAmount || 0)
+      // 优先使用后端 paymentStatus；缺失时按金额 fallback 计算
+      const st = f.payStatus || (
+        paid >= expected && expected > 0 ? 'paid' :
+        paid > 0 ? 'partial' : 'unpaid'
+      )
+      const labelMap = { paid:'已缴', unpaid:'未缴', partial:'部分', overdue:'逾期', channel:'绿通', green_channel:'绿通' }
+      const colorMap = { paid:'ok', unpaid:'wa', partial:'wa', overdue:'er', channel:'pu', green_channel:'pu' }
+      return { expected, paid, due: expected-paid, statusLabel: labelMap[st]||'未缴', statusColor: colorMap[st]||'wa' }
     }
   },
   async onLoad(options) {
-    const uid = options.uid
-    const sid = options.sid
-    const rawId = options.id
-    const cleanId = (rawId && rawId !== 'undefined') ? rawId : null
-    const apiId = cleanId || sid
-    if (uid || sid) {
-      const found = searchStorage(uid, sid)
-      const bizStudent = getStudent(sid || found?.sid || found?.id)
-      this.fee = getFeeList().find(i => i.sid === (sid || found?.sid || found?.id))
-      this.feeItems = getStudentFeeItems(sid || found?.sid || found?.id)
-      if (found || bizStudent) {
-        const source = bizStudent || {}
-        this.student = {
-          name: found?.name || source.name || DEFAULT_STUDENT.name,
-          sid: found?.sid || found?.id || source.sid || DEFAULT_STUDENT.sid,
-          college: found?.college || source.college || DEFAULT_STUDENT.college,
-          major: source.major || DEFAULT_STUDENT.major || '软件工程',
-          className: found?.className || source.className || DEFAULT_STUDENT.className,
-          gender: source.gender || DEFAULT_STUDENT.gender,
-          phone: source.phone || DEFAULT_STUDENT.phone,
-          parentPhone: source.parentPhone || DEFAULT_STUDENT.parentPhone,
-          idNo: source.idNo || DEFAULT_STUDENT.idNo,
-          address: source.address || DEFAULT_STUDENT.address,
-          bankName: DEFAULT_STUDENT.bankName,
-          bankCard: DEFAULT_STUDENT.bankCard,
-          dorm: source.dorm || DEFAULT_STUDENT.dorm,
-          checkinStatus: source.checkedIn ? '已报到' : '未报到',
-          overdue: this.fee?.payStatus === 'overdue' ? 12 : 0,
-          feeTuition: this.fee?.amount || found?.amount || found?.feeTuition || DEFAULT_STUDENT.feeTuition,
-          feeDorm: DEFAULT_STUDENT.feeDorm,
-          feeBook: DEFAULT_STUDENT.feeBook,
-          tuitionUnpaid: this.fee ? this.fee.payStatus !== 'paid' : (found?.status === 'pending' || found?.status === '待审核' || found?.status === '待初审'),
-          totalDue: this.fee?.payStatus === 'paid' ? '0.00' : (this.fee?.amount || found?.amount || DEFAULT_STUDENT.totalDue)
-        }
-      }
-      const studentId = sid || found?.sid || found?.id
+    const sid = options.sid || options.uid || options.id
+    if (!sid || sid === 'undefined') return
+    try {
       const [detailRes, paymentRes] = await Promise.all([
-        studentApi.getStudentDetail(apiId || studentId),
-        paymentApi.getStudentPaymentDetail(apiId || studentId)
+        studentApi.getStudentDetail(sid),
+        paymentApi.getStudentPaymentDetail(sid)
       ])
-      if (detailRes?.data?.code === 0) {
-        const detail = detailRes.data.data
+      if (detailRes?.code === 0) {
+        const d = detailRes.data
         this.student = {
-          ...this.student,
-          name: detail.name || detail.studentName || this.student.name,
-          sid: detail.studentNo || detail.studentId || this.student.sid,
-          college: detail.college || this.student.college,
-          className: detail.className || this.student.className,
-          gender: detail.gender || this.student.gender,
-          phone: detail.phone || this.student.phone,
-          idNo: detail.idCard || detail.idNo || this.student.idNo,
-          checkinStatus: detail.checkinStatus === 'checked_in' ? '已报到' : '未报到'
+          name: d.name||'--', sid: d.studentNo||sid,
+          college: d.college||'--', className: d.className||'--',
+          gender: d.gender||'--', phone: d.phone||'--',
+          idNo: d.idNoMasked||'--', address: d.address||'--',
+          dorm: d.dormitory ? d.dormitory.building+' '+d.dormitory.room+'室' : '--',
+          checkinStatus: d.checkin?.status==='checked_in'?'已报到':'未报到',
+          tuitionUnpaid: d.paymentSummary?.status!=='paid',
+          totalDue: Number(d.paymentSummary?.unpaid||0).toLocaleString()
         }
       }
-      if (paymentRes?.data?.code === 0) {
-        const payment = paymentRes.data.data
-        const status = payment.paymentStatus || payment.status
-        this.fee = { payStatus: status, amount: String(payment.unpaidAmount || payment.receivableAmount || 0) }
-        this.student.tuitionUnpaid = status !== 'paid'
-        this.student.totalDue = Number(payment.unpaidAmount || 0).toLocaleString()
+      if (paymentRes?.code === 0) {
+        const p = paymentRes.data, s = p.summary||{}
+        const bills = p.bills || []
+        const requiredSet = new Set(['学费', '教材费'])
+        this.feeItems = bills.map(b => {
+          const name = b.itemName || b.item_name || '--'
+          const billStatus = b.status || (b.paidAmount >= b.receivableAmount ? 'paid' : b.paidAmount > 0 ? 'partial' : 'unpaid')
+          return {
+            name,
+            amount: b.receivableAmount || 0,
+            paid: b.paidAmount || 0,
+            required: requiredSet.has(name) || (b.required === true),
+            statusLabel: billStatus === 'paid' ? '已缴' : billStatus === 'partial' ? '部分' : '未缴',
+            statusColor: billStatus === 'paid' ? 'ok' : billStatus === 'partial' ? 'wa' : 'wa'
+          }
+        })
+        this.fee = { payStatus: s.paymentStatus, expectedAmount: s.receivableAmount, paidAmount: s.paidAmount }
+        this.student.tuitionUnpaid = s.paymentStatus !== 'paid'
+        this.student.totalDue = Number(s.unpaidAmount||0).toLocaleString()
       }
-    }
+    } catch(e){}
   },
   methods: {
     copySid() {
